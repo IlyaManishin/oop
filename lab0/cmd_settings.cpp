@@ -10,6 +10,18 @@
 
 namespace lab0
 {
+    static const char *get_char_pos(const char *str, char ch)
+    {
+        size_t sLength = strlen(str);
+        for (int i = 0; i < sLength; i++)
+        {
+            if (*str == ch)
+                return str;
+            str++;
+        }
+        return NULL;
+    }
+    
     class Option
     {
     private:
@@ -47,12 +59,17 @@ namespace lab0
 
             this->value = (char *)malloc((valueLength + 1) * sizeof(char));
             strncpy(this->value, eqPos + 1, valueLength);
-            this->key[valueLength] = '\0';
+            this->value[valueLength] = '\0';
         }
 
         bool check_key(const char *check)
         {
             return strncmp(check, this->key, MAX_ARGUMENT_SIZE) == 0;
+        }
+
+        const char *get_value()
+        {
+            return this->value;
         }
 
         static bool arg_is_option(const char *argValue)
@@ -65,24 +82,12 @@ namespace lab0
             return false;
         }
 
-        Option::~Option()
+        ~Option()
         {
             free(key);
             free(value);
         }
     };
-
-    static const char *get_char_pos(const char *str, char ch)
-    {
-        size_t sLength = strlen(str);
-        for (int i = 0; i < sLength; i++)
-        {
-            if (*str == ch)
-                return str;
-            str++;
-        }
-        return NULL;
-    }
 
     CmdSettings::CmdSettings(int argc, const char *argv[])
     {
@@ -93,6 +98,16 @@ namespace lab0
                 this->options.push_back(new Option(argv[i]));
             }
         }
+    }
+
+    const char *CmdSettings::get_value(const char *key)
+    {
+        for (Option *opt : this->options)
+        {
+            if (opt->check_key(key))
+                return opt->get_value();
+        }
+        return nullptr;
     }
 
 }

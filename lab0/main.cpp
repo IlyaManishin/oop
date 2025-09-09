@@ -4,13 +4,14 @@
 
 #define DEFAULT_DELIM_CHAR ';'
 
-namespace lab0
-{
-    int main(int argc, const char *argv[])
+using namespace lab0;
+
+int main(int argc, const char *argv[])
     {
+        CmdSettings *cmdSettings;
         try
         {
-            CmdSettings settings(argc, argv);
+            cmdSettings = new CmdSettings(argc, argv);
         }
         catch (const InvalidArguments &err)
         {
@@ -19,4 +20,3 @@ namespace lab0
         
         return EXIT_SUCCESS;
     }
-}

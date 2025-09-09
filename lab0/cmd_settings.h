@@ -31,7 +31,15 @@ namespace lab0
     {
 
     public:
-        CmdSettings::CmdSettings(int argc, const char *argv[]);
+        CmdSettings(int argc, const char *argv[]);
+        ~CmdSettings()
+        {
+            for (Option *opt : options)
+            {
+                delete opt;
+            }
+        }
+        const char *get_value(const char *key);
 
     private:
         std::vector<Option *> options;
