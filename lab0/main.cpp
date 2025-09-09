@@ -2,11 +2,21 @@
 
 #include "cmd_settings.h"
 
+#define DEFAULT_DELIM_CHAR ';'
+
 namespace lab0
-{   
-    int main(int argc, char **argv)
+{
+    int main(int argc, const char *argv[])
     {
-        CmdSettings settings();
+        try
+        {
+            CmdSettings settings(argc, argv);
+        }
+        catch (const InvalidArguments &err)
+        {
+            std::cout << err.what();
+        }
+        
         return EXIT_SUCCESS;
     }
 }
