@@ -6,6 +6,7 @@ project(lab0)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 add_compile_options(-g)
+enable_testing()
 
 add_executable(main main.cpp cmd_settings.cpp)
 

@@ -1,5 +1,5 @@
 #include <iostream>
 
-namespace Tables{
+namespace lab0{
 
 }

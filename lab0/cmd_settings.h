@@ -33,12 +33,15 @@ namespace lab0
     public:
         CmdSettings(int argc, const char *argv[]);
         ~CmdSettings();
-        
-        const char *get_value(const char *key);
+
+        const char *get_option_value(const char *key);
         bool check_option(const char *key);
+
+        const char *get_arg_value(int index);
 
     private:
         std::vector<Option *> options;
+        std::vector<const char *> args;
     };
 
 }

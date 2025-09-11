@@ -89,6 +89,10 @@ namespace lab0
             {
                 this->options.push_back(new Option(argv[i]));
             }
+            else
+            {
+                this->args.push_back(argv[i]);
+            }
         }
     }
     CmdSettings::~CmdSettings()
@@ -98,7 +102,7 @@ namespace lab0
             delete opt;
         }
     }
-    const char *CmdSettings::get_value(const char *key)
+    const char *CmdSettings::get_option_value(const char *key)
     {
         for (Option *opt : this->options)
         {
@@ -116,6 +120,13 @@ namespace lab0
                 return true;
         }
         return false;
+    }
+
+    const char *CmdSettings::get_arg_value(int index)
+    {
+        if (this->args.size() <= index)
+            return nullptr;
+        return this->args[index];
     }
 
     static const char *get_char_pos(const char *str, char ch)

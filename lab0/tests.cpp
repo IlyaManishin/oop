@@ -19,7 +19,7 @@ namespace tests
 
     bool cmd_settings_test()
     {
-        const char *argv[] = {"lab", "-p", "-q", "-d=test.csv", "-val"};
+        const char *argv[] = {"lab","input.txt", "-p", "-q", "-d=test.csv", "-val"};
         int argc = sizeof(argv) / sizeof(argv[0]);
 
         lab0::CmdSettings *settings;
@@ -38,11 +38,14 @@ namespace tests
         TEST_ASSERT(settings->check_option("val") == true);
         TEST_ASSERT(settings->check_option("x") == false);
 
-        TEST_ASSERT(strcmp(settings->get_value("d"), "test.csv") == 0);
-        TEST_ASSERT(settings->get_value("val") == nullptr);
-        TEST_ASSERT(settings->get_value("zzz") == nullptr);
+        TEST_ASSERT(strcmp(settings->get_option_value("d"), "test.csv") == 0);
+        TEST_ASSERT(settings->get_option_value("val") == nullptr);
+        TEST_ASSERT(settings->get_option_value("zzz") == nullptr);
 
-        TEST_ASSERT(settings->get_value("lab") == nullptr);
+        TEST_ASSERT(settings->get_option_value("lab") == nullptr);
+        TEST_ASSERT(strcmp(settings->get_arg_value(0), "input.txt") == 0);
+        TEST_ASSERT(settings->get_arg_value(1) == NULL);
+
 
         delete settings;
         return true;
