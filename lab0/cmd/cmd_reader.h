@@ -9,6 +9,17 @@ namespace lab0
         MAX_ARGUMENT_SIZE = 128,
     };
 
+    typedef struct TProgramSettings
+    {
+        bool isError;
+        char *errMsg;
+
+        const char *filePath;
+        const char *destPath;
+        int maxColumns;
+        char delim;
+    } TProgramSettings;
+
     class Option;
 
     class InvalidArguments : public std::exception
@@ -27,12 +38,13 @@ namespace lab0
         std::string errMessage;
     };
 
-    class CmdSettings
+    class CmdReader
     {
 
     public:
-        CmdSettings(int argc, const char *argv[]);
-        ~CmdSettings();
+        CmdReader(int argc, const char *argv[]);
+        ~CmdReader();
+        TProgramSettings get_settings();
 
         const char *get_option_value(const char *key);
         bool check_option(const char *key);

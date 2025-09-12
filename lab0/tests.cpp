@@ -1,7 +1,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "cmd_settings.h"
+#include "cmd/cmd_reader.h"
 
 #define TEST_ASSERT(expr)                                                         \
     do                                                                            \
@@ -17,41 +17,65 @@ namespace tests
 {
     static int allTestsCount = 0;
 
-    bool cmd_settings_test()
+    static lab0::CmdReader *get_base_cmd_reader()
     {
-        const char *argv[] = {"lab","input.txt", "-p", "-q", "-d=test.csv", "-val"};
+        const char *argv[] = {"lab", "input.txt", "-p", "-q", "-h=100", "-d=;", "-dest=test.csv", "-val"};
         int argc = sizeof(argv) / sizeof(argv[0]);
 
-        lab0::CmdSettings *settings;
+        lab0::CmdReader *reader;
         try
         {
-            settings = new lab0::CmdSettings(argc, argv);
+            reader = new lab0::CmdReader(argc, argv);
         }
         catch (lab0::InvalidArguments &exc)
         {
             fprintf(stderr, "Error: %s in line: %d\n", exc.what(), __LINE__);
-            return false;
+            return nullptr;
         }
+        return reader;
+    }
 
-        TEST_ASSERT(settings->check_option("p") == true);
-        TEST_ASSERT(settings->check_option("q") == true);
-        TEST_ASSERT(settings->check_option("val") == true);
-        TEST_ASSERT(settings->check_option("x") == false);
+    static bool cmd_reader_test()
+    {
+        lab0::CmdReader *reader = get_base_cmd_reader();
+        TEST_ASSERT(reader != nullptr);
 
-        TEST_ASSERT(strcmp(settings->get_option_value("d"), "test.csv") == 0);
-        TEST_ASSERT(settings->get_option_value("val") == nullptr);
-        TEST_ASSERT(settings->get_option_value("zzz") == nullptr);
+        TEST_ASSERT(reader->check_option("p") == true);
+        TEST_ASSERT(reader->check_option("q") == true);
+        TEST_ASSERT(reader->check_option("val") == true);
+        TEST_ASSERT(reader->check_option("x") == false);
 
-        TEST_ASSERT(settings->get_option_value("lab") == nullptr);
-        TEST_ASSERT(strcmp(settings->get_arg_value(0), "input.txt") == 0);
-        TEST_ASSERT(settings->get_arg_value(1) == NULL);
+        TEST_ASSERT(strcmp(reader->get_option_value("dest"), "test.csv") == 0);
+        TEST_ASSERT(reader->get_option_value("val") == nullptr);
+        TEST_ASSERT(reader->get_option_value("zzz") == nullptr);
 
+        TEST_ASSERT(reader->get_option_value("lab") == nullptr);
+        TEST_ASSERT(strcmp(reader->get_arg_value(0), "input.txt") == 0);
+        TEST_ASSERT(reader->get_arg_value(1) == NULL);
 
-        delete settings;
+        delete reader;
         return true;
     }
 
-    int run_test(bool (*test_func)(), const char *testName)
+    static bool settings_test()
+    {
+        lab0::CmdReader *reader = get_base_cmd_reader();
+        TEST_ASSERT(reader != nullptr);
+
+        lab0::TProgramSettings settings = reader->get_settings();
+        TEST_ASSERT(!settings.isError);
+
+        TEST_ASSERT(strcmp(settings.filePath, "input.txt") == 0);
+        TEST_ASSERT(strcmp(settings.destPath, "test.csv") == 0);
+
+        TEST_ASSERT(settings.maxColumns == 100);                      
+        TEST_ASSERT(settings.delim == ';'); 
+
+        delete reader;
+        return true;
+    }
+
+    static int run_test(bool (*test_func)(), const char *testName)
     {
         allTestsCount++;
 
@@ -70,9 +94,11 @@ using namespace tests;
 int main()
 {
     int passedCount = 0;
-    passedCount += run_test(cmd_settings_test, "Cmd settings");
+    passedCount += run_test(cmd_reader_test, "Cmd reader");
+    passedCount += run_test(settings_test, "Settings");
     if (passedCount != allTestsCount)
         return EXIT_FAILURE;
+    printf("Tests finish\n");
 
     return EXIT_SUCCESS;
 }

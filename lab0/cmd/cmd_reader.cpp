@@ -3,9 +3,13 @@
 #include <exception>
 #include <iostream>
 
-#include "cmd_settings.h"
+#include "cmd_reader.h"
 
 #define OPT_KEY_OFFSET 1
+
+#define DEFAULT_DEST_PATH "output.csv"
+#define DEFAULT_DELIM ';'
+#define DEFAULT_MAX_COLUMNS 100
 
 namespace lab0
 {
@@ -81,7 +85,7 @@ namespace lab0
         }
     };
 
-    CmdSettings::CmdSettings(int argc, const char *argv[])
+    CmdReader::CmdReader(int argc, const char *argv[])
     {
         for (int i = 1; i < argc; i++)
         {
@@ -95,14 +99,14 @@ namespace lab0
             }
         }
     }
-    CmdSettings::~CmdSettings()
+    CmdReader::~CmdReader()
     {
         for (Option *opt : options)
         {
             delete opt;
         }
     }
-    const char *CmdSettings::get_option_value(const char *key)
+    const char *CmdReader::get_option_value(const char *key)
     {
         for (Option *opt : this->options)
         {
@@ -112,7 +116,7 @@ namespace lab0
         return nullptr;
     }
 
-    bool CmdSettings::check_option(const char *key)
+    bool CmdReader::check_option(const char *key)
     {
         for (Option *opt : this->options)
         {
@@ -122,7 +126,45 @@ namespace lab0
         return false;
     }
 
-    const char *CmdSettings::get_arg_value(int index)
+    static int try_get_int_arg(const char *str, int baseValue)
+    {
+        if (str == nullptr)
+            return baseValue;
+        int res = atoi(str);
+        if (res == 0)
+            res = baseValue;
+        return baseValue;
+    }
+
+    TProgramSettings CmdReader::get_settings()
+    {
+        TProgramSettings res;
+        res.isError = false;
+
+        res.filePath = this->get_arg_value(0);
+        if (res.filePath == nullptr)
+        {
+            res.isError = true;
+            res.errMsg = "Error: No input file";
+            return res;
+        }
+        res.destPath = this->get_option_value("dest");
+        if (res.destPath == nullptr)
+            res.destPath = DEFAULT_DEST_PATH;
+
+        const char *maxColS = this->get_option_value("h");
+        res.maxColumns = try_get_int_arg(maxColS, DEFAULT_MAX_COLUMNS);
+
+        const char *delimS = this->get_option_value("d");
+        if (delimS == nullptr || strlen(delimS) == 0)
+            res.delim = DEFAULT_DELIM;
+        else
+            res.delim = delimS[0];
+
+        return res;
+    }
+
+    const char *CmdReader::get_arg_value(int index)
     {
         if (this->args.size() <= index)
             return nullptr;
