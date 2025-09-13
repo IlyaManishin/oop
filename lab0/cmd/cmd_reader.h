@@ -12,7 +12,7 @@ namespace lab0
     typedef struct TProgramSettings
     {
         bool isError;
-        char *errMsg;
+        const char *errMsg;
 
         const char *filePath;
         const char *destPath;
@@ -54,6 +54,7 @@ namespace lab0
     private:
         std::vector<Option *> options;
         std::vector<const char *> args;
+        int try_get_int_arg(const char *str, int baseValue);
     };
 
 }

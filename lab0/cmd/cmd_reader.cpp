@@ -15,14 +15,24 @@ namespace lab0
 {
     static const char OPTION_PREFIX = '-';
 
-    static const char *get_char_pos(const char *str, char ch);
-
     class Option
     {
     private:
         bool hasValue;
         char *key;
         char *value;
+
+        const char *get_char_pos(const char *str, char ch)
+        {
+            size_t sLength = strlen(str);
+            for (int i = 0; i < sLength; i++)
+            {
+                if (*str == ch)
+                    return str;
+                str++;
+            }
+            return nullptr;
+        }
 
     public:
         Option(const char *argValue)
@@ -99,6 +109,7 @@ namespace lab0
             }
         }
     }
+
     CmdReader::~CmdReader()
     {
         for (Option *opt : options)
@@ -106,6 +117,7 @@ namespace lab0
             delete opt;
         }
     }
+
     const char *CmdReader::get_option_value(const char *key)
     {
         for (Option *opt : this->options)
@@ -126,14 +138,14 @@ namespace lab0
         return false;
     }
 
-    static int try_get_int_arg(const char *str, int baseValue)
+    int CmdReader::try_get_int_arg(const char *str, int baseValue)
     {
         if (str == nullptr)
             return baseValue;
         int res = atoi(str);
         if (res == 0)
             res = baseValue;
-        return baseValue;
+        return res;
     }
 
     TProgramSettings CmdReader::get_settings()
@@ -166,21 +178,9 @@ namespace lab0
 
     const char *CmdReader::get_arg_value(int index)
     {
-        if (this->args.size() <= index)
+        if (index >= this->args.size())
             return nullptr;
         return this->args[index];
-    }
-
-    static const char *get_char_pos(const char *str, char ch)
-    {
-        size_t sLength = strlen(str);
-        for (int i = 0; i < sLength; i++)
-        {
-            if (*str == ch)
-                return str;
-            str++;
-        }
-        return nullptr;
     }
 
 }

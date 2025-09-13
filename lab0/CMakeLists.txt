@@ -5,10 +5,9 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 project(lab0)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(SRC ${CMAKE_SOURCE_DIR})
 add_compile_options(-g)
 enable_testing()
 
-add_executable(main main.cpp cmd/cmd_reader.cpp)
-
-add_executable(tests tests.cpp cmd/cmd_reader.cpp)
-add_test(NAME tests COMMAND tests)
+add_executable(main main.cpp cmd/cmd_reader.cpp tables/tables.cpp)
+add_subdirectory(tests)

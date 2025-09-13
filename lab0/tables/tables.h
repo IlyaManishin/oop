@@ -1,34 +1,38 @@
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace lab0
 {
     class IterableFile
     {
-    private:
-        FILE *file;
-        size_t curWordIndex;
-        size_t wordsCount;
+    protected:
+        std::fstream *file;
         std::vector<std::string> words;
 
     public:
         IterableFile(const char *filePath)
         {
-            this->file = fopen64(filePath, "r");
+            this->file = new std::fstream();
+            this->file->open(filePath);
         }
 
         ~IterableFile()
         {
-            fclose(this->file);
+            delete this->file;
         }
 
-        auto begin()  { return words.begin(); }
-        auto end()  { return words.end(); }
+        bool is_open() const { return file->is_open(); }
+
+        auto begin() const { return words.begin(); }
+        auto end() const { return words.end(); }
     };
 
     class TXTWordsFile : public IterableFile
     {
+    public:
         TXTWordsFile(const char *filePath);
         ~TXTWordsFile() = default;
     };
@@ -43,10 +47,11 @@ namespace lab0
     {
     private:
         char delim;
-        IterableFile *usedFile;
+        void save_pairs_to_csv(const std::vector<std::pair<std::string, int>> &sortedPairs,
+                               std::fstream &destFile, size_t wordsCount, int maxColumns);
 
     public:
-        TableStats(IterableFile *usedFile, char delim) : usedFile(usedFile), delim(delim) {};
-        TTableStatsResp SaveStatsToCsv(const char *csvPath, int maxColumns);
+        TableStats(char delim) : delim(delim) {};
+        TTableStatsResp SaveStatsToCsv(const IterableFile &usedFile, const char *csvPath, int maxColumns);
     };
 }
