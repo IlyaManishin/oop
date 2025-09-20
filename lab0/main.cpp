@@ -23,6 +23,7 @@ int main(int argc, const char *argv[])
     if (settings.isError)
     {
         std::cout << settings.errMsg << std::endl;
+        delete cmdReader;
         return EXIT_FAILURE;
     }
     TXTWordsFile wordsFile(settings.filePath);
@@ -33,7 +34,7 @@ int main(int argc, const char *argv[])
         std::cout << resp.errMsg << std::endl;
         return EXIT_FAILURE;
     }
-    
+
     delete cmdReader;
     return EXIT_SUCCESS;
 }

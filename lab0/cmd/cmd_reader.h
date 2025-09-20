@@ -4,11 +4,6 @@
 
 namespace lab0
 {
-    enum
-    {
-        MAX_ARGUMENT_SIZE = 128,
-    };
-
     typedef struct TProgramSettings
     {
         bool isError;

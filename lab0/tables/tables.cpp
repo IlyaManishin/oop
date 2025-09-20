@@ -6,7 +6,7 @@
 #include "tables.h"
 
 #define is_word_symbol(ch) \
-    (('a' <= (ch) && (ch) <= 'z') || (('A' <= (ch) && (ch) <= 'Z')) || ('0' <= (ch) && (ch) <= '9'))
+    (('a' <= (ch) && (ch) <= 'z') || (('A' <= (ch) && (ch) <= 'Z')) || ('0' <= (ch) && (ch) <= '9') || ((unsigned char)ch >= 128))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 namespace lab0
@@ -120,24 +120,42 @@ namespace lab0
     void TableStats::save_pairs_to_csv(const std::vector<std::pair<std::string, int>> &sortedPairs,
                                        std::fstream &destFile, size_t wordsCount, int maxColumns)
     {
-        int maxIter = min(maxColumns, sortedPairs.size());
-        for (int i = 0; i < maxIter; i++)
+        // int maxIter = min(maxColumns, sortedPairs.size());
+        // for (int i = 0; i < maxIter; i++)
+        // {
+        //     destFile << sortedPairs[i].first << this->delim;
+        // }
+        // destFile << std::endl;
+
+        // for (int i = 0; i < maxIter; i++)
+        // {
+        //     destFile << sortedPairs[i].second << this->delim;
+        // }
+        // destFile << std::endl;
+
+        // for (int i = 0; i < maxIter; i++)
+        // {
+        //     destFile << std::setprecision(3) << (double)sortedPairs[i].second / wordsCount << this->delim;
+        // }
+        // destFile << std::endl;
+        std::vector<std::string> columns = {"Word", "Count", "Frequency"};
+        for (int i = 0; i < columns.size(); i++)
         {
-            destFile << sortedPairs[i].first << this->delim;
+            destFile << columns[i] << this->delim;
         }
         destFile << std::endl;
 
-        for (int i = 0; i < maxIter; i++)
-        {
-            destFile << sortedPairs[i].second << this->delim;
-        }
-        destFile << std::endl;
+        size_t maxIter = min(maxColumns, sortedPairs.size());
 
-        for (int i = 0; i < maxIter; i++)
+        for (size_t i = 0; i < maxIter; ++i)
         {
-            destFile << std::setprecision(3) << (double)sortedPairs[i].second / wordsCount << this->delim;
+            const auto &p = sortedPairs[i];
+            double freq = wordsCount ? (double)(p.second) / wordsCount : 0.0;
+            destFile << p.first << this->delim
+                     << p.second << this->delim
+                     << std::setprecision(3) << freq
+                     << std::endl;
         }
-        destFile << std::endl;
     }
 
 }

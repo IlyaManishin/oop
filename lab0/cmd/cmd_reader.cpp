@@ -13,6 +13,10 @@
 
 namespace lab0
 {
+    enum
+    {
+        MAX_ARGUMENT_SIZE = 128,
+    };
     static const char OPTION_PREFIX = '-';
 
     class Option

@@ -50,6 +50,8 @@ namespace lab0
         void save_pairs_to_csv(const std::vector<std::pair<std::string, int>> &sortedPairs,
                                std::fstream &destFile, size_t wordsCount, int maxColumns);
 
+        void NewFunction(int &maxColumns, const std::vector<std::pair<std::string, int>> &sortedPairs, std::fstream &destFile, size_t wordsCount);
+
     public:
         TableStats(char delim) : delim(delim) {};
         TTableStatsResp SaveStatsToCsv(const IterableFile &usedFile, const char *csvPath, int maxColumns);

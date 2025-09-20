@@ -90,17 +90,35 @@ namespace tests
         lab0::TXTWordsFile wordsFile(testPath.c_str());
         lab0::TableStats stats(delim);
         lab0::TTableStatsResp resp = stats.SaveStatsToCsv(wordsFile, destPath.c_str(), maxColumns);
+        if (resp.isError)
+            fprintf(stderr, "%s\n", resp.errMsg);
         TEST_ASSERT(!resp.isError);
 
         std::fstream destFile(destPath);
         TEST_ASSERT(destFile.is_open());
 
-        std::string names, freqs;
-        std::getline(destFile, names);
-        std::getline(destFile, freqs);
+        std::string columns = "Word;Count;Frequency;";
+        std::string line;
+        std::getline(destFile, line, '\n');
+        TEST_ASSERT(columns == line);
 
-        TEST_ASSERT(names == "aa;cc;a;ff;aaa;b;fff;jfjfj;ll;ssss;");
-        TEST_ASSERT(freqs == "4;3;2;2;1;1;1;1;1;1;");
+        std::vector<std::string> expected = {
+            "aa;4;",
+            "cc;3;",
+            "a;2;",
+            "ff;2;",
+            "aaa;1;",
+            "b;1;",
+            "fff;1;",
+            "jfjfj;1;",
+            "ll;1;",
+            "ssss;1;"};
+
+        for (size_t i = 0; i < expected.size(); i++)
+        {
+            TEST_ASSERT(std::getline(destFile, line, '\n'));
+            TEST_ASSERT(line.rfind(expected[i]) != std::string::npos);
+        }
 
         std::remove(destPath.c_str());
         return true;
