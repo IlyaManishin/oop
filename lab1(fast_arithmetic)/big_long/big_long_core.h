@@ -4,8 +4,7 @@
 
 namespace bigLong
 {
-    constexpr int digits_size(size_t byteSize)
-    {
-        return byteSize % BL_USED_DIGIT_BITS == 0 ? byteSize / BL_USED_DIGIT_BITS : byteSize / BL_USED_DIGIT_BITS + 1;
-    }
+    constexpr int type_digits_size(size_t byteSize);
+
+
 } // namespace bigLong
