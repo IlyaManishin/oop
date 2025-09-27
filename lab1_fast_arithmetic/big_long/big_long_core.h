@@ -4,7 +4,7 @@
 
 namespace bigLong
 {
-    constexpr int type_digits_size(size_t byteSize);
+    constexpr size_t type_digits_size(size_t byteSize);
 
 
 } // namespace bigLong
