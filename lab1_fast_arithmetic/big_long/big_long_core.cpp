@@ -44,12 +44,12 @@ namespace bigLong
 
         long double asCeil;
         std::modf(floating, &asCeil);
-        
+
         while (asCeil >= 1)
         {
             digit digitPart = static_cast<digit>(std::fmod(asCeil, (long double)BL_DIGIT_MOD));
             digits.push_back(digitPart);
-            assert(this->digits[digitIndex] < BL_DIGIT_MOD);
+            assert(this->digits[digits.size() - 1] < BL_DIGIT_MOD);
 
             asCeil /= BL_DIGIT_MOD;
         }
@@ -129,6 +129,29 @@ namespace bigLong
     constexpr size_t type_digits_size(size_t byteSize)
     {
         return byteSize % BL_USED_DIGIT_BITS == 0 ? byteSize / BL_USED_DIGIT_BITS : byteSize / BL_USED_DIGIT_BITS + 1;
+    }
+
+    int BigLong::bigLongAbsCompare(const BigLong &other) const
+    {
+        if (this->numSize > other.numSize)
+        {
+            return 1;
+        }
+        else if (this->numSize < other.numSize)
+        {
+            return -1;
+        }
+        else
+        {
+            for (int i = this->numSize - 1; i >= 0; i--)
+            {
+                if (this->digits[i] < other.digits[i])
+                    return -1;
+                else if (this->digits[i] > other.digits[i])
+                    return 1;
+            }
+        }
+        return 0;
     }
 
 } // namespace bigLong

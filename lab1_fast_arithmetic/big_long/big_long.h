@@ -20,9 +20,6 @@ namespace bigLong
         template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
         BigLong(T floating);
 
-        template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>, bool>>
-        BigLong(T floating);
-
         BigLong(const std::string &numStr);
         BigLong(const char *numStr);
 
@@ -36,7 +33,15 @@ namespace bigLong
         BigLong &operator+=(T floating);
         BigLong &operator+=(const BigLong &other);
 
-        const std::vector<digit> &get_digits();
+        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+        BigLong &operator-=(T integral);
+        template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
+        BigLong &operator-=(T floating);
+        BigLong &operator-=(const BigLong &other);
+
+        bool operator==(const BigLong &other) const;
+        bool operator<(const BigLong &other) const;
+        bool operator>(const BigLong &other) const { return other < *this; }
 
         ~BigLong();
 
@@ -54,16 +59,17 @@ namespace bigLong
         template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
         void initFromLongFloating(T floating);
 
-        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
+        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
         void addIntegral(T integral);
 
         // template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
         // void addBigFloating(T floating);
 
-        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
+        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
         void subIntegral(T integral);
 
         void normalize();
+        int bigLongAbsCompare(const BigLong &other) const;
     };
 
 }

@@ -71,7 +71,6 @@ namespace bigLong
         else if (integral < 0)
         {
             auto unsignedNum = std::make_unsigned<T>(integral);
-            // this -= unsignedNum;
         }
         return *this;
     }
@@ -85,12 +84,38 @@ namespace bigLong
 
     BigLong &BigLong::operator+=(const BigLong &other)
     {
-        // return *this;
+        if (other.numSign == ZERO_NUM) return;
+
     }
 
-    const std::vector<digit> &BigLong::get_digits()
+    bool BigLong::operator<(const BigLong &other) const
     {
-        return this->digits;
+        if (this->numSign > other.numSign)
+        {
+            return false;
+        }
+        else if (this->numSign < other.numSign)
+        {
+            return true;
+        }
+        else
+        {
+            if (this->numSign == ZERO_NUM)
+                return false;
+            else if (this->numSign == NEGATIVE_NUM)
+                return this->bigLongAbsCompare(other) == 1;
+            else
+                return this->bigLongAbsCompare(other) == -1;
+        }
+    }
+
+    bool BigLong::operator==(const BigLong &other) const
+    {
+        if (this->numSign != other.numSign)
+            return false;
+        if (this->bigLongAbsCompare(other) != 0)
+            return false;
+        return true;
     }
 
 }
