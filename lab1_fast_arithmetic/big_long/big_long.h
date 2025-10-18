@@ -31,9 +31,23 @@ namespace bigLong
         BigLong &operator+=(const BigLong &other);
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+        BigLong operator-(T number);
+        BigLong operator-(const BigLong &otherBl);
+
+        template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong &operator-=(T number);
 
         BigLong &operator-=(const BigLong &other);
+
+        template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+        BigLong operator*(T number) const;
+
+        BigLong operator*(const BigLong &other) const;
+
+        template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+        BigLong &operator*=(T number);
+
+        BigLong &operator*=(const BigLong &other);
 
         bool operator==(const BigLong &other) const;
         bool operator<(const BigLong &other) const;
@@ -52,7 +66,7 @@ namespace bigLong
             printf("%d\n", this->digits.size() > 0 ? this->digits[0] : -1);
         }
 
-        ~BigLong();
+        ~BigLong() {};
 
     private:
         std::vector<_detail::digit> digits;

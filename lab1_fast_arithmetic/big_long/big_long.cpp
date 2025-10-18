@@ -64,6 +64,13 @@ namespace bigLong
         return *this;
     }
 
+    BigLong BigLong::operator-(const BigLong &otherBl)
+    {
+        BigLong res(*this);
+        res -= otherBl;
+        return res;
+    }
+
     BigLong &BigLong::operator-=(const BigLong &other)
     {
         if (other.numSign == ZERO_NUM)
@@ -99,6 +106,42 @@ namespace bigLong
         return *this;
     }
 
+    BigLong &BigLong::operator*=(const BigLong &other)
+    {
+        if (this->numSign == 0 || other.numSign == 0)
+        {
+            this->digits.clear();
+            this->numSize = 0;
+            this->numSign = 0;
+            return *this;
+        }
+
+        size_t size_a = this->numSize;
+        size_t size_b = other.numSize;
+        std::vector<digit> result(size_a + size_b, 0);
+
+        for (size_t i = 0; i < size_a; ++i)
+        {
+            twodigits carry = 0;
+            twodigits f = this->digits[i];
+
+            for (size_t j = 0; j < size_b; ++j)
+            {
+                twodigits tmp = static_cast<twodigits>(result[i + j]) + f * other.digits[j] + carry;
+                result[i + j] = static_cast<digit>(tmp & BL_DIGIT_MASK);
+                carry = tmp >> BL_BIT_COUNT;
+            }
+
+            if (carry)
+                result[i + size_b] += static_cast<digit>(carry);
+        }
+
+        this->digits = std::move(result);
+        this->numSign *= other.numSign;
+        this->normalize();
+        return *this;
+    }
+
     bool BigLong::operator<(const BigLong &other) const
     {
         if (this->numSign > other.numSign)
@@ -129,7 +172,4 @@ namespace bigLong
         return true;
     }
 
-    BigLong::~BigLong()
-    {
-    }
 }

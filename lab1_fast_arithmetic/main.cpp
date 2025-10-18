@@ -10,7 +10,7 @@ int main()
     bl.printBigLong();
     bl -= add;
     bl.printBigLong();
-    bl -= add;
+    bl = bl - add;
     bl.printBigLong();
     return EXIT_SUCCESS;
 }

@@ -37,6 +37,14 @@ namespace bigLong
     }
 
     template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+    BigLong BigLong::operator+(T number)
+    {
+        BigLong res(*this);
+        res += number;
+        return res;
+    }
+
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
     BigLong &BigLong::operator+=(T number)
     {
         if (number == 0)
@@ -57,11 +65,37 @@ namespace bigLong
     }
 
     template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
-    BigLong BigLong::operator+(T number)
+    BigLong BigLong::operator-(T number)
     {
         BigLong res(*this);
-        res += number;
+        res -= number;
         return res;
+    }
+
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+    BigLong &BigLong::operator-=(T number)
+    {
+        if (number == 0)
+            return *this;
+
+        *this -= bl;
+        return *this;
+    }
+
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+    BigLong BigLong::operator*(T number) const
+    {
+        BigLong res(*this);
+        res *= number;
+        return res;
+    }
+
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+    BigLong &BigLong::operator*=(T number)
+    {
+        BigLong bl(number);
+        *this *= bl;
+        return *this;
     }
 
     template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
