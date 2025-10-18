@@ -47,6 +47,10 @@ namespace bigLong
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         bool operator==(T other) const { return *this == BigLong(other); }
+        void printBigLong()
+        {
+            printf("%d\n", this->digits.size() > 0 ? this->digits[0] : -1);
+        }
 
         ~BigLong();
 
@@ -69,5 +73,6 @@ namespace bigLong
         void normalize();
         int bigLongAbsCompare(const BigLong &other) const;
     };
-
 }
+
+#include "big_long_impl.h"

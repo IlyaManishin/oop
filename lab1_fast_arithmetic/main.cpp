@@ -3,6 +3,14 @@
 int main()
 {
     bigLong::BigLong bl(10);
-    printf("%d", bl > 9);
+    bl += 10;
+    bl += 100;
+    bigLong::BigLong add(1000);
+    bl += add;
+    bl.printBigLong();
+    bl -= add;
+    bl.printBigLong();
+    bl -= add;
+    bl.printBigLong();
     return EXIT_SUCCESS;
 }
