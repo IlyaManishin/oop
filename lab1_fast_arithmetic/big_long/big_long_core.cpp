@@ -20,13 +20,13 @@ namespace bigLong
         }
         sign numSign = integral > 0 ? POSITIVE_NUM : NEGATIVE_NUM;
         constexpr size_t digitsCount = type_digits_size(sizeof(T));
-        this->initBigLong(digitsCount);
+        this->initBigLong(digitsCount, numSign);
 
         auto unsignedNum = std::make_unsigned_t<T>(integral);
         for (int i = 0; i < digitsCount; i++)
         {
             this->digits[i] = unsignedNum & BL_DIGIT_MASK;
-            unsignedNum >>= BL_USED_DIGIT_BITS;
+            unsignedNum >>= BL_BIT_COUNT;
         }
         this->normalize();
     }
@@ -34,7 +34,7 @@ namespace bigLong
     template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool>>
     void BigLong::initFromLongFloating(T floating)
     {
-        SIGN sign = POSITIVE_NUM;
+        sign sign = POSITIVE_NUM;
         if (floating < 0)
         {
             floating = -floating;
@@ -73,54 +73,51 @@ namespace bigLong
         this->numSign = ZERO_NUM;
     }
 
-    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
-    void BigLong::addIntegral(T integral)
+    void BigLong::toAbs()
     {
-        assert(integral >= 0);
-
-        if (integral == 0)
-            return;
-
-        // constexpr size_t digitsCount = type_digits_size(sizeof(T));
-        uint64_t uIntegral = (uint64_t)integral;
-        constexpr int digitsSize = type_digits_size(sizeof(uint64_t));
-        uint32_t carry = 0;
-
-        int i;
-        for (i = 0; i < digitsSize; i++)
-        {
-            if (i >= this->digits.size())
-                this->digits.push_back(0);
-            carry = digits[i] + uIntegral & BL_DIGIT_MASK;
-            digits[i] = carry & BL_DIGIT_MASK;
-            uIntegral >>= BL_DIGIT_OFFSET;
-            carry >>= BL_DIGIT_OFFSET;
-        }
-        for (; carry > 0; i++)
-        {
-            if (i >= this->digits.size())
-                this->digits.push_back(0);
-            carry += digits[i];
-            this->digits[i] = carry & BL_DIGIT_MASK;
-            carry >>= BL_DIGIT_OFFSET;
-            i++;
-        }
+        this->numSign = POSITIVE_NUM;
     }
 
-    // template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
-    // void addBigFloating(T floating)
+    void BigLong::swapSign()
+    {
+        this->numSign = -this->numSign;
+    }
+
+    // template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
+    // void BigLong::addIntegral(T integral)
     // {
-    //     assert(floating > 0);
-    //     long double asDouble = static_cast<long double>(floating);
-    //     if (asDouble)
+    //     assert(integral >= 0);
+
+    //     if (integral == 0)
+    //         return;
+
+    //     // constexpr size_t digitsCount = type_digits_size(sizeof(T));
+    //     uint64_t uIntegral = (uint64_t)integral;
+    //     constexpr int digitsSize = type_digits_size(sizeof(uint64_t));
+    //     uint32_t carry = 0;
+
+    //     int i;
+    //     for (i = 0; i < digitsSize; i++)
+    //     {
+    //         if (i >= this->digits.size())
+    //             this->digits.push_back(0);
+    //         carry = digits[i] + uIntegral & BL_DIGIT_MASK;
+    //         digits[i] = carry & BL_DIGIT_MASK;
+    //         uIntegral >>= BL_DIGIT_OFFSET;
+    //         carry >>= BL_DIGIT_OFFSET;
+    //     }
+    //     for (; carry > 0; i++)
+    //     {
+    //         if (i >= this->digits.size())
+    //             this->digits.push_back(0);
+    //         carry += digits[i];
+    //         this->digits[i] = carry & BL_DIGIT_MASK;
+    //         carry >>= BL_DIGIT_OFFSET;
+    //         i++;
+    //     }
     // }
 
-    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
-    void subIntegral(T integral)
-    {
-    }
-
-    void BigLong::initBigLong(size_t digitsCount, SIGN numSign)
+    void BigLong::initBigLong(size_t digitsCount, sign numSign)
     {
         this->digits = std::vector<digit>(digitsCount, 0);
         this->numSign = numSign;
@@ -128,7 +125,7 @@ namespace bigLong
 
     constexpr size_t type_digits_size(size_t byteSize)
     {
-        return byteSize % BL_USED_DIGIT_BITS == 0 ? byteSize / BL_USED_DIGIT_BITS : byteSize / BL_USED_DIGIT_BITS + 1;
+        return byteSize % BL_BIT_COUNT == 0 ? byteSize / BL_BIT_COUNT : byteSize / BL_BIT_COUNT + 1;
     }
 
     int BigLong::bigLongAbsCompare(const BigLong &other) const
@@ -152,6 +149,88 @@ namespace bigLong
             }
         }
         return 0;
+    }
+    // void BigLong::abs_bl_add(const BigLong &other)
+    // {
+    //     this->digits = abs_digits_add(this->digits, other.digits);
+    //     this->numSize = this->digits.size();
+    //     this->normalize();
+    // }
+
+    std::vector<digit> abs_digits_add(const std::vector<digit> &num1, const std::vector<digit> &num2)
+    {
+        size_t minSize = std::min(num1.size(), num2.size());
+        size_t maxSize = std::max(num1.size(), num2.size());
+
+        std::vector<digit> result(maxSize + 1, 0);
+        digit carry = 0;
+        size_t i = 0;
+
+        for (; i < minSize; ++i)
+        {
+            digit sum = num1[i] + num2[i] + carry;
+            result[i] = sum & BL_DIGIT_MASK;
+            carry = sum >> BL_BIT_COUNT;
+        }
+
+        for (; i < maxSize; ++i)
+        {
+            digit sum = num1[i] + carry;
+            result[i] = sum & BL_DIGIT_MASK;
+            carry = sum >> BL_BIT_COUNT;
+        }
+
+        if (carry)
+            result[i++] = carry;
+
+        return result;
+    }
+
+    // void BigLong::abs_bl_sub(const BigLong &other)
+    // {
+    //     assert(this->bigLongAbsCompare(other) >= 0);
+
+    //     this->digits = abs_digits_sub(this->digits, other.digits);
+    //     this->numSize = this->digits.size();
+    //     this->normalize();
+    // }
+
+    std::vector<digit> abs_digits_sub(const std::vector<digit> &num1, const std::vector<digit> &num2)
+    {
+        std::vector<digit> result(num1.size(), 0);
+        digit borrow = 0;
+        size_t i = 0;
+
+        for (; i < num2.size(); ++i)
+        {
+            digit diff = (digit)num1[i] - num2[i] - borrow;
+            if (diff < 0)
+            {
+                diff += BL_DIGIT_MOD;
+                borrow = 1;
+            }
+            else
+            {
+                borrow = 0;
+            }
+            result[i] = static_cast<digit>(diff);
+        }
+
+        for (; i < num1.size(); ++i)
+        {
+            digit diff = (digit)num1[i] - borrow;
+            if (diff < 0)
+            {
+                diff += BL_DIGIT_MOD;
+                borrow = 1;
+            }
+            else
+            {
+                borrow = 0;
+            }
+            result[i] = static_cast<digit>(diff);
+        }
+        return result;
     }
 
 } // namespace bigLong

@@ -42,10 +42,6 @@ namespace bigLong
         initFromString(numStr, strlen(numStr));
     }
 
-    BigLong::~BigLong()
-    {
-    }
-
     template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
     BigLong BigLong::operator+(T number)
     {
@@ -60,32 +56,90 @@ namespace bigLong
         res += otherBl;
         return res;
     };
-
-    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
-    BigLong &BigLong::operator+=(T integral)
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+    BigLong &BigLong::operator+=(T number)
     {
-        if (integral > 0)
+        if (number == 0)
+            return *this;
+        BigLong bl = BigLong(number);
+        if (bl > 0)
         {
-            this->addIntegral(integral);
+            *this += bl;
         }
-        else if (integral < 0)
+        else
         {
-            auto unsignedNum = std::make_unsigned<T>(integral);
+            bl.toAbs();
+            *this -= bl;
         }
-        return *this;
-    }
-
-    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool>>
-    BigLong &BigLong::operator+=(T floating)
-    {
-        *this += BigLong(floating);
-        return *this;
     }
 
     BigLong &BigLong::operator+=(const BigLong &other)
     {
-        if (other.numSign == ZERO_NUM) return;
+        if (other.numSign == ZERO_NUM)
+            return *this;
 
+        if (this->numSign == ZERO_NUM)
+        {
+            this->digits = other.digits;
+            this->numSize = other.numSize;
+            this->numSign = other.numSign;
+            return *this;
+        }
+
+        if (this->numSign == other.numSign)
+        {
+            this->digits = abs_digits_add(this->digits, other.digits);
+        }
+        else
+        {
+            int cmp = this->bigLongAbsCompare(other);
+            if (cmp >= 0)
+            {
+                this->digits = abs_digits_sub(this->digits, other.digits);
+            }
+            else
+            {
+                this->digits = abs_digits_sub(other.digits, this->digits);
+                this->swapSign();
+            }
+        }
+        this->normalize();
+        return *this;
+    }
+
+    BigLong &BigLong::operator-=(const BigLong &other)
+    {
+        if (other.numSign == ZERO_NUM)
+            return *this;
+
+        if (this->numSign == ZERO_NUM)
+        {
+            this->digits = other.digits;
+            this->numSize = other.numSize;
+            this->numSign = -other.numSign;
+            return *this;
+        }
+
+        if (this->numSign != other.numSign)
+        {
+            this->digits = abs_digits_add(this->digits, other.digits);
+        }
+        else
+        {
+            int cmp = this->bigLongAbsCompare(other);
+            if (cmp >= 0)
+            {
+                this->digits = abs_digits_sub(this->digits, other.digits);
+            }
+            else
+            {
+                this->digits = abs_digits_sub(other.digits, this->digits);
+                this->swapSign();
+            }
+        }
+
+        this->normalize();
+        return *this;
     }
 
     bool BigLong::operator<(const BigLong &other) const
@@ -118,4 +172,7 @@ namespace bigLong
         return true;
     }
 
+    BigLong::~BigLong()
+    {
+    }
 }
