@@ -12,7 +12,8 @@ namespace bigLong
     {
         constexpr size_t type_digits_size(size_t byteSize)
         {
-            return byteSize % BL_BIT_COUNT == 0 ? byteSize / BL_BIT_COUNT : byteSize / BL_BIT_COUNT + 1;
+            size_t bit_size = byteSize * 8;
+            return bit_size % BL_BIT_COUNT == 0 ? bit_size / BL_BIT_COUNT : bit_size / BL_BIT_COUNT + 1;
         }
     } // namespace _detail
 
@@ -51,16 +52,7 @@ namespace bigLong
             return *this;
 
         BigLong bl(number);
-        if (bl > 0)
-        {
-            *this += bl;
-        }
-        else
-        {
-            bl.toAbs();
-            *this -= bl;
-        }
-
+        *this += bl;
         return *this;
     }
 
@@ -78,11 +70,12 @@ namespace bigLong
         if (number == 0)
             return *this;
 
+        BigLong bl(number);
         *this -= bl;
         return *this;
     }
 
-    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
     BigLong BigLong::operator*(T number) const
     {
         BigLong res(*this);
@@ -107,7 +100,15 @@ namespace bigLong
             return;
         }
 
-        _detail::sign numSign = integral > 0 ? _detail::POSITIVE_NUM : _detail::NEGATIVE_NUM;
+        if (integral > 0)
+        {
+            _detail::sign numSign = _detail::POSITIVE_NUM;
+        }
+        else
+        {
+            _detail::sign numSign = _detail::NEGATIVE_NUM;
+            integral = -integral;
+        }
         constexpr size_t digitsCount = _detail::type_digits_size(sizeof(T));
         this->initBigLong(digitsCount, numSign);
 

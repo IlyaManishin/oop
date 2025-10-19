@@ -102,14 +102,11 @@ namespace bigLong
         }
         return 0;
     }
-    // void BigLong::abs_bl_add(const BigLong &other)
-    // {
-    //     this->digits = abs_digits_add(this->digits, other.digits);
-    //     this->numSize = this->digits.size();
-    //     this->normalize();
-    // }
+
     namespace _detail
     {
+        
+        
         std::vector<digit> abs_digits_add(const std::vector<digit> &num1, const std::vector<digit> &num2)
         {
             size_t minSize = std::min(num1.size(), num2.size());
@@ -138,15 +135,6 @@ namespace bigLong
 
             return result;
         }
-
-        // void BigLong::abs_bl_sub(const BigLong &other)
-        // {
-        //     assert(this->bigLongAbsCompare(other) >= 0);
-
-        //     this->digits = abs_digits_sub(this->digits, other.digits);
-        //     this->numSize = this->digits.size();
-        //     this->normalize();
-        // }
 
         std::vector<digit> abs_digits_sub(const std::vector<digit> &num1, const std::vector<digit> &num2)
         {

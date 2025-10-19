@@ -3,14 +3,8 @@
 int main()
 {
     bigLong::BigLong bl(10);
-    bl += 10;
-    bl += 100;
-    bigLong::BigLong add(1000);
-    bl += add;
-    bl.printBigLong();
-    bl -= add;
-    bl.printBigLong();
-    bl = bl - add;
+    bl *= 10;
+    bl *= -123;
     bl.printBigLong();
     return EXIT_SUCCESS;
 }
