@@ -99,21 +99,17 @@ namespace bigLong
             this->initBigLong(0, _detail::ZERO_NUM);
             return;
         }
-
-        if (integral > 0)
+        _detail::sign numSign = _detail::POSITIVE_NUM;
+        if (integral < 0)
         {
-            _detail::sign numSign = _detail::POSITIVE_NUM;
-        }
-        else
-        {
-            _detail::sign numSign = _detail::NEGATIVE_NUM;
+            numSign = _detail::NEGATIVE_NUM;
             integral = -integral;
         }
         constexpr size_t digitsCount = _detail::type_digits_size(sizeof(T));
         this->initBigLong(digitsCount, numSign);
 
         auto unsignedNum = std::make_unsigned_t<T>(integral);
-        for (int i = 0; i < digitsCount; i++)
+        for (size_t i = 0; i < digitsCount; i++)
         {
             this->digits[i] = unsignedNum & _detail::BL_DIGIT_MASK;
             unsignedNum >>= _detail::BL_BIT_COUNT;

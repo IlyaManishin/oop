@@ -14,6 +14,9 @@ namespace bigLong
 
         std::vector<digit> abs_digits_add(const std::vector<digit> &num1,
                                           const std::vector<digit> &num2);
+
+        std::vector<digit> abs_digits_mul(const std::vector<digit> &num1,
+                                          const std::vector<digit> &num2);
     } // namespace _detail
 
 } // namespace bigLong

@@ -63,7 +63,7 @@ namespace bigLong
         bool operator==(T other) const { return *this == BigLong(other); }
         void printBigLong()
         {
-            printf("%d\n", this->digits.size() > 0 ? this->digits[0] : -1);
+            printf("%d %lld\n", this->digits.size() > 0 ? this->digits[0] : -1, (long long)this->digits.size());
         }
 
         ~BigLong() {};

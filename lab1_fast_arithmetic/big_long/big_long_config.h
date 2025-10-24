@@ -18,7 +18,7 @@ namespace bigLong
 
         constexpr size_t BL_DIGIT_OFFSET = 2;
         constexpr size_t BL_BIT_COUNT = sizeof(digit) * 8 - BL_DIGIT_OFFSET;
-        constexpr size_t BL_DIGIT_MOD = 1ull << (BL_BIT_COUNT + 1);
+        constexpr size_t BL_DIGIT_MOD = 1ull << BL_BIT_COUNT;
         constexpr size_t BL_DIGIT_MASK = BL_DIGIT_MOD - 1;
 
         constexpr size_t BL_BASE_DIGITS_COUNT = 1;

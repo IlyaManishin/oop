@@ -112,30 +112,11 @@ namespace bigLong
         {
             this->digits.clear();
             this->numSize = 0;
-            this->numSign = 0;
+            this->numSign = ZERO_NUM;
             return *this;
         }
-
-        size_t size_a = this->numSize;
-        size_t size_b = other.numSize;
-        std::vector<digit> result(size_a + size_b, 0);
-
-        for (size_t i = 0; i < size_a; ++i)
-        {
-            twodigits carry = 0;
-            twodigits f = this->digits[i];
-
-            for (size_t j = 0; j < size_b; ++j)
-            {
-                twodigits tmp = static_cast<twodigits>(result[i + j]) + f * other.digits[j] + carry;
-                result[i + j] = static_cast<digit>(tmp & BL_DIGIT_MASK);
-                carry = tmp >> BL_BIT_COUNT;
-            }
-
-            if (carry)
-                result[i + size_b] += static_cast<digit>(carry);
-        }
-
+        std::vector<digit> result = abs_digits_mul(this->digits, other.digits);
+        
         this->digits = std::move(result);
         this->numSign *= other.numSign;
         this->normalize();
