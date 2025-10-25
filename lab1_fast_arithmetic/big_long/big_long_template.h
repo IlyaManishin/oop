@@ -123,11 +123,11 @@ namespace bigLong
         _detail::sign sign = _detail::POSITIVE_NUM;
         if (floating < 0)
         {
-            floating = -floating;
             sign = _detail::NEGATIVE_NUM;
+            floating = -floating;
         }
 
-        initBigLong(0, sign);
+        this->initBigLong(0, sign);
 
         long double asCeil;
         std::modf(floating, &asCeil);

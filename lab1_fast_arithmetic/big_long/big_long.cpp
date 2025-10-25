@@ -7,7 +7,6 @@
 #include "big_long.h"
 #include "big_long_config.h"
 #include "big_long_core.h"
-#include "big_long_impl.h"
 
 namespace bigLong
 {

@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "big_long_config.h"
-#include "big_long_types.h"
 
 namespace bigLong
 {
@@ -89,4 +88,4 @@ namespace bigLong
     };
 }
 
-#include "big_long_impl.h"
+#include "big_long_template.h"

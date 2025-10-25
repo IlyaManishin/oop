@@ -3,8 +3,6 @@
 #include <climits>
 #include <cstddef>
 
-#include "big_long_types.h"
-
 namespace bigLong
 {
     namespace _detail
@@ -15,6 +13,10 @@ namespace bigLong
             ZERO_NUM = 0,
             NEGATIVE_NUM = -1,
         };
+
+        typedef char sign;
+        typedef uint32_t digit;
+        typedef uint64_t twodigits;
 
         constexpr size_t BL_DIGIT_OFFSET = 2;
         constexpr size_t BL_BIT_COUNT = sizeof(digit) * 8 - BL_DIGIT_OFFSET;

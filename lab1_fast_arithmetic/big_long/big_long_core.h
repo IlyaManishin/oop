@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "big_long_types.h"
+#include "big_long_config.h"
 
 namespace bigLong
 {

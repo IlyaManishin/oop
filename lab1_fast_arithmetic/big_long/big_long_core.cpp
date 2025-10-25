@@ -35,40 +35,6 @@ namespace bigLong
         this->numSign = -this->numSign;
     }
 
-    // template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
-    // void BigLong::addIntegral(T integral)
-    // {
-    //     assert(integral >= 0);
-
-    //     if (integral == 0)
-    //         return;
-
-    //     // constexpr size_t digitsCount = type_digits_size(sizeof(T));
-    //     uint64_t uIntegral = (uint64_t)integral;
-    //     constexpr int digitsSize = type_digits_size(sizeof(uint64_t));
-    //     uint32_t carry = 0;
-
-    //     int i;
-    //     for (i = 0; i < digitsSize; i++)
-    //     {
-    //         if (i >= this->digits.size())
-    //             this->digits.push_back(0);
-    //         carry = digits[i] + uIntegral & BL_DIGIT_MASK;
-    //         digits[i] = carry & BL_DIGIT_MASK;
-    //         uIntegral >>= BL_DIGIT_OFFSET;
-    //         carry >>= BL_DIGIT_OFFSET;
-    //     }
-    //     for (; carry > 0; i++)
-    //     {
-    //         if (i >= this->digits.size())
-    //             this->digits.push_back(0);
-    //         carry += digits[i];
-    //         this->digits[i] = carry & BL_DIGIT_MASK;
-    //         carry >>= BL_DIGIT_OFFSET;
-    //         i++;
-    //     }
-    // }
-
     void BigLong::initBigLong(size_t digitsCount, sign numSign)
     {
         this->digits = std::vector<digit>(digitsCount, 0);
