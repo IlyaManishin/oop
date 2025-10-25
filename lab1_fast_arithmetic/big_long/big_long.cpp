@@ -21,134 +21,59 @@ namespace bigLong
     {
         initFromString(numStr, strlen(numStr));
     }
-
-    BigLong BigLong::operator+(const BigLong &otherBl)
+    
+    void BigLong::initFromString(const char *string, size_t length)
     {
-        BigLong res(*this);
-        res += otherBl;
-        return res;
-    };
+    }
 
-    BigLong &BigLong::operator+=(const BigLong &other)
+    void BigLong::normalize()
     {
-        if (other.numSign == ZERO_NUM)
-            return *this;
+        while (digits.size() > 1 && digits.back() == 0)
+            digits.pop_back();
 
-        if (this->numSign == ZERO_NUM)
+        numSize = digits.size();
+
+        if (numSize == 1 && digits[0] == 0)
+            numSign = ZERO_NUM;
+    }
+
+    void BigLong::toAbs()
+    {
+        this->numSign = POSITIVE_NUM;
+    }
+
+    void BigLong::swapSign()
+    {
+        this->numSign = -this->numSign;
+    }
+
+    void BigLong::initBigLong(size_t digitsCount, sign numSign)
+    {
+        this->digits = std::vector<digit>(digitsCount, 0);
+        this->numSign = numSign;
+    }
+
+    int BigLong::bigLongAbsCompare(const BigLong &other) const
+    {
+        if (this->numSize > other.numSize)
         {
-            this->digits = other.digits;
-            this->numSize = other.numSize;
-            this->numSign = other.numSign;
-            return *this;
+            return 1;
         }
-
-        if (this->numSign == other.numSign)
+        else if (this->numSize < other.numSize)
         {
-            this->digits = abs_digits_add(this->digits, other.digits);
+            return -1;
         }
         else
         {
-            int cmp = this->bigLongAbsCompare(other);
-            if (cmp >= 0)
+            for (int i = this->numSize - 1; i >= 0; i--)
             {
-                this->digits = abs_digits_sub(this->digits, other.digits);
-            }
-            else
-            {
-                this->digits = abs_digits_sub(other.digits, this->digits);
-                this->swapSign();
+                if (this->digits[i] < other.digits[i])
+                    return -1;
+                else if (this->digits[i] > other.digits[i])
+                    return 1;
             }
         }
-        this->normalize();
-        return *this;
+        return 0;
     }
 
-    BigLong BigLong::operator-(const BigLong &otherBl)
-    {
-        BigLong res(*this);
-        res -= otherBl;
-        return res;
-    }
-
-    BigLong &BigLong::operator-=(const BigLong &other)
-    {
-        if (other.numSign == ZERO_NUM)
-            return *this;
-
-        if (this->numSign == ZERO_NUM)
-        {
-            this->digits = other.digits;
-            this->numSize = other.numSize;
-            this->numSign = -other.numSign;
-            return *this;
-        }
-
-        if (this->numSign != other.numSign)
-        {
-            this->digits = abs_digits_add(this->digits, other.digits);
-        }
-        else
-        {
-            int cmp = this->bigLongAbsCompare(other);
-            if (cmp >= 0)
-            {
-                this->digits = abs_digits_sub(this->digits, other.digits);
-            }
-            else
-            {
-                this->digits = abs_digits_sub(other.digits, this->digits);
-                this->swapSign();
-            }
-        }
-
-        this->normalize();
-        return *this;
-    }
-
-    BigLong &BigLong::operator*=(const BigLong &other)
-    {
-        if (this->numSign == 0 || other.numSign == 0)
-        {
-            this->digits.clear();
-            this->numSize = 0;
-            this->numSign = ZERO_NUM;
-            return *this;
-        }
-        std::vector<digit> result = abs_digits_mul(this->digits, other.digits);
-        
-        this->digits = std::move(result);
-        this->numSign *= other.numSign;
-        this->normalize();
-        return *this;
-    }
-
-    bool BigLong::operator<(const BigLong &other) const
-    {
-        if (this->numSign > other.numSign)
-        {
-            return false;
-        }
-        else if (this->numSign < other.numSign)
-        {
-            return true;
-        }
-        else
-        {
-            if (this->numSign == ZERO_NUM)
-                return false;
-            else if (this->numSign == NEGATIVE_NUM)
-                return this->bigLongAbsCompare(other) == 1;
-            else
-                return this->bigLongAbsCompare(other) == -1;
-        }
-    }
-
-    bool BigLong::operator==(const BigLong &other) const
-    {
-        if (this->numSign != other.numSign)
-            return false;
-        if (this->bigLongAbsCompare(other) != 0)
-            return false;
-        return true;
-    }
 }
