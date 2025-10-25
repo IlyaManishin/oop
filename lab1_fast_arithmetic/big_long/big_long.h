@@ -26,27 +26,32 @@ namespace bigLong
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong &operator+=(T number);
-
         BigLong &operator+=(const BigLong &other);
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong operator-(T number);
         BigLong operator-(const BigLong &otherBl);
+        BigLong operator-() { this->swapSign(); return *this;};
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong &operator-=(T number);
-
         BigLong &operator-=(const BigLong &other);
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong operator*(T number) const;
-
         BigLong operator*(const BigLong &other) const;
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong &operator*=(T number);
-
         BigLong &operator*=(const BigLong &other);
+
+        template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+        BigLong operator/(T number) const;
+        BigLong operator/(const BigLong &other) const;
+
+        template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+        BigLong &operator/=(T number);
+        BigLong &operator/=(const BigLong &other);
 
         bool operator==(const BigLong &other) const;
         bool operator<(const BigLong &other) const;
@@ -69,11 +74,11 @@ namespace bigLong
 
     private:
         std::vector<_detail::digit> digits;
-        size_t numSize;
         _detail::sign numSign;
 
         void initFromString(const char *string, size_t length);
-        void initBigLong(size_t digitsCount, _detail::sign numSign);
+        void initEmpty(size_t digitsCount, _detail::sign numSign);
+        void initZero();
         void toAbs();
         void swapSign();
 
@@ -84,6 +89,8 @@ namespace bigLong
         void initFromLongFloating(T floating);
 
         void normalize();
+        size_t getSize() const;
+        size_t getSizeDelta(const BigLong& other) const;
         int bigLongAbsCompare(const BigLong &other) const;
     };
 }

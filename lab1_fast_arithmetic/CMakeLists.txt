@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 project(big_long)
 
-add_compile_options(-Wall -g)
+add_compile_options(-Wall -Wextra -g)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(big_long)

@@ -1,40 +1,8 @@
 #include "../big_long/big_long.h"
 #include <gtest/gtest.h>
+#include <stdexcept>
 
 using namespace bigLong;
-
-TEST(BigLongConstructorTest, FromIntegral1)
-{
-    BigLong a(123);
-    EXPECT_TRUE(a == 123);
-}
-
-TEST(BigLongConstructorTest, FromIntegral2)
-{
-    BigLong a(100000);
-    a += 100000;
-    EXPECT_TRUE(a == 200000);
-    
-}
-
-TEST(BigLongConstructorTest, FromFloating)
-{
-    BigLong a(123.99);
-    EXPECT_TRUE(a == 123);
-}
-
-TEST(BigLongConstructorTest, FromString)
-{
-    BigLong a("456");
-    EXPECT_TRUE(a == 456);
-}
-
-TEST(BigLongConstructorTest, FromCString)
-{
-    const char *num = "789";
-    BigLong a(num);
-    EXPECT_TRUE(a == 789);
-}
 
 TEST(BigLongOperatorTest, PlusWithIntegral)
 {
@@ -130,9 +98,71 @@ TEST(BigLongOperatorTest, CheckBigValuesMul)
     EXPECT_TRUE(a == b);
 }
 
-
-int main(int argc, char **argv)
+TEST(BigLongOperatorTest, CheckBigValuesDiv)
 {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    BigLong a(1), b(1);
+    int size_count = 20;
+
+    for (int i = 0; i < size_count; i++)
+    {
+        a *= 2;
+        b += b;
+    }
+
+    for (int i = 0; i < size_count; i++)
+    {
+        a /= 2;
+        b /= 2;
+    }
+
+    EXPECT_TRUE(a == b);
+    EXPECT_TRUE(a == 1);
+}
+
+TEST(BigLongOperatorTest, DivisionByOne)
+{
+    BigLong a(123456789);
+    BigLong b(1);
+    a /= b;
+    EXPECT_TRUE(a == 123456789);
+}
+
+TEST(BigLongOperatorTest, DivisionOfEqualNumbers)
+{
+    BigLong a(777);
+    BigLong b(777);
+    a /= b;
+    EXPECT_TRUE(a == 1);
+}
+
+TEST(BigLongOperatorTest, DivisionSignCheck)
+{
+    BigLong a(-100);
+    BigLong b(20);
+    a /= b;
+    EXPECT_TRUE(a == -5);
+}
+
+TEST(BigLongOperatorTest, DivisionZeroCase)
+{
+    BigLong a(0);
+    BigLong b(123);
+    a /= b;
+    EXPECT_TRUE(a == 0);
+}
+
+TEST(BigLongOperatorTest, DivisionByZero)
+{
+    BigLong a(12345);
+    BigLong zero(0);
+
+    ASSERT_THROW(a /= zero, std::runtime_error);
+    ASSERT_THROW(a / zero, std::runtime_error);
+}
+
+TEST(BigLongOperatorTest, DivisionTerm)
+{
+    BigLong a(0);
+    BigLong b = (a + 100) / 10;
+    ASSERT_TRUE(b == 10);
 }

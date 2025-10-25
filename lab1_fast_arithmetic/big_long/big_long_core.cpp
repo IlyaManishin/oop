@@ -10,33 +10,40 @@ namespace bigLong
 {
     namespace _detail
     {
-        std::vector<digit> abs_digits_add(const std::vector<digit> &num1, const std::vector<digit> &num2)
+        void abs_digits_add_to_first(std::vector<digit> &num1, const std::vector<digit> &num2)
         {
             size_t minSize = std::min(num1.size(), num2.size());
             size_t maxSize = std::max(num1.size(), num2.size());
-            const std::vector<digit> &maxNum = num1.size() > num2.size() ? num1 : num2;
+            if (num1.size() < maxSize)
+                num1.resize(maxSize, 0);
 
-            std::vector<digit> result(maxSize + 1, 0);
             digit carry = 0;
             size_t i = 0;
 
             for (; i < minSize; ++i)
             {
                 digit sum = num1[i] + num2[i] + carry;
-                result[i] = sum & BL_DIGIT_MASK;
+                num1[i] = sum & BL_DIGIT_MASK;
                 carry = sum >> BL_BIT_COUNT;
             }
 
-            for (; i < maxSize; ++i)
+            for (; i < maxSize && carry; ++i)
             {
-                digit sum = maxNum[i] + carry;
-                result[i] = sum & BL_DIGIT_MASK;
+                digit sum = num1[i] + carry;
+                num1[i] = sum & BL_DIGIT_MASK;
                 carry = sum >> BL_BIT_COUNT;
             }
 
             if (carry)
-                result[i] = carry;
+                num1.push_back(carry);
+        }
 
+        std::vector<digit> abs_digits_add(const std::vector<digit> &num1, const std::vector<digit> &num2)
+        {
+            size_t maxSize = std::max(num1.size(), num2.size());
+            std::vector<digit> result(num1);
+            result.resize(maxSize + 1, static_cast<digit>(0));
+            abs_digits_add_to_first(result, num2);
             return result;
         }
 
@@ -48,7 +55,7 @@ namespace bigLong
 
             for (; i < num2.size(); ++i)
             {
-                digit diff = (digit)num1[i] - num2[i] - borrow;
+                int32_t diff = (digit)num1[i] - num2[i] - borrow;
                 if (diff < 0)
                 {
                     diff += BL_DIGIT_MOD;
@@ -63,7 +70,7 @@ namespace bigLong
 
             for (; i < num1.size(); ++i)
             {
-                digit diff = (digit)num1[i] - borrow;
+                int32_t diff = (digit)num1[i] - borrow;
                 if (diff < 0)
                 {
                     diff += BL_DIGIT_MOD;

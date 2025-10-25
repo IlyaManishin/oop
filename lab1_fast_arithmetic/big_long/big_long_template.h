@@ -91,12 +91,28 @@ namespace bigLong
         return *this;
     }
 
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+    BigLong BigLong::operator/(T number) const
+    {
+        BigLong res(*this);
+        res /= number;
+        return res;
+    }
+
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+    BigLong &BigLong::operator/=(T number)
+    {
+        BigLong bl(number);
+        *this /= bl;
+        return *this;
+    }
+
     template <typename T, std::enable_if_t<std::is_integral_v<T>, bool>>
     void BigLong::initFromIntegral(T integral)
     {
         if (integral == 0)
         {
-            this->initBigLong(0, _detail::ZERO_NUM);
+            this->initZero();
             return;
         }
         _detail::sign numSign = _detail::POSITIVE_NUM;
@@ -106,7 +122,7 @@ namespace bigLong
             integral = -integral;
         }
         constexpr size_t digitsCount = _detail::type_digits_size(sizeof(T));
-        this->initBigLong(digitsCount, numSign);
+        this->initEmpty(digitsCount, numSign);
 
         auto unsignedNum = std::make_unsigned_t<T>(integral);
         for (size_t i = 0; i < digitsCount; i++)
@@ -127,7 +143,7 @@ namespace bigLong
             floating = -floating;
         }
 
-        this->initBigLong(0, sign);
+        this->initEmpty(0, sign);
 
         long double asCeil;
         std::modf(floating, &asCeil);
