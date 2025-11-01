@@ -64,7 +64,7 @@ namespace bigLong
 
         if (numLength < BL_DEC_IN_DIGIT)
         {
-            long long strValue = static_cast<long long>(extract_digit_from_str(start, end));
+            long long strValue = static_cast<long long>(extract_digit_from_string(start, end));
             this->initFromIntegral(numSign * strValue);
             return;
         }
@@ -75,7 +75,7 @@ namespace bigLong
         while (curEnd > start)
         {
             const char *digitStart = std::max(curEnd - BL_DEC_IN_DIGIT, start);
-            digit dgt = extract_digit_from_str(digitStart, curEnd);
+            digit dgt = extract_digit_from_string(digitStart, curEnd);
             BigLong add = accum * dgt;
             // std::cout << biglong_from_digits_first2(add.digits) << " + " << biglong_from_digits_first2(this->digits) << std::endl;
             *this = *this + add;

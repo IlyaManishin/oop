@@ -22,12 +22,12 @@ namespace bigLong
                 largest = &num2;
             }
 
-            digit carry = 0;
+            digit carry = 0, sum = 0;
             size_t i = 0;
 
             for (; i < minSize; ++i)
             {
-                size_t sum = num1[i] + num2[i] + carry;
+                sum = num1[i] + num2[i] + carry;
                 num1[i] = sum & BL_DIGIT_MASK;
                 carry = sum >> BL_BIT_COUNT;
             }
@@ -125,7 +125,7 @@ namespace bigLong
             return '0' <= ch && ch <= '9';
         }
 
-        digit extract_digit_from_str(const char *start, const char *end)
+        digit extract_digit_from_string(const char *start, const char *end)
         {
             digit accum = 0;
             digit multy = 1;

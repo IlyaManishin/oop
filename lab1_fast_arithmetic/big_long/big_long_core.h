@@ -22,7 +22,7 @@ namespace bigLong
                                           const std::vector<digit> &num2);
 
         const char *extract_sign_from_string(const char *start, const char *end, sign *signDest);
-        digit extract_digit_from_str(const char *start, const char *end);
+        digit extract_digit_from_string(const char *start, const char *end);
     } // namespace _detail
 
 } // namespace bigLong
