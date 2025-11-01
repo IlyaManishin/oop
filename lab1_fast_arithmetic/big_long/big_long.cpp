@@ -31,24 +31,6 @@ namespace bigLong
         return "Invalid string: " + std::string(str, length);
     }
 
-    long long biglong_from_digits_first2(const std::vector<digit> &digits)
-    {
-        constexpr unsigned int BITS = 30u;
-        constexpr unsigned long long MASK = (1ULL << BITS) - 1ULL;
-
-        unsigned long long low = 0ULL;
-        unsigned long long high = 0ULL;
-
-        if (digits.size() > 0)
-            low = static_cast<unsigned long long>(digits[0]) & MASK;
-        if (digits.size() > 1)
-            high = static_cast<unsigned long long>(digits[1]) & MASK;
-
-        unsigned long long u = (high << BITS) | low;
-        long long result = static_cast<long long>(u);
-        return result;
-    }
-
     void BigLong::initFromString(const char *string, size_t length)
     {
         const char *end = string + length;
@@ -97,7 +79,7 @@ namespace bigLong
         long long resNumber = this->digits[0];
         if (this->getSize() > 1)
             resNumber += this->digits[1] * (1 << BL_BIT_COUNT);
-            
+
         if (this->numSign == NEGATIVE_NUM)
             resNumber = -resNumber;
         return std::to_string(resNumber);
