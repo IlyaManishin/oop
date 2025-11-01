@@ -87,6 +87,22 @@ namespace bigLong
         this->normalize();
     }
 
+    std::string BigLong::convertToString() const
+    {
+        if (this->getSize() > 2)
+            throw std::runtime_error("Sorry, but this number is so long((: size=" + std::to_string(this->getSize()));
+        if (this->digits.empty())
+            return std::string("0");
+
+        long long resNumber = this->digits[0];
+        if (this->getSize() > 1)
+            resNumber += this->digits[1] * (1 << BL_BIT_COUNT);
+            
+        if (this->numSign == NEGATIVE_NUM)
+            resNumber = -resNumber;
+        return std::to_string(resNumber);
+    }
+
     void BigLong::initEmpty(size_t digitsCount, sign numSign)
     {
         this->digits = std::vector<digit>(digitsCount, 0);

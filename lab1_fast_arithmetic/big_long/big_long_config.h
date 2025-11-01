@@ -23,8 +23,6 @@ namespace bigLong
         constexpr size_t BL_DIGIT_MOD = 1ull << BL_BIT_COUNT;
         constexpr size_t BL_DIGIT_MASK = BL_DIGIT_MOD - 1;
 
-        constexpr size_t BL_BASE_DIGITS_COUNT = 1;
-        constexpr size_t BL_MAX_DIGITS = INT32_MAX >> 1;
 
         constexpr size_t log10_ceil(uint64_t n)
         {

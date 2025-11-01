@@ -73,7 +73,7 @@ namespace bigLong
         {
             printf("%d %lld\n", this->digits.size() > 0 ? this->digits[0] : -1, (long long)this->digits.size());
         }
-
+        std::string convertToString() const;
         ~BigLong() {};
 
     private:

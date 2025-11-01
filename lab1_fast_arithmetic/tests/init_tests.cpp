@@ -75,8 +75,22 @@ TEST(BigLongConstructorTest, CheckMulty)
     EXPECT_TRUE(check == valid);
 }
 
-TEST(BigLongConstructorTest, CheckMulty1)
+TEST(BigLongConvertToStringTest, PositiveNumber)
 {
-    BigLong a();
+    BigLong a(123456789);
+    EXPECT_EQ(a.convertToString(), "123456789");
 }
+
+TEST(BigLongConvertToStringTest, NegativeNumber)
+{
+    BigLong a(-987654321);
+    EXPECT_EQ(a.convertToString(), "-987654321");
+}
+
+TEST(BigLongConvertToStringTest, Zero)
+{
+    BigLong a(0);
+    EXPECT_EQ(a.convertToString(), "0");
+}
+
 
