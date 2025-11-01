@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <string>
 
 #include "../big_long/big_long.h"
 
@@ -35,3 +36,47 @@ TEST(BigLongConstructorTest, FromCString)
     BigLong a(num);
     EXPECT_TRUE(a == 789);
 }
+
+TEST(BigLongConstructorTest, VeryLongString0)
+{
+    std::string numStr = "12345678900";
+    BigLong check(numStr);
+    check /= 100;
+    BigLong valid(123456789);
+
+    EXPECT_TRUE(check == valid);
+}
+
+TEST(BigLongConstructorTest, VeryLongString1)
+{
+    std::string numStr = "1234567890";
+    int zeros = 100;
+    BigLong valid(numStr);
+    for (int i = 0; i < zeros; i++)
+    {
+        numStr += std::string("0");
+        valid *= 10;
+    }
+    BigLong check(numStr);
+    EXPECT_TRUE(check == valid);
+}
+
+TEST(BigLongConstructorTest, CheckMulty)
+{
+    std::string numStr = "1234";
+    int zeros =  10;
+    BigLong check(1234);
+    for (int i = 0; i < zeros; i++)
+    {
+        numStr += std::string("0000000000");
+        check *= 10000000000;
+    }
+    BigLong valid(numStr);
+    EXPECT_TRUE(check == valid);
+}
+
+TEST(BigLongConstructorTest, CheckMulty1)
+{
+    BigLong a();
+}
+

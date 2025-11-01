@@ -31,7 +31,11 @@ namespace bigLong
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong operator-(T number);
         BigLong operator-(const BigLong &otherBl);
-        BigLong operator-() { this->swapSign(); return *this;};
+        BigLong operator-()
+        {
+            this->swapSign();
+            return *this;
+        };
 
         template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         BigLong &operator-=(T number);
@@ -77,6 +81,7 @@ namespace bigLong
         _detail::sign numSign;
 
         void initFromString(const char *string, size_t length);
+
         void initEmpty(size_t digitsCount, _detail::sign numSign);
         void initZero();
         void toAbs();
@@ -90,7 +95,7 @@ namespace bigLong
 
         void normalize();
         size_t getSize() const;
-        size_t getSizeDelta(const BigLong& other) const;
+        size_t getSizeDelta(const BigLong &other) const;
         int bigLongAbsCompare(const BigLong &other) const;
     };
 }

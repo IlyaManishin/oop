@@ -14,22 +14,27 @@ namespace bigLong
         {
             size_t minSize = std::min(num1.size(), num2.size());
             size_t maxSize = std::max(num1.size(), num2.size());
+
+            const std::vector<digit> *largest = &num1;
             if (num1.size() < maxSize)
+            {
                 num1.resize(maxSize, 0);
+                largest = &num2;
+            }
 
             digit carry = 0;
             size_t i = 0;
 
             for (; i < minSize; ++i)
             {
-                digit sum = num1[i] + num2[i] + carry;
+                size_t sum = num1[i] + num2[i] + carry;
                 num1[i] = sum & BL_DIGIT_MASK;
                 carry = sum >> BL_BIT_COUNT;
             }
 
-            for (; i < maxSize && carry; ++i)
+            for (; i < maxSize; ++i)
             {
-                digit sum = num1[i] + carry;
+                digit sum = (*largest)[i] + carry;
                 num1[i] = sum & BL_DIGIT_MASK;
                 carry = sum >> BL_BIT_COUNT;
             }
@@ -108,6 +113,53 @@ namespace bigLong
                     result[i + size_b] += static_cast<digit>(carry);
             }
             return result;
+        }
+
+        static inline digit char_to_num(char ch)
+        {
+            return (digit)(ch - '0');
+        }
+
+        static inline bool is_num_digit(char ch)
+        {
+            return '0' <= ch && ch <= '9';
+        }
+
+        digit extract_digit_from_str(const char *start, const char *end)
+        {
+            digit accum = 0;
+            digit multy = 1;
+
+            long long length = end - start;
+            for (long long i = length - 1; i >= 0; i--)
+            {
+                char ch = start[i];
+                if (!is_num_digit(ch))
+                    return -1;
+                accum += char_to_num(ch) * multy;
+                multy *= 10;
+            }
+
+            return accum;
+        }
+
+        const char *extract_sign_from_string(const char *start, const char *end, sign *signDest)
+        {
+            *signDest = POSITIVE_NUM;
+            const char *cur = start;
+            while (cur < end)
+            {
+                if (*cur == '-')
+                {
+                    *signDest *= -1;
+                    cur++;
+                }
+                else if (*cur == '+')
+                    cur++;
+                else
+                    break;
+            }
+            return cur;
         }
     } // namespace _detail
 

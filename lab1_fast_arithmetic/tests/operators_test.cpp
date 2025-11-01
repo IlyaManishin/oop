@@ -18,6 +18,20 @@ TEST(BigLongOperatorTest, PlusWithBigLong)
     EXPECT_TRUE(result == 30);
 }
 
+TEST(BigLongOperatorTest, LeftRightPlus)
+{
+    BigLong a(1), b(1);
+    BigLong accum(1);
+    int maxIterations = 1000;
+    for (int i = 0; i < maxIterations; i++)
+    {
+        a = a + accum;
+        b = accum + b;
+        accum *= 100;
+    }
+    EXPECT_TRUE(a == b);
+}
+
 TEST(BigLongOperatorTest, PlusAssignIntegral)
 {
     BigLong a(10);
