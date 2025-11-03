@@ -3,19 +3,11 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#include <variant>
-#include <vector>
+
+#include "cmd_args.hpp"
 
 namespace cmd
 {
-    using Arg = std::variant<int, double, std::string>;
-    
-    struct Command
-    {
-        int commandId;
-        std::vector<Arg> args;
-    };
-    
     class CommandParser
     {
     public:

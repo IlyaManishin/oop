@@ -29,13 +29,9 @@ namespace cmd
     {
         char *end = nullptr;
     
-        long i = std::strtol(token.c_str(), &end, 10);
+        float f = std::strtof(token.c_str(), &end);
         if (*end == '\0')
-            return static_cast<int>(i);
-    
-        double d = std::strtod(token.c_str(), &end);
-        if (*end == '\0')
-            return d;
+            return f;
     
         return token;
     }
