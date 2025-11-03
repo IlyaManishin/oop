@@ -1,5 +1,4 @@
-#include "cmd_parser.hpp"
-
+#include "cmd_parser/cmd_parser.hpp"
 #include <iostream>
 
 enum class CMD
@@ -16,7 +15,9 @@ cmd::CommandParser *init_cmd_parser()
     parser->registerCommand("help", static_cast<int>(CMD::HELP));
     parser->registerCommand("mix", static_cast<int>(CMD::MIX));
     parser->registerCommand("mute", static_cast<int>(CMD::MUTE));
-    parser->registerCommand("change_speed", static_cast<int>(CMD::CHANGE_SPEED));
+    parser->registerCommand("speed", static_cast<int>(CMD::CHANGE_SPEED));
+
+    return parser;
 }
 
 int main(int argc, char **argv)
@@ -25,7 +26,7 @@ int main(int argc, char **argv)
     try
     {
         cmd::Command *command = parser->parse(argc, argv);
-        
+
 
     }
     catch (const std::runtime_error &e)
