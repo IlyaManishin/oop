@@ -1,41 +1,64 @@
 #pragma once
 
+#include <fstream>
 #include <string>
 
-class WavInterval
+namespace wav_lib
 {
-public:
-    WavInterval(WavFile *file, float startSec, float endSec, float speed)
-        : startSec(startSec), endSec(endSec), speed(speed) {};
+    class WavInterval;
 
-private:    
-    WavFile* file;
-    float startSec;
-    float endSec;
-    float speed;
-};
+    class WavFile
+    {
 
-class WavFile
-{
+    public:
+        WavFile(const std::string &wavPath);
+        void PrintInfo();
+        void PlayWav();
+        void WriteInterval(const WavInterval &interval);
+        void GetInterval(float startSec, float endSec);
 
-public:
-    WavFile(std::string wavPath);
-    void playWav();
-    void writeInterval(WavInterval interval);
-    void getInterval(float startSec, float endSec);
+        ~WavFile();
 
-    ~WavFile();
+    private:
+        std::string path;
+        std::fstream file;
+        uint32_t chunkSize;
+        uint16_t audioFormat;
+        uint16_t numChannels;
+        uint32_t sampleRate;
+        uint32_t byteRate;
+        uint16_t blockAlign;
+        uint16_t bitsPerSample;
+        uint32_t subchunk2Size;
 
-private:
-};
+        std::streampos dataStart;
+        std::streampos dataEnd;
+    };
 
-class WavReader
-{
-public:
-    WavReader(const std::string &waveDir = "");
-    WavFile *readWav(const std::string &path) const;
-    WavFile *createWav(const std::string &destPath) const;
+    class WavInterval
+    {
+    public:
+        WavInterval(WavFile *file, float startSec, float endSec)
+            : file(file), startSec(startSec), endSec(endSec), speed(1) {};
+        void ChangeSpeed(float speed) { this->speed = speed; };
 
-private:
-    bool _isWavFile(std::string &path);
-};
+    private:
+        WavFile *file;
+        float startSec;
+        float endSec;
+        float speed;
+    };
+
+    class WavReader
+    {
+    public:
+        WavReader(const std::string &wavDir = "") : wavDir(wavDir) {};
+        WavFile *ReadWav(const std::string &path) const;
+        WavFile *CreateWav(const std::string &destPath) const;
+        bool IsExistsWav(const std::string &path) const;
+
+    private:
+        std::string wavDir;
+        bool _isWavFile(std::string &path);
+    };
+} // namespace wav_lib

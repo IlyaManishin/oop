@@ -15,3 +15,5 @@ class InvalidWavFile : public WavException
 public:
     explicit InvalidWavFile(const std::string &msg = "Invalid WAV file") : WavException(msg) {}
 };
+
+

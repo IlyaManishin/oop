@@ -1,6 +1,8 @@
 #include "../src/cmd_parser/cmd_parser.hpp"
 
 #include <gtest/gtest.h>
+#include <variant>
+#include <string>
 
 using namespace cmd;
 
@@ -41,8 +43,8 @@ TEST_F(CommandParserTest, MixCommandWithArgs)
     EXPECT_EQ(cmd->commandId, static_cast<int>(CMD::MIX));
     ASSERT_EQ(cmd->args.size(), 3);
 
-    EXPECT_EQ(std::get<int>(cmd->args[0]), 42);
-    EXPECT_DOUBLE_EQ(std::get<double>(cmd->args[1]), 0.5);
+    EXPECT_FLOAT_EQ(std::get<float>(cmd->args[0]), 42.0f);
+    EXPECT_FLOAT_EQ(std::get<float>(cmd->args[1]), 0.5f);
     EXPECT_EQ(std::get<std::string>(cmd->args[2]), "hello");
 }
 

@@ -1,8 +1,10 @@
 #pragma once
-#include <vector>
+#include "cmd_parser/cmd_args.hpp"
 #include <string>
+#include <vector>
 
-void cmdHelp(const std::vector<std::string>& args);
-void cmdMix(const std::vector<std::string>& args);
-void cmdMute(const std::vector<std::string>& args);
-void cmdChangeSpeed(const std::vector<std::string>& args);
+bool cmdHelp(const std::vector<cmd::Arg> &args) noexcept;
+bool cmdInfo(const std::vector<cmd::Arg> &args) noexcept;
+bool cmdMix(const std::vector<cmd::Arg> &args) noexcept;
+bool cmdMute(const std::vector<cmd::Arg> &args) noexcept;
+bool cmdChangeSpeed(const std::vector<cmd::Arg> &args) noexcept;

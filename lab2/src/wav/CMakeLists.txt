@@ -1,1 +1,1 @@
-add_library(wav_lib STATIC wav.cpp)
+add_library(wav_lib STATIC wav_file.cpp wav_reader.cpp wav_utils.cpp)
