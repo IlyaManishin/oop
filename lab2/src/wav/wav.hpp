@@ -22,6 +22,7 @@ namespace wav_lib
     private:
         std::string path;
         std::fstream file;
+        
         uint32_t chunkSize;
         uint16_t audioFormat;
         uint16_t numChannels;
@@ -33,6 +34,8 @@ namespace wav_lib
 
         std::streampos dataStart;
         std::streampos dataEnd;
+
+        void _extract_data();
     };
 
     class WavInterval

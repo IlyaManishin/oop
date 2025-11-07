@@ -7,52 +7,67 @@
 #include <iostream>
 #include <string>
 
+const int MAX_CHAIN_COUNT = 12;
 namespace wav_lib
 {
 
-    WavFile::WavFile(const std::string &wavPath)
+    WavFile::WavFile(const std::string &wavPath) : file(wavPath, std::ios::in | std::ios::binary)
     {
         this->path = wavPath;
-        std::ifstream f(wavPath, std::ios::binary);
-        if (!f.is_open())
+        if (!this->file.is_open())
             throw InvalidWavFile("Cannot open file: " + wavPath);
 
         char chunkId[4];
         char format[4];
         char subchunk1Id[4];
-        char subchunk2Id[4];
 
-        if (!f.read(chunkId, 4))
+        if (!this->file.read(chunkId, 4))
             throw InvalidWavFile("Failed to read chunkId");
-        this->chunkSize = read_uint32(f);
-        if (!f.read(format, 4))
+        this->chunkSize = read_uint32(this->file);
+        if (!this->file.read(format, 4))
             throw InvalidWavFile("Failed to read format");
 
         if (std::strncmp(chunkId, "RIFF", 4) != 0 || std::strncmp(format, "WAVE", 4) != 0)
             throw InvalidWavFile("Not a RIFF/WAVE file");
 
-        if (!f.read(subchunk1Id, 4))
+        if (!this->file.read(subchunk1Id, 4))
             throw InvalidWavFile("Failed to read subchunk1Id");
+        if (!std::strncmp(subchunk1Id, "fmt ", 4) != 0)
+            throw InvalidWavFile("Invalid subchunk1Id identifier");
 
-        uint32_t subchunk1Size = read_uint32(f);
+        uint32_t subchunk1Size = read_uint32(this->file);
 
-        this->audioFormat = read_uint16(f);
-        this->numChannels = read_uint16(f);
-        this->sampleRate = read_uint32(f);
-        this->byteRate = read_uint32(f);
-        this->blockAlign = read_uint16(f);
-        this->bitsPerSample = read_uint16(f);
+        this->audioFormat = read_uint16(this->file);
+        this->numChannels = read_uint16(this->file);
+        this->sampleRate = read_uint32(this->file);
+        this->byteRate = read_uint32(this->file);
+        this->blockAlign = read_uint16(this->file);
+        this->bitsPerSample = read_uint16(this->file);
 
-        if (!f.read(subchunk2Id, 4))
-            throw InvalidWavFile("Failed to read subchunk2Id");
-        subchunk2Size = read_uint32(f);
+        this->_extract_data();
+    }
 
-        if (std::strncmp(subchunk1Id, "fmt ", 4) != 0 || std::strncmp(subchunk2Id, "data", 4) != 0)
-            throw InvalidWavFile("Invalid subchunk identifiers");
+    void WavFile::_extract_data()
+    {
+        char subchunk2Id[4];
+        for (int i = 0; i < MAX_CHAIN_COUNT; i++)
+        {
+            if (!this->file.read(subchunk2Id, 4))
+                throw InvalidWavFile("Failed to read subchunk2Id");
+            subchunk2Size = read_uint32(this->file);
+            if (std::strncmp(subchunk2Id, "LIST", 4) == 0)
+            {
+                std::streampos cur = this->file.tellg();
+                cur += subchunk2Size;
+                this->file.seekg(cur);
+            }
+            if (std::strncmp(subchunk2Id, "data", 4) != 0)
+                throw InvalidWavFile("Invalid subchunk identifiers");
 
-        dataStart = f.tellg();
-        f.seekg(0, std::ios::end);
-        dataEnd = f.tellg();
+            dataStart = this->file.tellg();
+            this->file.seekg(0, std::ios::end);
+            dataEnd = this->file.tellg();
+        }
     }
 
     void WavFile::PrintInfo()
