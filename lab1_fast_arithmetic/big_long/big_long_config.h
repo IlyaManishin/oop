@@ -44,7 +44,7 @@ namespace bigLong
             return res;
         }
 
-        constexpr size_t BL_DEC_IN_DIGIT = log10_ceil(BL_DIGIT_MOD) - 5;
+        constexpr size_t BL_DEC_IN_DIGIT = log10_ceil(BL_DIGIT_MOD) - 1;
         constexpr size_t BL_DEC_PART_DIV = npow(10, BL_DEC_IN_DIGIT);
         // constexpr size_t BL_DEC_IN_DIGIT = 1;
         // constexpr size_t BL_DEC_PART_DIV = 10;
