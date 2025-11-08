@@ -10,10 +10,10 @@ public:
     explicit WavException(const std::string &msg = "") : std::runtime_error(msg) {}
 };
 
-class InvalidWavFile : public WavException
+class InvalidWavFileExc : public WavException
 {
 public:
-    explicit InvalidWavFile(const std::string &msg = "Invalid WAV file") : WavException(msg) {}
+    explicit InvalidWavFileExc(const std::string &msg = "Invalid WAV file") : WavException(msg) {}
 };
 
 

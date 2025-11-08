@@ -27,9 +27,28 @@ static bool get_arg(const std::vector<cmd::Arg> &args, size_t i, T &out)
     return false;
 }
 
-bool cmdHelp(const std::vector<cmd::Arg> &) noexcept
+static WavFile *read_wav_file(const WavReader &reader, const std::string &path)
+{
+    try
+    {
+        WavFile *wavFile = reader.ReadWav(path);
+        return wavFile;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << "\n";
+        return nullptr;
+    }
+}
+
+bool cmd_from_config_file(const std::vector<cmd::Arg> &args) noexcept
+{
+}
+
+bool cmd_help(const std::vector<cmd::Arg> &) noexcept
 {
     std::cout << "Commands:\n";
+    std::cout << "  file          add commands file\n";
     std::cout << "  help          show list of commands\n";
     std::cout << "  mix           mix intervals from two files\n";
     std::cout << "  mute          mute interval in a wav file\n";
@@ -39,7 +58,14 @@ bool cmdHelp(const std::vector<cmd::Arg> &) noexcept
     return true;
 }
 
-bool cmdMix(const std::vector<cmd::Arg> &args) noexcept
+bool cmd_mix_impl(WavFile *outFile, float outStart, float outEnd,
+                  WavFile *inFile, float inStart, float inEnd)
+{
+    std::cout << "Mixed successfully\n";
+    return true;
+}
+
+bool cmd_mix(const std::vector<cmd::Arg> &args) noexcept
 {
     std::string outputPath, inputFile;
     float outStart = 0, outEnd = 0, inStart = 0, inEnd = 0;
@@ -57,17 +83,30 @@ bool cmdMix(const std::vector<cmd::Arg> &args) noexcept
 
     try
     {
+        WavReader reader;
+        WavFile *outFile = read_wav_file(reader, outputPath);
+        if (!outFile)
+            return false;
+        WavFile *inFile = read_wav_file(reader, inputFile);
+        if (!inFile)
+            return false;
 
-        std::cout << "Mixed successfully\n";
+        return cmd_mix_impl(outFile, outStart, outEnd, inFile, inStart, inEnd);
     }
     catch (const std::exception &e)
     {
         std::cerr << "Error: " << e.what() << "\n";
+        return false;
     }
+}
+
+bool cmd_info_impl(WavFile *wavFile)
+{
+    wavFile->PrintInfo();
     return true;
 }
 
-bool cmdInfo(const std::vector<cmd::Arg> &args) noexcept
+bool cmd_info(const std::vector<cmd::Arg> &args) noexcept
 {
     std::string wavPath;
     if (!get_arg(args, 0, wavPath))
@@ -75,20 +114,21 @@ bool cmdInfo(const std::vector<cmd::Arg> &args) noexcept
         std::cerr << "Usage: info <wavfile>\n";
         return false;
     }
+    WavReader reader;
+    WavFile *wavFile = read_wav_file(reader, wavPath);
+    if (!wavFile)
+        return false;
 
-    try
-    {
-        WavReader reader;
-        reader.ReadWav(wavPath);
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << e.what() << "\n";
-    }
+    return cmd_info_impl(wavFile);
+}
+
+bool cmd_mute_impl(WavFile *wavFile, float start, float end)
+{
+    std::cout << "Muted interval successfully (stub)\n";
     return true;
 }
 
-bool cmdMute(const std::vector<cmd::Arg> &args) noexcept
+bool cmd_mute(const std::vector<cmd::Arg> &args) noexcept
 {
     std::string wavPath;
     float start = 0, end = 0;
@@ -104,19 +144,26 @@ bool cmdMute(const std::vector<cmd::Arg> &args) noexcept
     try
     {
         WavReader reader;
-        reader.ReadWav(wavPath);
+        WavFile *wavFile = read_wav_file(reader, wavPath);
+        if (!wavFile)
+            return false;
 
-        std::cout << "Muted interval successfully (stub)\n";
+        return cmd_mute_impl(wavFile, start, end);
     }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << "\n";
+        return false;
     }
+}
 
+bool cmd_change_speed_impl(WavFile *wavFile, float start, float end, float speed)
+{
+    std::cout << "Speed changed successfully (stub)\n";
     return true;
 }
 
-bool cmdChangeSpeed(const std::vector<cmd::Arg> &args) noexcept
+bool cmd_change_speed(const std::vector<cmd::Arg> &args) noexcept
 {
     std::string wavPath;
     float start = 0, end = 0, speed = 1.0;
@@ -133,13 +180,15 @@ bool cmdChangeSpeed(const std::vector<cmd::Arg> &args) noexcept
     try
     {
         WavReader reader;
-        reader.ReadWav(wavPath);
+        WavFile *wavFile = read_wav_file(reader, wavPath);
+        if (!wavFile)
+            return false;
 
-        std::cout << "Speed changed successfully (stub)\n";
+        return cmd_change_speed_impl(wavFile, start, end, speed);
     }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << "\n";
+        return false;
     }
-    return true;
 }

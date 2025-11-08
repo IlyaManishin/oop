@@ -35,7 +35,7 @@ namespace wav_lib
         std::streampos dataStart;
         std::streampos dataEnd;
 
-        void _extract_data();
+        void _extract_file_data();
     };
 
     class WavInterval

@@ -8,6 +8,7 @@ namespace project
 {
     enum class CMD
     {
+        FROM_FILE,
         HELP,
         INFO,
         MIX,
@@ -20,6 +21,7 @@ namespace project
     cmd::CommandParser *init_cmd_parser()
     {
         cmd::CommandParser *parser = new cmd::CommandParser();
+        parser->registerCommand("config", (int)CMD::FROM_FILE);
         parser->registerCommand("help", (int)CMD::HELP);
         parser->registerCommand("info", (int)CMD::INFO);
         parser->registerCommand("mix", (int)CMD::MIX);
@@ -32,11 +34,12 @@ namespace project
     std::unordered_map<int, command_run_func> get_commands_map()
     {
         std::unordered_map<int, command_run_func> res;
-        res[(int)CMD::HELP] = cmdHelp;
-        res[(int)CMD::INFO] = cmdInfo;
-        res[(int)CMD::MIX] = cmdMix;
-        res[(int)CMD::MUTE] = cmdMute;
-        res[(int)CMD::CHANGE_SPEED] = cmdChangeSpeed;
+        res[(int)CMD::FROM_FILE] = cmd_help;
+        res[(int)CMD::HELP] = cmd_help;
+        res[(int)CMD::INFO] = cmd_info;
+        res[(int)CMD::MIX] = cmd_mix;
+        res[(int)CMD::MUTE] = cmd_mute;
+        res[(int)CMD::CHANGE_SPEED] = cmd_change_speed;
 
         return res;
     }

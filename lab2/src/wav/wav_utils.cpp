@@ -10,7 +10,7 @@ namespace wav_lib
     {
         uint16_t value;
         if (!f.read((char *)&value, sizeof(value)))
-            throw InvalidWavFile("Unexpected EOF while reading wav field");
+            throw InvalidWavFileExc("Unexpected EOF while reading wav field");
         return value;
     }
 
@@ -18,7 +18,7 @@ namespace wav_lib
     {
         uint32_t value;
         if (!f.read((char *)&value, sizeof(value)))
-            throw InvalidWavFile("Unexpected EOF while reading wav field");
+            throw InvalidWavFileExc("Unexpected EOF while reading wav field");
         return value;
     }
 } // namespace wav_lib

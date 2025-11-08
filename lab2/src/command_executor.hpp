@@ -5,8 +5,9 @@
 #include <string>
 #include <vector>
 
-bool cmdHelp(const std::vector<cmd::Arg> &args) noexcept;
-bool cmdInfo(const std::vector<cmd::Arg> &args) noexcept;
-bool cmdMix(const std::vector<cmd::Arg> &args) noexcept;
-bool cmdMute(const std::vector<cmd::Arg> &args) noexcept;
-bool cmdChangeSpeed(const std::vector<cmd::Arg> &args) noexcept;
+bool cmd_from_config_file(const std::vector<cmd::Arg> &args) noexcept;
+bool cmd_help(const std::vector<cmd::Arg> &args) noexcept;
+bool cmd_info(const std::vector<cmd::Arg> &args) noexcept;
+bool cmd_mix(const std::vector<cmd::Arg> &args) noexcept;
+bool cmd_mute(const std::vector<cmd::Arg> &args) noexcept;
+bool cmd_change_speed(const std::vector<cmd::Arg> &args) noexcept;
