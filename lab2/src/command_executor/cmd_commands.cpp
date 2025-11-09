@@ -1,3 +1,5 @@
+#include "base_commands/core_commands.hpp"
+#include "base_commands/file_commands.hpp"
 #include "cmd_parser/cmd_args.hpp"
 #include "executor.hpp"
 #include "wav/wav.hpp"
@@ -60,13 +62,6 @@ namespace command_executor
         return true;
     }
 
-    bool cmd_mix_impl(WavFile *outFile, float outStart, float outEnd,
-                      WavFile *inFile, float inStart, float inEnd)
-    {
-        std::cout << "Mixed successfully\n";
-        return true;
-    }
-
     bool cmd_mix(const std::vector<cmd::Arg> &args) noexcept
     {
         std::string outputPath, inputFile;
@@ -102,12 +97,6 @@ namespace command_executor
         }
     }
 
-    bool cmd_info_impl(WavFile *wavFile)
-    {
-        wavFile->PrintInfo();
-        return true;
-    }
-
     bool cmd_info(const std::vector<cmd::Arg> &args) noexcept
     {
         std::string wavPath;
@@ -122,12 +111,6 @@ namespace command_executor
             return false;
 
         return cmd_info_impl(wavFile);
-    }
-
-    bool cmd_mute_impl(WavFile *wavFile, float start, float end)
-    {
-        std::cout << "Muted interval successfully (stub)\n";
-        return true;
     }
 
     bool cmd_mute(const std::vector<cmd::Arg> &args) noexcept
@@ -157,12 +140,6 @@ namespace command_executor
             std::cerr << e.what() << "\n";
             return false;
         }
-    }
-
-    bool cmd_change_speed_impl(WavFile *wavFile, float start, float end, float speed)
-    {
-        std::cout << "Speed changed successfully (stub)\n";
-        return true;
     }
 
     bool cmd_change_speed(const std::vector<cmd::Arg> &args) noexcept
