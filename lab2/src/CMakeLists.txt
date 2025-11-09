@@ -1,5 +1,5 @@
-add_subdirectory(cmd_parser)
-add_subdirectory(wav)
-add_executable(main main.cpp command_executor.cpp)
+add_subdirectory(command_executor)
+add_subdirectory(libs)
+add_executable(main main.cpp)
 
-target_link_libraries(main PRIVATE wav_lib cmd_parser)
+target_link_libraries(main PRIVATE wav_lib command_executor)

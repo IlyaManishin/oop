@@ -1,8 +1,9 @@
+#include "wav_exceptions.hpp"
+#include "wav_utils.hpp"
+
 #include <cinttypes>
 #include <fstream>
 
-#include "wav_exceptions.hpp"
-#include "wav_utils.hpp"
 
 namespace wav_lib
 {

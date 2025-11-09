@@ -1,6 +1,6 @@
 #include "wav.hpp"
-#include "wav_exceptions.hpp"
-#include "wav_utils.hpp"
+#include "internal/wav_exceptions.hpp"
+#include "internal/wav_utils.hpp"
 
 #include <cstring>
 #include <fstream>

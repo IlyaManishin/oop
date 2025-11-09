@@ -1,7 +1,10 @@
 #pragma once
 
+#include "internal/wav_exceptions.hpp"
+
 #include <fstream>
 #include <string>
+
 
 namespace wav_lib
 {
@@ -9,7 +12,7 @@ namespace wav_lib
 
     class WavFile
     {
-
+        class WavHeader;
     public:
         WavFile(const std::string &wavPath);
         void PrintInfo();
