@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 
-namespace cmd
+namespace cmd_parser
 {
     void CommandParser::registerCommand(const std::string &name, int id)
     {
@@ -35,5 +35,5 @@ namespace cmd
     
         return token;
     }
-} // namespace cmd
+} // namespace cmd_parser
 

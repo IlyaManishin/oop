@@ -6,7 +6,7 @@
 
 #include "cmd_args.hpp"
 
-namespace cmd
+namespace cmd_parser
 {
     class CommandParser
     {
@@ -18,6 +18,6 @@ namespace cmd
         std::unordered_map<std::string, int> commandMap;
         static Arg parseArg(const std::string &token);
     };
-} // namespace cmd
+} // namespace cmd_parser
 
 

@@ -5,9 +5,9 @@
 #include <iostream>
 #include <unordered_map>
 
-namespace command_executor
+namespace executor
 {
-    enum class CMD
+    enum class COMMANDS
     {
         FROM_FILE,
         HELP,
@@ -17,17 +17,17 @@ namespace command_executor
         CHANGE_SPEED
     };
 
-    using command_run_func = bool (*)(const std::vector<cmd::Arg> &);
+    using command_run_func = bool (*)(const std::vector<cmd_parser::Arg> &);
 
-    cmd::CommandParser *init_cmd_parser()
+    cmd_parser::CommandParser *init_cmd_parser()
     {
-        cmd::CommandParser *parser = new cmd::CommandParser();
-        parser->registerCommand("config", (int)CMD::FROM_FILE);
-        parser->registerCommand("help", (int)CMD::HELP);
-        parser->registerCommand("info", (int)CMD::INFO);
-        parser->registerCommand("mix", (int)CMD::MIX);
-        parser->registerCommand("mute", (int)CMD::MUTE);
-        parser->registerCommand("speed", (int)CMD::CHANGE_SPEED);
+        cmd_parser::CommandParser *parser = new cmd_parser::CommandParser();
+        parser->registerCommand("config", (int)COMMANDS::FROM_FILE);
+        parser->registerCommand("help", (int)COMMANDS::HELP);
+        parser->registerCommand("info", (int)COMMANDS::INFO);
+        parser->registerCommand("mix", (int)COMMANDS::MIX);
+        parser->registerCommand("mute", (int)COMMANDS::MUTE);
+        parser->registerCommand("speed", (int)COMMANDS::CHANGE_SPEED);
 
         return parser;
     }
@@ -35,20 +35,20 @@ namespace command_executor
     std::unordered_map<int, command_run_func> get_commands_map()
     {
         std::unordered_map<int, command_run_func> res;
-        res[(int)CMD::FROM_FILE] = cmd_run_from_config_file;
-        res[(int)CMD::HELP] = cmd_help;
-        res[(int)CMD::INFO] = cmd_info;
-        res[(int)CMD::MIX] = cmd_mix;
-        res[(int)CMD::MUTE] = cmd_mute;
-        res[(int)CMD::CHANGE_SPEED] = cmd_change_speed;
+        res[(int)COMMANDS::FROM_FILE] = cmd_run_from_config_file;
+        res[(int)COMMANDS::HELP] = cmd_help;
+        res[(int)COMMANDS::INFO] = cmd_info;
+        res[(int)COMMANDS::MIX] = cmd_mix;
+        res[(int)COMMANDS::MUTE] = cmd_mute;
+        res[(int)COMMANDS::CHANGE_SPEED] = cmd_change_speed;
 
         return res;
     }
 
     bool run_from_cmd_args(int argc, char **argv)
     {
-        cmd::CommandParser *parser = init_cmd_parser();
-        cmd::Command *command;
+        cmd_parser::CommandParser *parser = init_cmd_parser();
+        cmd_parser::Command *command;
         try
         {
             command = parser->parse(argc, argv);
@@ -67,4 +67,4 @@ namespace command_executor
         delete parser;
         return res;
     }
-}//namespace command_executor
+}//namespace executor

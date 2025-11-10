@@ -4,14 +4,14 @@
 #include <vector>
 #include <string>
 
-namespace cmd
+namespace cmd_parser
 {
     using Arg = std::variant<float, std::string>;
-
+    using Args = std::vector<Arg>;
     struct Command
     {
         int commandId;
-        std::vector<Arg> args;
+        Args args;
     };
 
-} // namespace cmd
+} // namespace cmd_parser

@@ -5,7 +5,7 @@
 
 using namespace wav_lib;
 
-namespace command_executor
+namespace executor
 {
     bool cmd_info_impl(WavFile *wavFile)
     {
@@ -32,4 +32,4 @@ namespace command_executor
         return true;
     }
     
-} // namespace command_executor
+} // namespace executor

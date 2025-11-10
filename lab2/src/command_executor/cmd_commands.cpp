@@ -9,11 +9,12 @@
 #include <vector>
 
 using namespace wav_lib;
+using namespace cmd_parser;
 
-namespace command_executor
+namespace executor
 {
     template <typename T>
-    static bool get_arg(const std::vector<cmd::Arg> &args, size_t i, T &out) noexcept
+    static bool get_arg(const Args &args, size_t i, T &out) noexcept
     {
         if (i >= args.size())
         {
@@ -45,7 +46,7 @@ namespace command_executor
         }
     }
 
-    bool cmd_run_from_config_file(const std::vector<cmd::Arg> &args) noexcept
+    bool cmd_run_from_config_file(const Args &args) noexcept
     {
         std::string configPath;
         if (!get_arg(args, 0, configPath))
@@ -57,7 +58,7 @@ namespace command_executor
         return res;
     }
 
-    bool cmd_help(const std::vector<cmd::Arg> &) noexcept
+    bool cmd_help(const Args &) noexcept
     {
         std::cout << "Commands:\n";
         std::cout << "  file          add commands file\n";
@@ -70,7 +71,7 @@ namespace command_executor
         return true;
     }
 
-    bool cmd_mix(const std::vector<cmd::Arg> &args) noexcept
+    bool cmd_mix(const Args &args) noexcept
     {
         std::string outputPath, inputFile;
         float outStart = 0, outEnd = 0, inStart = 0, inEnd = 0;
@@ -110,7 +111,7 @@ namespace command_executor
         }
     }
 
-    bool cmd_info(const std::vector<cmd::Arg> &args) noexcept
+    bool cmd_info(const Args &args) noexcept
     {
         std::string wavPath;
         if (!get_arg(args, 0, wavPath))
@@ -132,9 +133,10 @@ namespace command_executor
         {
             std::cerr << e.what() << '\n';
         }
+        return false;
     }
 
-    bool cmd_mute(const std::vector<cmd::Arg> &args) noexcept
+    bool cmd_mute(const Args &args) noexcept
     {
         std::string wavPath;
         float start = 0, end = 0;
@@ -162,7 +164,7 @@ namespace command_executor
         }
     }
 
-    bool cmd_change_speed(const std::vector<cmd::Arg> &args) noexcept
+    bool cmd_change_speed(const Args &args) noexcept
     {
         std::string wavPath;
         float start = 0, end = 0, speed = 1.0;
@@ -191,4 +193,4 @@ namespace command_executor
             return false;
         }
     }
-} // namespace command_executor
+} // namespace executor

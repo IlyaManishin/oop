@@ -4,6 +4,6 @@
 
 int main(int argc, char **argv)
 {
-    bool res = command_executor::run_from_cmd_args(argc, argv);
+    bool res = executor::run_from_cmd_args(argc, argv);
     return res ? EXIT_SUCCESS : EXIT_FAILURE;
 }

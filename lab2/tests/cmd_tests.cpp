@@ -4,7 +4,7 @@
 #include <variant>
 #include <string>
 
-using namespace cmd;
+using namespace cmd_parser;
 
 enum class CMD
 {
