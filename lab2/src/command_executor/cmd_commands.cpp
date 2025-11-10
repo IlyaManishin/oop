@@ -13,7 +13,7 @@ using namespace wav_lib;
 namespace command_executor
 {
     template <typename T>
-    static bool get_arg(const std::vector<cmd::Arg> &args, size_t i, T &out)
+    static bool get_arg(const std::vector<cmd::Arg> &args, size_t i, T &out) noexcept
     {
         if (i >= args.size())
         {
@@ -31,7 +31,7 @@ namespace command_executor
         return false;
     }
 
-    static WavFile *read_wav_file(const WavReader &reader, const std::string &path)
+    static WavFile *read_wav_file(const WavReader &reader, const std::string &path) noexcept
     {
         try
         {
@@ -47,6 +47,14 @@ namespace command_executor
 
     bool cmd_run_from_config_file(const std::vector<cmd::Arg> &args) noexcept
     {
+        std::string configPath;
+        if (!get_arg(args, 0, configPath))
+        {
+            std::cerr << "Usage: file <config_file> ";
+            return false;
+        }
+        bool res = run_from_config_file(configPath);
+        return res;
     }
 
     bool cmd_help(const std::vector<cmd::Arg> &) noexcept
@@ -78,16 +86,21 @@ namespace command_executor
             return false;
         }
 
+        WavReader reader;
+        WavFile *outFile = read_wav_file(reader, outputPath);
+        if (!outFile)
+        {
+            return false;
+        }
+        WavFile *inFile = read_wav_file(reader, inputFile);
+        if (!inFile)
+        {
+            delete outFile;
+            return false;
+        }
+
         try
         {
-            WavReader reader;
-            WavFile *outFile = read_wav_file(reader, outputPath);
-            if (!outFile)
-                return false;
-            WavFile *inFile = read_wav_file(reader, inputFile);
-            if (!inFile)
-                return false;
-
             return cmd_mix_impl(outFile, outStart, outEnd, inFile, inStart, inEnd);
         }
         catch (const std::exception &e)
@@ -110,7 +123,15 @@ namespace command_executor
         if (!wavFile)
             return false;
 
-        return cmd_info_impl(wavFile);
+        try
+        {
+            bool res = cmd_info_impl(wavFile);
+            return res;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     }
 
     bool cmd_mute(const std::vector<cmd::Arg> &args) noexcept
@@ -125,7 +146,6 @@ namespace command_executor
             std::cerr << "Usage: mute <wavfile> <start> <end>\n";
             return false;
         }
-
         try
         {
             WavReader reader;
@@ -156,13 +176,13 @@ namespace command_executor
             return false;
         }
 
+        WavReader reader;
+        WavFile *wavFile = read_wav_file(reader, wavPath);
+        if (!wavFile)
+            return false;
+
         try
         {
-            WavReader reader;
-            WavFile *wavFile = read_wav_file(reader, wavPath);
-            if (!wavFile)
-                return false;
-
             return cmd_change_speed_impl(wavFile, start, end, speed);
         }
         catch (const std::exception &e)

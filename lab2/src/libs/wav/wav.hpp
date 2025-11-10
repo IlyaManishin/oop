@@ -19,6 +19,7 @@ namespace wav_lib
         void PlayWav();
         void WriteInterval(const WavInterval &interval);
         void GetInterval(float startSec, float endSec);
+        void Close();
 
         ~WavFile();
 
@@ -39,6 +40,7 @@ namespace wav_lib
         std::streampos dataEnd;
 
         void _extract_file_data();
+        void _save_header(){};
     };
 
     class WavInterval
@@ -65,6 +67,6 @@ namespace wav_lib
 
     private:
         std::string wavDir;
-        bool _isWavFile(std::string &path);
+        bool _isWavFile(const std::string &path) const;
     };
 } // namespace wav_lib

@@ -1,6 +1,6 @@
-#include "wav.hpp"
 #include "internal/wav_exceptions.hpp"
 #include "internal/wav_utils.hpp"
+#include "wav.hpp"
 
 #include <cstring>
 #include <fstream>
@@ -17,6 +17,11 @@ namespace wav_lib
         if (!this->file.is_open())
             throw InvalidWavFileExc("Cannot open file: " + wavPath);
 
+        this->_extract_file_data();
+    }
+
+    void WavFile::_extract_file_data()
+    {
         char chunkId[4];
         char format[4];
         char subchunk1Id[4];
@@ -44,11 +49,6 @@ namespace wav_lib
         this->blockAlign = read_uint16(this->file);
         this->bitsPerSample = read_uint16(this->file);
 
-        this->_extract_file_data();
-    }
-
-    void WavFile::_extract_file_data()
-    {
         char subchunk2Id[4];
         for (int i = 0; i < MAX_CHAIN_COUNT; i++)
         {
@@ -80,6 +80,10 @@ namespace wav_lib
         std::cout << "Bits per sample: " << this->bitsPerSample << "\n";
         std::cout << "Byte rate: " << this->byteRate << "\n";
         std::cout << "Data size: " << this->dataEnd << " bytes\n";
+    }
+
+    void WavFile::Close(){
+        this->_save_header();
     }
 
     WavFile::~WavFile()
