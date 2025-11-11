@@ -1,4 +1,4 @@
-#include "wav_exceptions.hpp"
+#include "../wav_exceptions.hpp"
 #include "wav_utils.hpp"
 
 #include <cinttypes>

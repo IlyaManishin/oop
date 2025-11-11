@@ -1,7 +1,7 @@
+#include "executor.hpp"
 #include "base_commands/core_commands.hpp"
 #include "base_commands/file_commands.hpp"
 #include "cmd_parser/cmd_args.hpp"
-#include "executor.hpp"
 #include "wav/wav.hpp"
 
 #include <iostream>
