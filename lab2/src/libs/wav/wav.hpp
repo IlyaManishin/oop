@@ -1,7 +1,6 @@
 #pragma once
 
-#include "internal/wav_internal.hpp"
-#include "internal/wav_exceptions.hpp"
+#include "wav_exceptions.hpp"
 
 #include <cstdint>
 #include <fstream>
@@ -9,6 +8,20 @@
 
 namespace wav_lib
 {
+    namespace _detail
+    {
+        typedef struct TWavHeader
+        {
+            uint32_t chunkSize;
+            uint16_t audioFormat;
+            uint16_t numChannels;
+            uint32_t sampleRate;
+            uint32_t byteRate;
+            uint16_t blockAlign;
+            uint16_t bitsPerSample;
+            uint32_t subchunk2Size;
+        } TWavHeader;
+    } // namespace _detail
     class WavInterval;
 
     class WavFile
@@ -26,10 +39,10 @@ namespace wav_lib
     private:
         std::string path;
         std::fstream file;
-        
+
         std::streampos dataStart;
         std::streampos dataEnd;
-        
+
         _detail::TWavHeader header;
 
         void _extract_file_data();

@@ -1,5 +1,4 @@
 #include "wav.hpp"
-#include "internal/wav_exceptions.hpp"
 #include "internal/wav_utils.hpp"
 
 #include <cstring>
