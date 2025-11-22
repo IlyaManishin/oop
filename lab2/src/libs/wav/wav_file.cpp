@@ -1,5 +1,5 @@
-#include "wav.hpp"
 #include "internal/wav_utils.hpp"
+#include "wav.hpp"
 
 #include <cstring>
 #include <fstream>
@@ -10,47 +10,28 @@ const int MAX_CHAIN_COUNT = 12;
 
 namespace wav_lib
 {
-    WavFile *WavReader::ReadWav(const std::string &path) const
+    static InvalidWavFileExc get_wav_not_init_error(const std::string wavPath)
     {
-        WavFile *wavFile = new WavFile(path);
-        return wavFile;
+        return InvalidWavFileExc("Wav file not init", wavPath);
     }
 
-    bool WavReader::_isWavFile(const std::string &path) const
-    {
-        try
-        {
-            WavFile *file = this->ReadWav(path);
-            delete file;
-            return true;
-        }
-        catch (const WavException &e)
-        {
-            return false;
-        }
-    }
-
-    bool WavReader::IsExistsWav(const std::string &path) const
-    {
-        std::fstream wavStream(path);
-        if (!wavStream.is_open())
-            return false;
-
-        wavStream.close();
-
-        return this->_isWavFile(path);
-    }
-
-    WavFile::WavFile(const std::string &wavPath) : file(wavPath, std::ios::in | std::ios::out | std::ios::binary)
+    WavFile::WavFile(const std::string &wavPath, bool isNew)
+        : file(wavPath, std::ios::in | std::ios::out | std::ios::binary)
     {
         this->path = wavPath;
+        this->isChanged = false;
+        this->isInit = false;
+
         if (!this->file.is_open())
             throw InvalidWavFileExc("Cannot open file: " + wavPath);
-
-        this->_extract_file_data();
+        if (!isNew)
+        {
+            this->extractFileData();
+            this->isInit = true;
+        }
     }
 
-    void WavFile::_extract_file_data()
+    void WavFile::extractFileData()
     {
         char chunkId[4];
         char format[4];
@@ -105,12 +86,39 @@ namespace wav_lib
 
     void WavFile::PrintInfo()
     {
+        if (!this->isInit)
+            throw get_wav_not_init_error(this->path);
+
         std::cout << "File: " << path << "\n";
         std::cout << "Channels: " << this->header.numChannels << "\n";
         std::cout << "Sample rate: " << this->header.sampleRate << " Hz\n";
         std::cout << "Bits per sample: " << this->header.bitsPerSample << "\n";
         std::cout << "Byte rate: " << this->header.byteRate << "\n";
         std::cout << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
+    }
+
+    void WavFile::_save_header()
+    {
+        this->file.seekp(0, std::ios::beg);
+
+        this->file.write("RIFF", 4);
+        int newChunkSize = get_uint_file_size(this->file) - 4;
+        write_uint32(this->file, newChunkSize);
+        this->file.write("WAVE", 4);
+
+        this->file.write("fmt ", 4);
+        write_uint32(this->file, 16);
+        write_uint16(this->file, this->header.audioFormat);
+        write_uint16(this->file, this->header.numChannels);
+        write_uint32(this->file, this->header.sampleRate);
+        write_uint32(this->file, this->header.byteRate);
+        write_uint16(this->file, this->header.blockAlign); //???
+        write_uint16(this->file, this->header.bitsPerSample);
+
+        this->file.write("data", 4);
+        write_uint32(this->file, this->header.subchunk2Size);
+
+        this->file.flush();
     }
 
     void WavFile::Close()

@@ -22,12 +22,13 @@ namespace wav_lib
             uint32_t subchunk2Size;
         } TWavHeader;
     } // namespace _detail
+
     class WavInterval;
 
     class WavFile
     {
     public:
-        WavFile(const std::string &wavPath);
+        WavFile(const std::string &wavPath, bool isExists = true);
         ~WavFile();
 
         void PrintInfo();
@@ -43,9 +44,12 @@ namespace wav_lib
         std::streampos dataStart;
         std::streampos dataEnd;
 
+        bool isChanged;
+        bool isInit;
+
         _detail::TWavHeader header;
 
-        void _extract_file_data();
+        void extractFileData();
         void _save_header();
     };
 
@@ -53,7 +57,8 @@ namespace wav_lib
     {
     public:
         WavInterval(WavFile *file, float startSec, float endSec);
-        void ChangeSpeed(float speed);
+
+        void ChangeSpeed(float speed) { this->speed = speed; };
 
     private:
         WavFile *file;
@@ -65,13 +70,17 @@ namespace wav_lib
     class WavReader
     {
     public:
-        WavReader(const std::string &wavDir = "") : wavDir(wavDir) {};
+        WavReader(const std::string &wavDir = "", bool) : wavDir(wavDir) {};
         WavFile *ReadWav(const std::string &path) const;
-        WavFile *CreateWav(const std::string &destPath) const;
+        WavFile *CreateWav(const std::string &destPath,
+                           int numChannels = 2,
+                           uint32_t sampleRate = 44100,
+                           uint32_t bitsPerSample = 16) const;
         bool IsExistsWav(const std::string &path) const;
 
     private:
         std::string wavDir;
+
         bool _isWavFile(const std::string &path) const;
     };
 } // namespace wav_lib
