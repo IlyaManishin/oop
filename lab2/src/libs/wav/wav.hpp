@@ -1,7 +1,7 @@
 #pragma once
 
 #include "internal/wav_internal.hpp"
-#include "wav_exceptions.hpp"
+#include "internal/wav_exceptions.hpp"
 
 #include <cstdint>
 #include <fstream>
@@ -31,7 +31,7 @@ namespace wav_lib
         std::streampos dataEnd;
         
         _detail::TWavHeader header;
-        
+
         void _extract_file_data();
         void _save_header();
     };
