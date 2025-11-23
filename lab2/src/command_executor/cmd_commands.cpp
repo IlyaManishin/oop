@@ -1,8 +1,9 @@
+#include "cmd_parser/cmd_parser.hpp"
+#include "wav/wav.hpp"
+
 #include "base_commands/core_commands.hpp"
 #include "base_commands/file_commands.hpp"
-#include "cmd_parser/cmd_parser.hpp"
 #include "executor.hpp"
-#include "wav/wav.hpp"
 #include "utils/utils.hpp"
 
 #include <iostream>
@@ -75,15 +76,14 @@ namespace executor
         }
 
         WavReader reader;
-        WavFile *outFile = try_read_wav_file(reader, outputPath);
+        WavFileSPtr outFile = try_read_wav(reader, outputPath);
         if (!outFile)
         {
             return false;
         }
-        WavFile *inFile = try_read_wav_file(reader, inputFile);
+        WavFileSPtr inFile = try_read_wav(reader, inputFile);
         if (!inFile)
         {
-            delete outFile;
             return false;
         }
 
@@ -107,7 +107,7 @@ namespace executor
             return false;
         }
         WavReader reader;
-        WavFile *wavFile = try_read_wav_file(reader, wavPath);
+        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
         if (!wavFile)
         {
             return false;
@@ -140,7 +140,7 @@ namespace executor
         try
         {
             WavReader reader;
-            WavFile *wavFile = try_read_wav_file(reader, wavPath);
+            WavFileSPtr wavFile = try_read_wav(reader, wavPath);
             if (!wavFile)
             {
                 return false;
@@ -170,7 +170,7 @@ namespace executor
         }
 
         WavReader reader;
-        WavFile *wavFile = try_read_wav_file(reader, wavPath);
+        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
         if (!wavFile)
         {
             return false;

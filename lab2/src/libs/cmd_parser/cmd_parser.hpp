@@ -4,11 +4,13 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
+#include <vector>
 
 namespace cmd_parser
 {
     using Arg = std::variant<float, std::string>;
     using Args = std::vector<Arg>;
+
     struct Command
     {
         int commandId;

@@ -1,21 +1,46 @@
 #include "wav.hpp"
 
 #include <string>
+#include <iostream>
 
 namespace wav_lib
 {
-    WavFile *WavReader::ReadWav(const std::string &path) const
-    {
-        WavFile *wavFile = new WavFile(path);
-        return wavFile;
-    }
-
-    bool WavReader::_isWavFile(const std::string &path) const
+    WavFileSPtr WavReader::ReadWav(const std::string &path) const
     {
         try
         {
-            WavFile *file = this->ReadWav(path);
-            delete file;
+            auto file = WavFile::Open(path);
+            return file;
+        }
+        catch (const WavException &e)
+        {
+            std::cerr << "Error reading WAV file \"" << path << "\": " << e.what() << "\n";
+            return nullptr;
+        }
+    }
+
+    WavFileSPtr WavReader::CreateWav(const std::string &destPath,
+                                    int numChannels,
+                                    uint32_t sampleRate,
+                                    uint32_t bitsPerSample) const
+    {
+        try
+        {
+            auto file = WavFile::Create(destPath, numChannels, sampleRate, bitsPerSample);
+            return file;
+        }
+        catch (const WavException &e)
+        {
+            std::cerr << "Error creating WAV file \"" << destPath << "\": " << e.what() << "\n";
+            return nullptr;
+        }
+    }
+
+    bool WavReader::isWavFile(const std::string &path) const
+    {
+        try
+        {
+            WavFileSPtr file = WavFile::Open(path);
             return true;
         }
         catch (const WavException &e)
@@ -32,14 +57,7 @@ namespace wav_lib
 
         wavStream.close();
 
-        return this->_isWavFile(path);
+        return this->isWavFile(path);
     }
 
-    WavFile *WavReader::CreateWav(const std::string &destPath,
-                                  int numChannels,
-                                  uint32_t sampleRate,
-                                  uint32_t bitsPerSample) const
-    {
-        
-    }
 } // namespace wav_lib

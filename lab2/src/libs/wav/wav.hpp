@@ -4,10 +4,16 @@
 
 #include <cstdint>
 #include <fstream>
+#include <memory>
 #include <string>
 
 namespace wav_lib
 {
+    class WavFile;
+    class WavInterval;
+
+    using WavFileSPtr = std::shared_ptr<WavFile>;
+
     namespace _detail
     {
         typedef struct TWavHeader
@@ -23,21 +29,30 @@ namespace wav_lib
         } TWavHeader;
     } // namespace _detail
 
-    class WavInterval;
-
     class WavFile
     {
     public:
-        WavFile(const std::string &wavPath, bool isExists = true);
+        static WavFileSPtr Open(const std::string &path);
+        static WavFileSPtr Create(const std::string &path,
+                                  uint16_t channels,
+                                  uint32_t sampleRate,
+                                  uint16_t bitsPerSample);
         ~WavFile();
 
         void PrintInfo();
         void PlayWav();
         void WriteInterval(const WavInterval &interval);
         void GetInterval(float startSec, float endSec);
-        void Close();
+        void Save();
 
     private:
+        enum class Mode
+        {
+            OpenExisting,
+            CreateNew
+        };
+        WavFile(const std::string &wavPath, Mode mode);
+
         std::string path;
         std::fstream file;
 
@@ -45,23 +60,23 @@ namespace wav_lib
         std::streampos dataEnd;
 
         bool isChanged;
-        bool isInit;
 
         _detail::TWavHeader header;
 
         void extractFileData();
-        void _save_header();
+        void saveHeader();
+        void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
     };
 
     class WavInterval
     {
     public:
-        WavInterval(WavFile *file, float startSec, float endSec);
+        WavInterval(WavFileSPtr file, float startSec, float endSec);
 
         void ChangeSpeed(float speed) { this->speed = speed; };
 
     private:
-        WavFile *file;
+        WavFileSPtr wavFile;
         float startSec;
         float endSec;
         float speed;
@@ -70,17 +85,17 @@ namespace wav_lib
     class WavReader
     {
     public:
-        WavReader(const std::string &wavDir = "", bool) : wavDir(wavDir) {};
-        WavFile *ReadWav(const std::string &path) const;
-        WavFile *CreateWav(const std::string &destPath,
-                           int numChannels = 2,
-                           uint32_t sampleRate = 44100,
-                           uint32_t bitsPerSample = 16) const;
+        WavReader(const std::string &wavDir = "") : wavDir(wavDir) {};
+        WavFileSPtr ReadWav(const std::string &path) const;
+        WavFileSPtr CreateWav(const std::string &destPath,
+                              int numChannels = 2,
+                              uint32_t sampleRate = 44100,
+                              uint32_t bitsPerSample = 16) const;
         bool IsExistsWav(const std::string &path) const;
 
     private:
         std::string wavDir;
 
-        bool _isWavFile(const std::string &path) const;
+        bool isWavFile(const std::string &path) const;
     };
 } // namespace wav_lib

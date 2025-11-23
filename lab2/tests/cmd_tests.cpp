@@ -1,4 +1,4 @@
-#include "../src/command_executor/cmd_parser/cmd_parser.hpp"
+#include "cmd_parser/cmd_parser.hpp"
 
 #include <gtest/gtest.h>
 #include <variant>
