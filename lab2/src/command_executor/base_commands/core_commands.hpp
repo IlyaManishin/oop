@@ -7,5 +7,6 @@ namespace executor
     bool cmd_mix_impl(wav_lib::WavFile *outFile, float outStart, float outEnd,
                       wav_lib::WavFile *inFile, float inStart, float inEnd);
     bool cmd_change_speed_impl(wav_lib::WavFile *wavFile, float start, float end, float speed);
+    //add create new
 
 } // namespace executor

@@ -1,5 +1,6 @@
 #include "cmd_parser.hpp"
 
+#include <vector>
 #include <cstdlib>
 
 namespace cmd_parser

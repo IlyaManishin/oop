@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cmd_parser/cmd_args.hpp"
+#include "cmd_parser/cmd_parser.hpp"
 
 #include <string>
 #include <vector>
