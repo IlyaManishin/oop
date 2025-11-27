@@ -9,25 +9,22 @@
 
 namespace wav_lib
 {
+    typedef struct TWavHeader
+    {
+        uint32_t chunkSize;
+        uint16_t audioFormat;
+        uint16_t numChannels;
+        uint32_t sampleRate;
+        uint32_t byteRate;
+        uint16_t blockAlign;
+        uint16_t bitsPerSample;
+        uint32_t subchunk2Size;
+    } TWavHeader;
+
     class WavFile;
     class WavInterval;
 
     using WavFileSPtr = std::shared_ptr<WavFile>;
-
-    namespace _detail
-    {
-        typedef struct TWavHeader
-        {
-            uint32_t chunkSize;
-            uint16_t audioFormat;
-            uint16_t numChannels;
-            uint32_t sampleRate;
-            uint32_t byteRate;
-            uint16_t blockAlign;
-            uint16_t bitsPerSample;
-            uint32_t subchunk2Size;
-        } TWavHeader;
-    } // namespace _detail
 
     class WavFile
     {
@@ -37,13 +34,18 @@ namespace wav_lib
                                   uint16_t channels,
                                   uint32_t sampleRate,
                                   uint16_t bitsPerSample);
-        ~WavFile();
 
         void PrintInfo();
+        TWavHeader GetHeader();
+
         void PlayWav();
         void WriteInterval(const WavInterval &interval);
-        void GetInterval(float startSec, float endSec);
         void Save();
+
+        WavInterval GetInterval(float startSec, float endSec);
+        void WriteInterval(WavInterval interval);
+
+        ~WavFile();
 
     private:
         enum class Mode
@@ -61,25 +63,11 @@ namespace wav_lib
 
         bool isChanged;
 
-        _detail::TWavHeader header;
+        TWavHeader header;
 
         void extractFileData();
         void saveHeader();
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
-    };
-
-    class WavInterval
-    {
-    public:
-        WavInterval(WavFileSPtr file, float startSec, float endSec);
-
-        void ChangeSpeed(float speed) { this->speed = speed; };
-
-    private:
-        WavFileSPtr wavFile;
-        float startSec;
-        float endSec;
-        float speed;
     };
 
     class WavReader

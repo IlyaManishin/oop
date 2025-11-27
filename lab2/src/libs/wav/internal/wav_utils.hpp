@@ -25,4 +25,7 @@ namespace wav_lib
     {
         return sampleRate * blockAlign;
     }
+
+    size_t sec_to_byte_pos(float posSec, uint32_t byteRate, uint32_t blockAlign);
+
 } // namespace wav_lib

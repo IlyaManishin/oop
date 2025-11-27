@@ -6,7 +6,10 @@
 
 namespace wav_lib
 {
-    const std::string &get_msg_with_path(const std::string &msg, const std::string &path);
+    inline const std::string get_msg_with_path(const std::string &msg, const std::string &path)
+    {
+        return std::string("WAV file error(") + path + std::string("): ") + msg;
+    }
 
     class WavException : public std::runtime_error
     {

@@ -9,10 +9,20 @@
 const int MAX_CHAIN_COUNT = 12;
 const int EMPTY_WAV_CHUNK_SIZE = 36;
 
-using namespace wav_lib::_detail;
-
 namespace wav_lib
 {
+    class WavInterval
+    {
+    public:
+        WavFile *wavFile;
+        size_t startPos;
+        size_t endPos;
+
+        WavInterval(WavFile *wavFile, size_t startPos, size_t endPos)
+            : wavFile(wavFile), startPos(startPos), endPos(endPos) {};
+        ~WavInterval() {};
+    };
+
     static InvalidWavFileExc get_wav_not_init_error(const std::string wavPath)
     {
         return InvalidWavFileExc("Wav file not init", wavPath);
@@ -156,6 +166,23 @@ namespace wav_lib
 
         this->saveHeader();
         this->isChanged = false;
+    }
+
+    TWavHeader WavFile::GetHeader()
+    {
+        return this->header;
+    }
+
+    WavInterval WavFile::GetInterval(float startSec, float endSec)
+    {
+        size_t start = sec_to_byte_pos(startSec, this->header.byteRate, this->header.blockAlign);
+        size_t end = sec_to_byte_pos(endSec, this->header.byteRate, this->header.blockAlign);
+        WavInterval interval(this, start, end);
+        return interval;
+    }
+
+    void WavFile::WriteInterval(WavInterval interval)
+    {
     }
 
     WavFile::~WavFile()
