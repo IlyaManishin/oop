@@ -5,7 +5,8 @@
 typedef enum TokenizerSettings
 {
     WHITESPACE_IN_TAB = 4,
-    MAX_IDENT_LENGTH = 128
+    MAX_IDENT_LENGTH = 128,
+    MAX_TOKEN_LENGTH = 1024
 } TokenizerSettings;
 
 typedef enum TokenizerStates

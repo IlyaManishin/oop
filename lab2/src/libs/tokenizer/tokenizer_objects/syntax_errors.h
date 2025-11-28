@@ -29,12 +29,6 @@ typedef struct TTokenizerError
     TErrorFilePos pos;
 } TTokenizerError;
 
-typedef struct TAstParserError
-{
-    char *textMsg;
-    TErrorFilePos pos;
-    //???
-} TAstParserError;
 
 typedef struct TCritError
 {

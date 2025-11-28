@@ -8,28 +8,6 @@ typedef enum TokenTypes
     NUMBER,
     STRING,
 
-    RETURN_KW,   // return
-    IF_KW,       // if
-    ELSE_KW,     // else
-    ELIF_KW,     // elif
-    FOR_KW,      // for
-    BREAK_KW,    // break
-    CONTINUE_KW, // continue
-    TRUE_KW,     // True
-    NONE_KW,     // None
-    FALSE_KW,    // False
-    AND_KW,      // and
-    OR_KW,       // or
-    NOT_KW,      // not
-
-    WHILE_KW, // while
-    IN_KW,    // in
-    PASS_KW,  // pass
-    DEF_KW,   // def
-    // CLASS_KW,  // class
-    IMPORT_KW, // import
-    FROM_KW,   // from
-    // AS_KW,     // as
 
     PLUS,           // +
     MINUS,          // -

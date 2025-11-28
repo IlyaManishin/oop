@@ -1,13 +1,59 @@
 #include <assert.h>
 #include <string.h>
 
-#include "token_buffer.h"
 #include "tokenizer.h"
 #include "tokenizer_api.h"
+#include "tokenizer_objects/token_buffer.h"
 
-TTokenizer *tokenizer_from_file_data(TFileData fileData)
+typedef struct TFileData
 {
-    assert(fileData.str != NULL);
+    char *str;
+    size_t dataSize;
+} TFileData;
+
+TFileData read_file_data(FILE *file)
+{
+    TFileData result;
+    if (file == NULL)
+    {
+        goto error;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long dataSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    if (dataSize <= 0)
+        goto error;
+
+    char *data = (char *)malloc(dataSize + 1);
+    if (data == NULL)
+    {
+        goto error;
+    }
+    fread(data, 1, dataSize, file);
+    fseek(file, 0, SEEK_SET);
+
+    result.str = data;
+    result.dataSize = dataSize;
+    return result;
+error:
+    result.str = NULL;
+    result.dataSize = 0;
+    return result;
+}
+
+size_t nsu_strnlen(const char *s, size_t maxlen)
+{
+    size_t i = 0;
+    while (i < maxlen && s[i] != '\0')
+        i++;
+    return i;
+}
+
+TTokenizer *tokenizer_from_file_data(FILE *file)
+{
+    assert(file != NULL);
+    TFileData fileData = read_file_data(file);
 
     TTokenBuffer *tokBuffer = get_token_buf();
     if (tokBuffer == NULL)
@@ -70,8 +116,8 @@ size_t token_strlen(TToken token)
 
 bool check_token_str(TToken token, const char *str)
 {
-    size_t strLength = nsu_strnlen(str, MAX_STRNLEN);
     size_t tokenLength = token_strlen(token);
+    size_t strLength = nsu_strnlen(str, tokenLength + 1);
     if (strLength != tokenLength)
         return false;
 
