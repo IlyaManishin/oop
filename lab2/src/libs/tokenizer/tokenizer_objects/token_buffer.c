@@ -1,9 +1,9 @@
+#include "token_buffer.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "token_buffer.h"
 
 typedef struct TTokenBuffer
 {

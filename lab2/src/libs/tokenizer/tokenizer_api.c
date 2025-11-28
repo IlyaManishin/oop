@@ -1,9 +1,10 @@
-#include <assert.h>
-#include <string.h>
-
 #include "tokenizer.h"
 #include "tokenizer_api.h"
 #include "tokenizer_objects/token_buffer.h"
+
+#include <assert.h>
+#include <string.h>
+
 
 typedef struct TFileData
 {
@@ -157,17 +158,6 @@ void flush_used_tokens(TTokenizer *tokenizer)
     pop_tokens_from_buf(tokenizer->tokensBuf, tokenizer->curBufPos);
     rewind_tokenizer_pos(tokenizer);
 }
-
-// TToken strong_token_read(TTokenizer *tokenizer)
-// {
-//     TToken token;
-//     if (pop_token_from_buf(tokenizer->tokensBuf, &token))
-//     {
-//         return token;
-//     }
-//     token = read_new_token(tokenizer);
-//     return token;
-// }
 
 int get_tokenizer_pos(TTokenizer *tokenizer)
 {

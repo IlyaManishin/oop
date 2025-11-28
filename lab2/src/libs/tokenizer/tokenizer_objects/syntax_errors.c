@@ -1,8 +1,8 @@
+#include "syntax_errors.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "syntax_errors.h"
 
 static void print_error_line(const char *errLine, const char *end)
 {

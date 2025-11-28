@@ -1,18 +1,18 @@
+#include "tokenizer.h"
+#include "token_buffer.h"
+#include "tokenizer_api.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "token_buffer.h"
-#include "tokenizer.h"
-#include "tokenizer_api.h"
 
 #define is_pass_symbol(ch) ((ch) == '\r' || (ch) == '\t' || (ch) == ' ')
 #define is_ident_or_kw_start_symbol(ch) (((ch) >= 'a' && (ch) <= 'z') || ((ch) >= 'A' && (ch) <= 'Z') || (ch) == '_')
 #define is_digit(ch) ((ch) >= '0' && (ch) <= '9')
 #define is_string_start_symbol(ch) (ch == '"' || ch == '\'' || ch == '`')
 
-static void set_pos_tokenizer_error(TTokenizer *tokenizer, const char *errStart, const char *textMsg, ParserErrorTypes type)
+static void set_pos_tokenizer_error(TTokenizer *tokenizer, const char *errStart, const char *textMsg, TokErrorTypes type)
 {
     tokenizer->tokError.textMsg = textMsg;
     tokenizer->tokError.withPos = true;
@@ -26,7 +26,7 @@ static void set_invalid_token_error(TTokenizer *tokenizer, const char *errStart,
     set_pos_tokenizer_error(tokenizer, errStart, textMsg, INVALID_TOKEN);
 }
 
-static void set_base_tokenizer_error(TTokenizer *tokenizer, char *textMsg, ParserErrorTypes type)
+static void set_base_tokenizer_error(TTokenizer *tokenizer, char *textMsg, TokErrorTypes type)
 {
     tokenizer->tokError.textMsg = textMsg;
     tokenizer->tokError.withPos = false;

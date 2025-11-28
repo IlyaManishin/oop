@@ -1,32 +1,32 @@
 #pragma once
 
+#include "tokenizer_objects/syntax_errors.h"
+#include "tokenizer_objects/token.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "tokenizer_objects/syntax_errors.h"
-#include "tokenizer_objects/token.h"
-
 #ifdef __cplusplus
-extern C
+extern "C"
 {
 #endif
 
     typedef struct TTokenizer TTokenizer;
 
-    TTokenizer *tokenizer_from_file_data(FILE * file);
-    void delete_tokenizer(TTokenizer * tokenizer);
+    TTokenizer *tokenizer_from_file_data(FILE *file);
+    void delete_tokenizer(TTokenizer *tokenizer);
 
-    bool is_tokenizer_error(TTokenizer * tokenizer);
-    TTokenizerError get_tokenizer_error(TTokenizer * tokenizer);
-    void pass_tokenizer_error(TTokenizer * tokenizer);
+    bool is_tokenizer_error(TTokenizer *tokenizer);
+    TTokenizerError get_tokenizer_error(TTokenizer *tokenizer);
+    void pass_tokenizer_error(TTokenizer *tokenizer);
 
-    TToken token_soft_read(TTokenizer * tokenizer);
-    void flush_used_tokens(TTokenizer * tokenizer);
+    TToken token_soft_read(TTokenizer *tokenizer);
+    void flush_used_tokens(TTokenizer *tokenizer);
 
-    int get_tokenizer_pos(TTokenizer * tokenizer);
-    void set_tokenizer_pos(TTokenizer * tokenizer, int pos);
-    int rewind_tokenizer_pos(TTokenizer * tokenizer);
+    int get_tokenizer_pos(TTokenizer *tokenizer);
+    void set_tokenizer_pos(TTokenizer *tokenizer, int pos);
+    int rewind_tokenizer_pos(TTokenizer *tokenizer);
 
     size_t token_length(TToken token);
     bool check_token_str(TToken token, const char *str);
