@@ -53,7 +53,7 @@ namespace executor
         {
             command = parser->parse(argc, argv);
         }
-        catch (const std::runtime_error e)
+        catch (const std::runtime_error& e)
         {
             std::cerr << e.what() << '\n';
             delete parser;

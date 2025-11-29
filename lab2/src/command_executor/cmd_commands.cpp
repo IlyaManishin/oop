@@ -1,8 +1,10 @@
-#include "executor.hpp"
+#include "cmd_parser/cmd_parser.hpp"
+#include "wav/wav.hpp"
+
 #include "base_commands/core_commands.hpp"
 #include "base_commands/file_commands.hpp"
-#include "cmd_parser/cmd_args.hpp"
-#include "wav/wav.hpp"
+#include "executor.hpp"
+#include "utils/utils.hpp"
 
 #include <iostream>
 #include <variant>
@@ -30,20 +32,6 @@ namespace executor
 
         std::cerr << "Invalid argument type at #" << i << "\n";
         return false;
-    }
-
-    static WavFile *read_wav_file(const WavReader &reader, const std::string &path) noexcept
-    {
-        try
-        {
-            WavFile *wavFile = reader.ReadWav(path);
-            return wavFile;
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << e.what() << "\n";
-            return nullptr;
-        }
     }
 
     bool cmd_run_from_config_file(const Args &args) noexcept
@@ -88,15 +76,14 @@ namespace executor
         }
 
         WavReader reader;
-        WavFile *outFile = read_wav_file(reader, outputPath);
+        WavFileSPtr outFile = try_read_wav(reader, outputPath);
         if (!outFile)
         {
             return false;
         }
-        WavFile *inFile = read_wav_file(reader, inputFile);
+        WavFileSPtr inFile = try_read_wav(reader, inputFile);
         if (!inFile)
         {
-            delete outFile;
             return false;
         }
 
@@ -120,9 +107,11 @@ namespace executor
             return false;
         }
         WavReader reader;
-        WavFile *wavFile = read_wav_file(reader, wavPath);
+        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
         if (!wavFile)
+        {
             return false;
+        }
 
         try
         {
@@ -151,9 +140,11 @@ namespace executor
         try
         {
             WavReader reader;
-            WavFile *wavFile = read_wav_file(reader, wavPath);
+            WavFileSPtr wavFile = try_read_wav(reader, wavPath);
             if (!wavFile)
+            {
                 return false;
+            }
 
             return cmd_mute_impl(wavFile, start, end);
         }
@@ -179,9 +170,11 @@ namespace executor
         }
 
         WavReader reader;
-        WavFile *wavFile = read_wav_file(reader, wavPath);
+        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
         if (!wavFile)
+        {
             return false;
+        }
 
         try
         {

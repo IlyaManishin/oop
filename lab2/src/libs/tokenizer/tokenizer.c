@@ -1,20 +1,18 @@
+#include "tokenizer.h"
+#include "token_buffer.h"
+#include "tokenizer_api.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "system_tools.h"
-
-#include "token_buffer.h"
-#include "tokenizer.h"
-#include "tokenizer_api.h"
 
 #define is_pass_symbol(ch) ((ch) == '\r' || (ch) == '\t' || (ch) == ' ')
 #define is_ident_or_kw_start_symbol(ch) (((ch) >= 'a' && (ch) <= 'z') || ((ch) >= 'A' && (ch) <= 'Z') || (ch) == '_')
 #define is_digit(ch) ((ch) >= '0' && (ch) <= '9')
 #define is_string_start_symbol(ch) (ch == '"' || ch == '\'' || ch == '`')
 
-static void set_pos_tokenizer_error(TTokenizer *tokenizer, const char *errStart, const char *textMsg, ParserErrorTypes type)
+static void set_pos_tokenizer_error(TTokenizer *tokenizer, const char *errStart, const char *textMsg, TokErrorTypes type)
 {
     tokenizer->tokError.textMsg = textMsg;
     tokenizer->tokError.withPos = true;
@@ -28,7 +26,7 @@ static void set_invalid_token_error(TTokenizer *tokenizer, const char *errStart,
     set_pos_tokenizer_error(tokenizer, errStart, textMsg, INVALID_TOKEN);
 }
 
-static void set_base_tokenizer_error(TTokenizer *tokenizer, char *textMsg, ParserErrorTypes type)
+static void set_base_tokenizer_error(TTokenizer *tokenizer, char *textMsg, TokErrorTypes type)
 {
     tokenizer->tokError.textMsg = textMsg;
     tokenizer->tokError.withPos = false;
@@ -120,7 +118,7 @@ static bool lookahead(TTokenizer *tokenizer, const char *check)
     }
     if (is_ident_or_kw_start_symbol(*cur))
         result = false;
-        
+
     cur--;
     // tgetc(tokenizer, &tok_ch);???
 
@@ -205,94 +203,6 @@ static bool try_to_tgets(TTokenizer *tokenizer, const char *s)
         isValid = true;
     }
     return isValid;
-}
-static TToken read_keyword_token(TTokenizer *tokenizer)
-{
-    char first;
-    tgetc(tokenizer, &first);
-
-    TokenTypes type = ERROR_TOKEN;
-
-    switch (first)
-    {
-    case 'r':
-        if (try_to_tgets(tokenizer, "eturn"))
-            type = RETURN_KW;
-        break;
-    case 'i':
-        if (try_to_tgets(tokenizer, "f"))
-            type = IF_KW;
-        else if (try_to_tgets(tokenizer, "mport"))
-            type = IMPORT_KW;
-        else if (try_to_tgets(tokenizer, "n"))
-            type = IN_KW;
-        break;
-    case 'd':
-        if (try_to_tgets(tokenizer, "ef"))
-            type = DEF_KW;
-        break;
-    case 'e':
-        if (try_to_tgets(tokenizer, "lse"))
-            type = ELSE_KW;
-        else if (try_to_tgets(tokenizer, "lif"))
-            type = ELIF_KW;
-        break;
-    case 'f':
-        if (try_to_tgets(tokenizer, "or"))
-            type = FOR_KW;
-        else if (try_to_tgets(tokenizer, "rom"))
-            type = FROM_KW;
-        break;
-    case 'b':
-        if (try_to_tgets(tokenizer, "reak"))
-            type = BREAK_KW;
-        break;
-    case 'c':
-        if (try_to_tgets(tokenizer, "ontinue"))
-            type = CONTINUE_KW;
-        break;
-    case 'a':
-        if (try_to_tgets(tokenizer, "nd"))
-            type = AND_KW;
-        break;
-    case 'o':
-        if (try_to_tgets(tokenizer, "r"))
-            type = OR_KW;
-        break;
-    case 'n':
-        if (try_to_tgets(tokenizer, "ot"))
-            type = NOT_KW;
-        break;
-    case 'w':
-        if (try_to_tgets(tokenizer, "hile"))
-            type = WHILE_KW;
-        break;
-    case 'p':
-        if (try_to_tgets(tokenizer, "ass"))
-            type = PASS_KW;
-        break;
-    case 'T':
-        if (try_to_tgets(tokenizer, "rue"))
-            type = TRUE_KW;
-        break;
-    case 'F':
-        if (try_to_tgets(tokenizer, "alse"))
-            type = FALSE_KW;
-        break;
-    case 'N':
-        if (try_to_tgets(tokenizer, "one"))
-            type = NONE_KW;
-        break;
-    }
-
-    if (type == ERROR_TOKEN)
-    {
-        tbackc(tokenizer, first);
-        return make_error_token(tokenizer);
-    }
-
-    TToken result = make_token(tokenizer, type);
-    return result;
 }
 
 static TToken _read_one_char_operation_token(TTokenizer *tokenizer, char ch)
@@ -626,11 +536,6 @@ EOF_state_set:
 
     if (is_ident_or_kw_start_symbol(ch))
     {
-        TToken keywordToken = read_keyword_token(tokenizer);
-        if (keywordToken.type != ERROR_TOKEN)
-        {
-            return keywordToken;
-        }
         TToken identToken = read_ident_token(tokenizer);
         return identToken;
     }
