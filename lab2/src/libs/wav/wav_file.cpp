@@ -1,10 +1,12 @@
 #include "internal/wav_utils.hpp"
+#include "internal/samples.hpp"
 #include "wav.hpp"
 
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 const int MAX_CHAIN_COUNT = 12;
 const int EMPTY_WAV_CHUNK_SIZE = 36;
@@ -16,10 +18,10 @@ namespace wav_lib
     public:
         WavFile *wavFile;
         size_t startPos;
-        size_t endPos;
+        size_t samplesCount;
 
-        WavInterval(WavFile *wavFile, size_t startPos, size_t endPos)
-            : wavFile(wavFile), startPos(startPos), endPos(endPos) {};
+        WavInterval(WavFile *wavFile, size_t startPos, size_t samplesCount)
+            : wavFile(wavFile), startPos(startPos), samplesCount(samplesCount) {};
         ~WavInterval() {};
     };
 
@@ -73,7 +75,7 @@ namespace wav_lib
         if (std::strncmp(subchunk1Id, "fmt ", 4) != 0)
             throw InvalidWavFileExc("Invalid subchunk1Id identifier", this->path);
 
-        uint32_t subchunk1Size = read_uint32(this->file);
+        read_uint32(this->file); // subchunk1Size
 
         this->header.audioFormat = read_uint16(this->file);
         this->header.numChannels = read_uint16(this->file);
@@ -150,7 +152,7 @@ namespace wav_lib
         write_uint16(this->file, this->header.numChannels);
         write_uint32(this->file, this->header.sampleRate);
         write_uint32(this->file, this->header.byteRate);
-        write_uint16(this->file, this->header.blockAlign); //???
+        write_uint16(this->file, this->header.blockAlign);
         write_uint16(this->file, this->header.bitsPerSample);
 
         this->file.write("data", 4);
@@ -175,14 +177,26 @@ namespace wav_lib
 
     WavInterval WavFile::GetInterval(float startSec, float endSec)
     {
-        size_t start = sec_to_byte_pos(startSec, this->header.byteRate, this->header.blockAlign);
-        size_t end = sec_to_byte_pos(endSec, this->header.byteRate, this->header.blockAlign);
-        WavInterval interval(this, start, end);
+        if (startSec < 0 || endSec < 0 || startSec > endSec)
+        {
+            throw WavException(get_invalid_interval_msg(startSec, endSec), this->path);
+        }
+
+        size_t dataStart = static_cast<size_t>(this->dataStart);
+        size_t dataEnd = static_cast<size_t>(this->dataEnd);
+
+        size_t start = dataStart + sec_to_byte_pos(startSec, this->header.byteRate, this->header.blockAlign);
+        size_t end = dataStart + sec_to_byte_pos(endSec, this->header.byteRate, this->header.blockAlign);
+        if (end > dataEnd)
+            end = dataEnd;
+
+        WavInterval interval(this, start, (end - start) / this->header.blockAlign);
         return interval;
     }
 
     void WavFile::WriteInterval(WavInterval interval)
     {
+        
     }
 
     WavFile::~WavFile()

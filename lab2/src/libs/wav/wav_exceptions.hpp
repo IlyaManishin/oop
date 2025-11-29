@@ -11,6 +11,12 @@ namespace wav_lib
         return std::string("WAV file error(") + path + std::string("): ") + msg;
     }
 
+    inline const std::string get_invalid_interval_msg(float start, float end)
+    {
+        std::string interval = std::to_string(start) + "," + std::to_string(end);
+        return std::string("Invalid wav interval: (") + interval + std::string(")");
+    }
+
     class WavException : public std::runtime_error
     {
     public:

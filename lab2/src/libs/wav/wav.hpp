@@ -16,14 +16,14 @@ namespace wav_lib
         uint16_t numChannels;
         uint32_t sampleRate;
         uint32_t byteRate;
-        uint16_t blockAlign;
+        uint16_t blockAlign; // all channels block size
         uint16_t bitsPerSample;
         uint32_t subchunk2Size;
     } TWavHeader;
 
-    class WavFile;
     class WavInterval;
-
+    class WavFile;
+    class WavSample;
     using WavFileSPtr = std::shared_ptr<WavFile>;
 
     class WavFile
@@ -39,7 +39,6 @@ namespace wav_lib
         TWavHeader GetHeader();
 
         void PlayWav();
-        void WriteInterval(const WavInterval &interval);
         void Save();
 
         WavInterval GetInterval(float startSec, float endSec);
@@ -68,6 +67,15 @@ namespace wav_lib
         void extractFileData();
         void saveHeader();
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
+
+        // size_t getReadPos();
+        // size_t getWritePos();
+        
+        // void setReadPos(size_t byteOffset);
+        // void setWritePos(size_t byteOffset);
+
+        // void rewindFilePos() { this->file.seekg(this->dataStart); };
+        // void rewindFilePos() { this->file.seekp(this->dataStart); };
     };
 
     class WavReader
