@@ -1,9 +1,11 @@
 #pragma once
 
 #include "../wav.hpp"
+#include "wav_exceptions.hpp"
 
 #include <cinttypes>
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace wav_lib
@@ -14,16 +16,18 @@ namespace wav_lib
     class Sample
     {
     public:
+        bool isEOF = false;
         std::vector<byteVector> channelsData;
-        uint32_t chDataSize;
 
-        Sample(std::vector<byteVector> channelsData, uint32_t chDataSize)
-            : channelsData(channelsData), chDataSize(chDataSize) {};
+        Sample() {};
+        Sample(std::vector<byteVector> channelsData)
+            : channelsData(channelsData) {};
     };
 
-    struct SampleReaderConfig
+    struct SReaderConfig
     {
-        std::fstream *srcFile;
+        std::string &path;
+        std::fstream &srcFile;
         size_t startPos;
         size_t samplesCount;
         size_t channelsCount;
@@ -33,19 +37,28 @@ namespace wav_lib
     class SampleReader
     {
     private:
+        std::string &path;
         std::fstream &srcFile;
         size_t startPos;
         size_t samplesCount;
         size_t channelsCount;
-        size_t bitsPerSample;
+        size_t bytesPerChannel;
+
+        size_t curSampleCount = 0;
 
     public:
-        SampleReader(const SampleReaderConfig &cfg)
-            : srcFile(*cfg.srcFile),
+        SampleReader(const SReaderConfig &cfg)
+            : path(cfg.path),
+              srcFile(cfg.srcFile),
               startPos(cfg.startPos),
               samplesCount(cfg.samplesCount),
               channelsCount(cfg.channelsCount),
-              bitsPerSample(cfg.bitsPerSample) {};
+              bytesPerChannel(cfg.bitsPerSample / 8)
+        {
+            srcFile.seekg(static_cast<std::streamoff>(startPos), std::ios::beg);
+        };
+
+        Sample ReadSample();
     };
 
 } // namespace wav_lib

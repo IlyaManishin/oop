@@ -1,5 +1,5 @@
 #include "wav_utils.hpp"
-#include "../wav_exceptions.hpp"
+#include "wav_exceptions.hpp"
 
 #include <cinttypes>
 #include <fstream>
@@ -43,7 +43,7 @@ namespace wav_lib
 
     size_t sec_to_byte_pos(float posSec, uint32_t byteRate, uint32_t blockAlign)
     {
-        size_t rawPos =  (size_t)(byteRate * posSec) ;
+        size_t rawPos = (size_t)(byteRate * posSec);
         size_t bytePos = rawPos - (rawPos % blockAlign);
         return bytePos;
     }

@@ -1,5 +1,5 @@
-#include "internal/wav_utils.hpp"
 #include "internal/samples.hpp"
+#include "internal/wav_utils.hpp"
 #include "wav.hpp"
 
 #include <cstring>
@@ -25,27 +25,27 @@ namespace wav_lib
         ~WavInterval() {};
     };
 
-    static InvalidWavFileExc get_wav_not_init_error(const std::string wavPath)
-    {
-        return InvalidWavFileExc("Wav file not init", wavPath);
-    }
+    // static InvalidWavFileExc get_wav_not_init_error(const std::string wavPath)
+    // {
+    //     return InvalidWavFileExc("Wav file not init", wavPath);
+    // }
 
     WavFileSPtr WavFile::Open(const std::string &path)
     {
-        WavFileSPtr file(new WavFile(path, Mode::OpenExisting));
+        WavFileSPtr file(new WavFile(path));
         file->extractFileData();
         return file;
     }
 
     WavFileSPtr WavFile::Create(const std::string &path, uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample)
     {
-        WavFileSPtr file(new WavFile(path, Mode::CreateNew));
+        WavFileSPtr file(new WavFile(path));
         file->initNewHeader(channels, sampleRate, bitsPerSample);
         file->Save();
         return file;
     }
 
-    WavFile::WavFile(const std::string &wavPath, Mode mode)
+    WavFile::WavFile(const std::string &wavPath)
         : file(wavPath, std::ios::in | std::ios::out | std::ios::binary)
     {
         this->path = wavPath;
@@ -179,7 +179,7 @@ namespace wav_lib
     {
         if (startSec < 0 || endSec < 0 || startSec > endSec)
         {
-            throw WavException(get_invalid_interval_msg(startSec, endSec), this->path);
+            throw OperationExc(get_invalid_interval_msg(startSec, endSec));
         }
 
         size_t dataStart = static_cast<size_t>(this->dataStart);
@@ -196,6 +196,16 @@ namespace wav_lib
 
     void WavFile::WriteInterval(WavInterval interval)
     {
+        SReaderConfig sconfig{
+            .path = this->path,
+            .srcFile = this->file,
+            .startPos = interval.startPos,
+            .samplesCount = interval.samplesCount,
+            .channelsCount = this->header.numChannels,
+            .bitsPerSample = this->header.bitsPerSample,
+        };
+
+        SampleReader reader(sconfig);
         
     }
 
