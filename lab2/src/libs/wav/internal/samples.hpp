@@ -16,22 +16,26 @@ namespace wav_lib
     class Sample
     {
     public:
-        bool isEOF = false;
+        bool isError = true;
+
         std::vector<byteVector> channelsData;
 
         Sample() {};
+        Sample(uint32_t channels, uint32_t bitsPerSample); // empty
         Sample(std::vector<byteVector> channelsData)
             : channelsData(channelsData) {};
+
+        bool IsError() { return this->isError; };
     };
 
     struct SReaderConfig
     {
         std::string &path;
         std::fstream &srcFile;
-        size_t startPos;
-        size_t samplesCount;
-        size_t channelsCount;
-        size_t bitsPerSample;
+        uint32_t startPos;
+        uint32_t samplesCount;
+        uint32_t channelsCount;
+        uint32_t bitsPerSample;
     };
 
     class SampleReader
@@ -39,12 +43,12 @@ namespace wav_lib
     private:
         std::string &path;
         std::fstream &srcFile;
-        size_t startPos;
-        size_t samplesCount;
-        size_t channelsCount;
-        size_t bytesPerChannel;
+        uint32_t startPos;
+        uint32_t samplesCount;
+        uint32_t channelsCount;
+        uint32_t bytesPerChannel;
 
-        size_t curSampleCount = 0;
+        uint32_t curSampleCount = 0;
 
     public:
         SampleReader(const SReaderConfig &cfg)
@@ -58,7 +62,7 @@ namespace wav_lib
             srcFile.seekg(static_cast<std::streamoff>(startPos), std::ios::beg);
         };
 
-        Sample ReadSample();
+        bool ReadSample(Sample &dest);
     };
 
 } // namespace wav_lib

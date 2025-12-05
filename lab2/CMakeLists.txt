@@ -8,6 +8,7 @@ project(wav_lib)
 
 find_package(GTest REQUIRED)
 include(GoogleTest)
+enable_testing()
 
 include_directories(src/libs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -16,5 +17,3 @@ add_compile_options(-Wall -g)
 
 add_subdirectory(src)
 add_subdirectory(tests)
-
-enable_testing()

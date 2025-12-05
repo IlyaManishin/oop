@@ -1,4 +1,5 @@
 #include "wav_utils.hpp"
+#include "config.hpp"
 #include "wav_exceptions.hpp"
 
 #include <cinttypes>
@@ -41,11 +42,42 @@ namespace wav_lib
         return (uint32_t)size;
     }
 
-    size_t sec_to_byte_pos(float posSec, uint32_t byteRate, uint32_t blockAlign)
+    uint32_t sec_to_byte_pos(float posSec, uint32_t byteRate, uint32_t blockAlign)
     {
-        size_t rawPos = (size_t)(byteRate * posSec);
-        size_t bytePos = rawPos - (rawPos % blockAlign);
+        size_t rawPos = byteRate * posSec;
+        if (rawPos >= config::MAX_WAV_DATA_SIZE)
+        {
+            return config::MAX_WAV_DATA_SIZE;
+        }
+        uint32_t bytePos = rawPos - (rawPos % blockAlign);
         return bytePos;
+    }
+
+    bool set_write_pos(std::fstream& file, std::streampos pos)
+    {
+        if (!file.is_open())
+            return false;
+
+        file.seekp(pos);
+        return !file.fail();
+    }
+
+    bool set_write_pos_off(std::fstream& file, std::streampos dataStart, uint32_t byteOffset)
+    {
+        if (!file.is_open())
+            return false;
+
+        file.seekp(dataStart + std::streamoff(byteOffset));
+        return !file.fail();
+    }
+
+    bool set_read_pos_off(std::fstream& file, std::streampos dataStart, uint32_t byteOffset)
+    {
+        if (!file.is_open())
+            return false;
+
+        file.seekg(dataStart + std::streamoff(byteOffset));
+        return !file.fail();
     }
 
 } // namespace wav_lib

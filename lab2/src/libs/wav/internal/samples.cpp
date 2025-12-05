@@ -3,18 +3,21 @@
 
 namespace wav_lib
 {
-    static Sample get_oef_sample()
+
+    Sample::Sample(uint32_t channels, uint32_t bitsPerSample)
     {
-        Sample sample;
-        sample.isEOF = true;
-        return sample;
+        this->channelsData.resize(channels);
+        uint32_t bytesPerSample = bitsPerSample / 8;
+        for (auto &ch : this->channelsData)
+            ch.resize(bytesPerSample, 0);
     }
-    
-    Sample SampleReader::ReadSample()
+
+    bool SampleReader::ReadSample(Sample &dest)
     {
         if (this->curSampleCount == this->samplesCount)
         {
-            return get_oef_sample();
+            dest.channelsData.empty();
+            return false;
         }
         std::vector<byteVector> data(this->channelsCount, byteVector(this->bytesPerChannel));
         for (size_t i = 0; i < this->channelsCount; i++)
@@ -22,12 +25,15 @@ namespace wav_lib
             byte *channelData = data[i].data();
             this->srcFile.read(channelData, this->bytesPerChannel);
             if (this->srcFile.bad())
-                throw InvalidWavFileExc(this->path);
+            {
+                dest.isError = true;
+                return false;
+            }
         }
-        Sample res(data);
+        dest.channelsData = data;
 
         this->curSampleCount++;
-        return res;
+        return true;
     }
 
 } // namespace wav_lib

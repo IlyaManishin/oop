@@ -26,6 +26,10 @@ namespace wav_lib
         return sampleRate * blockAlign;
     }
 
-    size_t sec_to_byte_pos(float posSec, uint32_t byteRate, uint32_t blockAlign);
+    bool set_write_pos(std::fstream& file, std::streampos pos);
+    bool set_write_pos_off(std::fstream& file, std::streampos dataStart, uint32_t byteOffset);
+    bool set_read_pos_off(std::fstream& file, std::streampos dataStart, uint32_t byteOffset);
+
+    uint32_t sec_to_byte_pos(float posSec, uint32_t byteRate, uint32_t blockAlign);
 
 } // namespace wav_lib
