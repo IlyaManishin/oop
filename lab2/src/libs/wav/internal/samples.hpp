@@ -1,9 +1,11 @@
 #pragma once
 
 #include "../wav.hpp"
+#include "wav_exceptions.hpp"
 
 #include <cinttypes>
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace wav_lib
@@ -14,38 +16,53 @@ namespace wav_lib
     class Sample
     {
     public:
-        std::vector<byteVector> channelsData;
-        uint32_t chDataSize;
+        bool isError = true;
 
-        Sample(std::vector<byteVector> channelsData, uint32_t chDataSize)
-            : channelsData(channelsData), chDataSize(chDataSize) {};
+        std::vector<byteVector> channelsData;
+
+        Sample() {};
+        Sample(uint32_t channels, uint32_t bitsPerSample); // empty
+        Sample(std::vector<byteVector> channelsData)
+            : channelsData(channelsData) {};
+
+        bool IsError() { return this->isError; };
     };
 
-    struct SampleReaderConfig
+    struct SReaderConfig
     {
-        std::fstream *srcFile;
-        size_t startPos;
-        size_t samplesCount;
-        size_t channelsCount;
-        size_t bitsPerSample;
+        std::string &path;
+        std::fstream &srcFile;
+        uint32_t startPos;
+        uint32_t samplesCount;
+        uint32_t channelsCount;
+        uint32_t bitsPerSample;
     };
 
     class SampleReader
     {
     private:
+        std::string &path;
         std::fstream &srcFile;
-        size_t startPos;
-        size_t samplesCount;
-        size_t channelsCount;
-        size_t bitsPerSample;
+        uint32_t startPos;
+        uint32_t samplesCount;
+        uint32_t channelsCount;
+        uint32_t bytesPerChannel;
+
+        uint32_t curSampleCount = 0;
 
     public:
-        SampleReader(const SampleReaderConfig &cfg)
-            : srcFile(*cfg.srcFile),
+        SampleReader(const SReaderConfig &cfg)
+            : path(cfg.path),
+              srcFile(cfg.srcFile),
               startPos(cfg.startPos),
               samplesCount(cfg.samplesCount),
               channelsCount(cfg.channelsCount),
-              bitsPerSample(cfg.bitsPerSample) {};
+              bytesPerChannel(cfg.bitsPerSample / 8)
+        {
+            srcFile.seekg(static_cast<std::streamoff>(startPos), std::ios::beg);
+        };
+
+        bool ReadSample(Sample &dest);
     };
 
 } // namespace wav_lib

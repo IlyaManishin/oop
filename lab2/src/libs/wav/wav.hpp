@@ -1,6 +1,6 @@
 #pragma once
 
-#include "wav_exceptions.hpp"
+#include "internal/wav_exceptions.hpp"
 
 #include <cstdint>
 #include <fstream>
@@ -16,14 +16,14 @@ namespace wav_lib
         uint16_t numChannels;
         uint32_t sampleRate;
         uint32_t byteRate;
-        uint16_t blockAlign; // all channels block size
-        uint16_t bitsPerSample;
+        uint16_t blockAlign;    // all channels block size
+        uint16_t bitsPerSample; // per one channel
         uint32_t subchunk2Size;
     } TWavHeader;
 
     class WavInterval;
     class WavFile;
-    class WavSample;
+    class Sample;
     using WavFileSPtr = std::shared_ptr<WavFile>;
 
     class WavFile
@@ -42,17 +42,12 @@ namespace wav_lib
         void Save();
 
         WavInterval GetInterval(float startSec, float endSec);
-        void WriteInterval(WavInterval interval);
+        void WriteInterval(WavInterval interval, float destPos);
 
         ~WavFile();
 
     private:
-        enum class Mode
-        {
-            OpenExisting,
-            CreateNew
-        };
-        WavFile(const std::string &wavPath, Mode mode);
+        WavFile(const std::string &wavPath);
 
         std::string path;
         std::fstream file;
@@ -67,10 +62,12 @@ namespace wav_lib
         void extractFileData();
         void saveHeader();
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
+        void updateSubchunkSize();
 
+        void writeSample(Sample& sample);
         // size_t getReadPos();
         // size_t getWritePos();
-        
+
         // void setReadPos(size_t byteOffset);
         // void setWritePos(size_t byteOffset);
 
