@@ -24,7 +24,9 @@ namespace wav_lib
     class WavInterval;
     class WavFile;
     class Sample;
+
     using WavFileSPtr = std::shared_ptr<WavFile>;
+    using WavIntervalSPtr = std::shared_ptr<WavInterval>;
 
     class WavFile
     {
@@ -41,8 +43,8 @@ namespace wav_lib
         void PlayWav();
         void Save();
 
-        WavInterval GetInterval(float startSec, float endSec);
-        void WriteInterval(WavInterval interval, float destPos);
+        WavIntervalSPtr GetInterval(float startSec, float endSec);
+        void WriteInterval(WavIntervalSPtr interval, float destPos);
 
         ~WavFile();
 

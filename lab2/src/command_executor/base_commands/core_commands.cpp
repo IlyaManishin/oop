@@ -19,17 +19,27 @@ namespace executor
         return true;
     }
 
-    bool cmd_mix_impl(WavFileSPtr outFile, float outStart, float outEnd,
+    bool cmd_mix_impl(WavFileSPtr outFile, float outStart,
                       WavFileSPtr inFile, float inStart, float inEnd)
     {
-        std::cout << "Mixed successfully\n";
+        try
+        {
+            auto interval = inFile->GetInterval(inStart, inEnd);
+            outFile->WriteInterval(interval, outStart);
+        }
+        catch (OperationExc &err)
+        {
+            std::cerr << err.what();
+            return false;
+        }
+
         return true;
     }
 
-        bool cmd_change_speed_impl(WavFileSPtr wavFile, float start, float end, float speed)
+    bool cmd_change_speed_impl(WavFileSPtr wavFile, float start, float end, float speed)
     {
         std::cout << "Speed changed successfully (stub)\n";
         return true;
     }
-    
+
 } // namespace executor
