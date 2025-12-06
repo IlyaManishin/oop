@@ -26,26 +26,30 @@ namespace wav_lib
         ~WavInterval() {};
     };
 
-    WavFile::WavFile(const std::string &wavPath)
-        : file(wavPath, std::ios::in | std::ios::out | std::ios::binary)
+    WavFile::WavFile(const std::string &wavPath, bool createNew)
     {
         this->path = wavPath;
         this->isChanged = false;
 
+        auto mode = std::ios::in | std::ios::out | std::ios::binary;
+        if (createNew)
+            mode = mode | std::ios::trunc;
+            
+        this->file.open(wavPath, mode);
         if (!this->file.is_open())
             throw InvalidWavFileExc("Cannot open file", this->path);
     }
 
     WavFileSPtr WavFile::Open(const std::string &path)
     {
-        WavFileSPtr file(new WavFile(path));
+        WavFileSPtr file(new WavFile(path, false));
         file->extractFileData();
         return file;
     }
 
     WavFileSPtr WavFile::Create(const std::string &path, uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample)
     {
-        WavFileSPtr file(new WavFile(path));
+        WavFileSPtr file(new WavFile(path, true));
         file->initNewHeader(channels, sampleRate, bitsPerSample);
         file->Save();
         return file;
@@ -171,11 +175,6 @@ namespace wav_lib
         this->isChanged = false;
     }
 
-    TWavHeader WavFile::GetHeader()
-    {
-        return this->header;
-    }
-
     WavIntervalSPtr WavFile::GetInterval(float startSec, float endSec)
     {
         if (startSec < 0 || endSec < 0 || startSec > endSec)
@@ -244,7 +243,7 @@ namespace wav_lib
         {
             throw InvalidWavFileExc(readingWav->path, "Can't read interval from wav file");
         }
-        this->dataEnd = this->file.tellp();
+        this->dataEnd = std::max(this->dataEnd, this->file.tellp());
         this->updateSubchunkSize();
     }
 

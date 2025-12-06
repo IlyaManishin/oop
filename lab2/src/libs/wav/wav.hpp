@@ -38,7 +38,7 @@ namespace wav_lib
                                   uint16_t bitsPerSample);
 
         void PrintInfo();
-        TWavHeader GetHeader();
+        TWavHeader GetHeader() { return this->header; };
 
         void PlayWav();
         void Save();
@@ -49,7 +49,7 @@ namespace wav_lib
         ~WavFile();
 
     private:
-        WavFile(const std::string &wavPath);
+        WavFile(const std::string &wavPath, bool createNew);
 
         std::string path;
         std::fstream file;
@@ -66,7 +66,7 @@ namespace wav_lib
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
         void updateSubchunkSize();
 
-        void writeSample(Sample& sample);
+        void writeSample(Sample &sample);
         // size_t getReadPos();
         // size_t getWritePos();
 

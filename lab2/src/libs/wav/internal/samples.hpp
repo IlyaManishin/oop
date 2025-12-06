@@ -16,7 +16,7 @@ namespace wav_lib
     class Sample
     {
     public:
-        bool isError = true;
+        bool isError = false;
 
         std::vector<byteVector> channelsData;
 
