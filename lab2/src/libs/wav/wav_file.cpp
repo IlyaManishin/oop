@@ -26,11 +26,6 @@ namespace wav_lib
         ~WavInterval() {};
     };
 
-    // static InvalidWavFileExc get_wav_not_init_error(const std::string wavPath)
-    // {
-    //     return InvalidWavFileExc("Wav file not init", wavPath);
-    // }
-
     WavFile::WavFile(const std::string &wavPath)
         : file(wavPath, std::ios::in | std::ios::out | std::ios::binary)
     {

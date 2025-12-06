@@ -20,7 +20,7 @@ namespace wav_lib
         {
             if (path == "")
                 return msg;
-            return std::string("WAV file error(") + path + std::string("): ") + msg;
+            return std::string("WAV file error (") + path + std::string("): ") + msg;
         }
 
     public:

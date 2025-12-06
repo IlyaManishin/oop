@@ -14,7 +14,7 @@ namespace executor
             WavFileSPtr wavFile = reader.ReadWav(path);
             return wavFile;
         }
-        catch (const std::exception &e)
+        catch (const WavException &e)
         {
             std::cerr << e.what() << "\n";
             return nullptr;
