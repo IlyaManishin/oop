@@ -24,7 +24,9 @@ namespace wav_lib
     class WavInterval;
     class WavFile;
     class Sample;
+
     using WavFileSPtr = std::shared_ptr<WavFile>;
+    using WavIntervalSPtr = std::shared_ptr<WavInterval>;
 
     class WavFile
     {
@@ -36,18 +38,18 @@ namespace wav_lib
                                   uint16_t bitsPerSample);
 
         void PrintInfo();
-        TWavHeader GetHeader();
+        TWavHeader GetHeader() { return this->header; };
 
         void PlayWav();
         void Save();
 
-        WavInterval GetInterval(float startSec, float endSec);
-        void WriteInterval(WavInterval interval, float destPos);
+        WavIntervalSPtr GetInterval(float startSec, float endSec);
+        void WriteInterval(WavIntervalSPtr interval, float destPos);
 
         ~WavFile();
 
     private:
-        WavFile(const std::string &wavPath);
+        WavFile(const std::string &wavPath, bool createNew);
 
         std::string path;
         std::fstream file;
@@ -64,7 +66,7 @@ namespace wav_lib
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
         void updateSubchunkSize();
 
-        void writeSample(Sample& sample);
+        void writeSample(Sample &sample);
         // size_t getReadPos();
         // size_t getWritePos();
 

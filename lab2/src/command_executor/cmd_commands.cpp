@@ -62,16 +62,15 @@ namespace executor
     bool cmd_mix(const Args &args) noexcept
     {
         std::string outputPath, inputFile;
-        float outStart = 0, outEnd = 0, inStart = 0, inEnd = 0;
+        float outStart = 0, inStart = 0, inEnd = 0;
 
         if (!get_arg(args, 0, outputPath) ||
             !get_arg(args, 1, outStart) ||
-            !get_arg(args, 2, outEnd) ||
-            !get_arg(args, 3, inputFile) ||
-            !get_arg(args, 4, inStart) ||
-            !get_arg(args, 5, inEnd))
+            !get_arg(args, 2, inputFile) ||
+            !get_arg(args, 3, inStart) ||
+            !get_arg(args, 4, inEnd))
         {
-            std::cerr << "Usage: mix <output> <outStart> <outEnd> <input> <inStart> <inEnd>\n";
+            std::cerr << "Usage: mix <output> <outStart> <input> <inStart> <inEnd>\n";
             return false;
         }
 
@@ -89,7 +88,7 @@ namespace executor
 
         try
         {
-            return cmd_mix_impl(outFile, outStart, outEnd, inFile, inStart, inEnd);
+            return cmd_mix_impl(outFile, outStart, inFile, inStart, inEnd);
         }
         catch (const std::exception &e)
         {

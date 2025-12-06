@@ -26,31 +26,30 @@ namespace wav_lib
         ~WavInterval() {};
     };
 
-    // static InvalidWavFileExc get_wav_not_init_error(const std::string wavPath)
-    // {
-    //     return InvalidWavFileExc("Wav file not init", wavPath);
-    // }
-
-    WavFile::WavFile(const std::string &wavPath)
-        : file(wavPath, std::ios::in | std::ios::out | std::ios::binary)
+    WavFile::WavFile(const std::string &wavPath, bool createNew)
     {
         this->path = wavPath;
         this->isChanged = false;
 
+        auto mode = std::ios::in | std::ios::out | std::ios::binary;
+        if (createNew)
+            mode = mode | std::ios::trunc;
+            
+        this->file.open(wavPath, mode);
         if (!this->file.is_open())
             throw InvalidWavFileExc("Cannot open file", this->path);
     }
 
     WavFileSPtr WavFile::Open(const std::string &path)
     {
-        WavFileSPtr file(new WavFile(path));
+        WavFileSPtr file(new WavFile(path, false));
         file->extractFileData();
         return file;
     }
 
     WavFileSPtr WavFile::Create(const std::string &path, uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample)
     {
-        WavFileSPtr file(new WavFile(path));
+        WavFileSPtr file(new WavFile(path, true));
         file->initNewHeader(channels, sampleRate, bitsPerSample);
         file->Save();
         return file;
@@ -176,12 +175,7 @@ namespace wav_lib
         this->isChanged = false;
     }
 
-    TWavHeader WavFile::GetHeader()
-    {
-        return this->header;
-    }
-
-    WavInterval WavFile::GetInterval(float startSec, float endSec)
+    WavIntervalSPtr WavFile::GetInterval(float startSec, float endSec)
     {
         if (startSec < 0 || endSec < 0 || startSec > endSec)
         {
@@ -195,24 +189,24 @@ namespace wav_lib
         uint32_t end = dataStart + sec_to_byte_pos(endSec, this->header.byteRate, this->header.blockAlign);
         if (end > dataEnd)
             end = dataEnd;
-
-        WavInterval interval(this, start, (end - start) / this->header.blockAlign);
+        uint32_t samplesCount = (end - start) / this->header.blockAlign;
+        WavIntervalSPtr interval = std::make_shared<WavInterval>(this, start, samplesCount);
         return interval;
     }
 
-    void WavFile::WriteInterval(WavInterval interval, float destPos)
+    void WavFile::WriteInterval(WavIntervalSPtr interval, float destPos)
     {
-        if (this == interval.wavFile)
+        if (this == interval->wavFile)
         {
             throw OperationExc("Can't write interval to current file");
         }
 
-        WavFile *readingWav = interval.wavFile;
+        WavFile *readingWav = interval->wavFile;
         SReaderConfig sconfig{
             .path = readingWav->path,
             .srcFile = readingWav->file,
-            .startPos = interval.startPos,
-            .samplesCount = interval.samplesCount,
+            .startPos = interval->startPos,
+            .samplesCount = interval->samplesCount,
             .channelsCount = readingWav->header.numChannels,
             .bitsPerSample = readingWav->header.bitsPerSample,
         };
@@ -230,11 +224,15 @@ namespace wav_lib
             set_write_pos(this->file, this->dataEnd);
             uint32_t addSamplesCount = (bytePos - this->header.subchunk2Size) / this->header.blockAlign;
 
+            Sample empty;
             for (uint32_t i = 0; i < addSamplesCount; i++)
             {
-                Sample empty;
                 this->writeSample(empty);
             }
+        }
+        else
+        {
+            set_write_pos_off(this->file, this->dataStart, bytePos);
         }
         Sample sample;
         while (reader.ReadSample(sample))
@@ -245,7 +243,7 @@ namespace wav_lib
         {
             throw InvalidWavFileExc(readingWav->path, "Can't read interval from wav file");
         }
-        this->dataEnd = this->file.tellp();
+        this->dataEnd = std::max(this->dataEnd, this->file.tellp());
         this->updateSubchunkSize();
     }
 

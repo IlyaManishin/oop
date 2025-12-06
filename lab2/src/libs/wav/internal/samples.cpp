@@ -16,7 +16,7 @@ namespace wav_lib
     {
         if (this->curSampleCount == this->samplesCount)
         {
-            dest.channelsData.empty();
+            dest.channelsData.clear();
             return false;
         }
         std::vector<byteVector> data(this->channelsCount, byteVector(this->bytesPerChannel));

@@ -1,28 +1,20 @@
 #include "wav.hpp"
 
-#include <string>
 #include <iostream>
+#include <string>
 
 namespace wav_lib
 {
     WavFileSPtr WavReader::ReadWav(const std::string &path) const
     {
-        try
-        {
-            auto file = WavFile::Open(path);
-            return file;
-        }
-        catch (const WavException &e)
-        {
-            std::cerr << "Error reading WAV file \"" << path << "\": " << e.what() << "\n";
-            return nullptr;
-        }
+        auto file = WavFile::Open(path);
+        return file;
     }
 
     WavFileSPtr WavReader::CreateWav(const std::string &destPath,
-                                    int numChannels,
-                                    uint32_t sampleRate,
-                                    uint32_t bitsPerSample) const
+                                     int numChannels,
+                                     uint32_t sampleRate,
+                                     uint32_t bitsPerSample) const
     {
         try
         {
