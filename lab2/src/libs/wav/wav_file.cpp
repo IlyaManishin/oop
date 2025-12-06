@@ -230,11 +230,15 @@ namespace wav_lib
             set_write_pos(this->file, this->dataEnd);
             uint32_t addSamplesCount = (bytePos - this->header.subchunk2Size) / this->header.blockAlign;
 
+            Sample empty;
             for (uint32_t i = 0; i < addSamplesCount; i++)
             {
-                Sample empty;
                 this->writeSample(empty);
             }
+        }
+        else
+        {
+            set_write_pos_off(this->file, this->dataStart, bytePos);
         }
         Sample sample;
         while (reader.ReadSample(sample))

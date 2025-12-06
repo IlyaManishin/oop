@@ -39,6 +39,8 @@ namespace wav_lib
         f.seekg(0, std::ios::end);
         std::streamsize size = f.tellg();
         f.seekg(cur);
+        
+        f.clear();
         return (uint32_t)size;
     }
 
@@ -53,29 +55,42 @@ namespace wav_lib
         return bytePos;
     }
 
-    bool set_write_pos(std::fstream& file, std::streampos pos)
+    bool set_write_pos(std::fstream &file, std::streampos pos)
     {
         if (!file.is_open())
             return false;
 
+        file.clear();
         file.seekp(pos);
         return !file.fail();
     }
 
-    bool set_write_pos_off(std::fstream& file, std::streampos dataStart, uint32_t byteOffset)
+    bool set_write_pos_off(std::fstream &file, std::streampos dataStart, uint32_t byteOffset)
     {
         if (!file.is_open())
             return false;
 
+        file.clear();
         file.seekp(dataStart + std::streamoff(byteOffset));
         return !file.fail();
     }
 
-    bool set_read_pos_off(std::fstream& file, std::streampos dataStart, uint32_t byteOffset)
+    bool set_read_pos(std::fstream &file, std::streampos pos)
     {
         if (!file.is_open())
             return false;
 
+        file.clear();
+        file.seekg(pos);
+        return !file.fail();
+    }
+
+    bool set_read_pos_off(std::fstream &file, std::streampos dataStart, uint32_t byteOffset)
+    {
+        if (!file.is_open())
+            return false;
+
+        file.clear();
         file.seekg(dataStart + std::streamoff(byteOffset));
         return !file.fail();
     }
