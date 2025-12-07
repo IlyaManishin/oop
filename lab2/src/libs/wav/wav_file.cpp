@@ -231,21 +231,17 @@ namespace wav_lib
             }
         }
 
-        bool res = set_write_pos_off(this->file, this->dataStart, bytePos);
-        if (!res)
-            throw OperationExc("Invalid wav file");
-
         if (this == interval->wavFile)
         {
-            this->writeIntervalToCur(interval, destPos);
+            this->writeIntervalToCur(interval, bytePos);
         }
         else if (this->cmpVolumeParams(interval->wavFile) && !interval->IsChangedSound())
         {
-            this->writeIntervalFast(interval, destPos);
+            this->writeIntervalFast(interval, bytePos);
         }
         else
         {
-            this->writeIntervalSlow(interval, destPos);
+            this->writeIntervalSlow(interval, bytePos);
         }
         this->updateSubchunkSize();
     }
@@ -269,6 +265,9 @@ namespace wav_lib
             std::string msg = get_msg_with_path(this->path, "Can't write interval to file");
             throw OperationExc(msg);
         }
+        
+        std::streampos endPos = get_offset_pos(this->dataStart, bytePos + intervalLength);
+        this->dataEnd = std::max(this->dataEnd, endPos);
     }
 
     void WavFile::writeIntervalFast(WavIntervalSPtr interval, uint32_t bytePos) // for only similar files
@@ -307,6 +306,8 @@ namespace wav_lib
             dstPos += chunk;
             remaining -= chunk;
         }
+        std::streampos endPos = get_offset_pos(this->dataStart, bytePos + intervalLength);
+        this->dataEnd = std::max(this->dataEnd, endPos);
     }
 
     void WavFile::writeIntervalSlow(WavIntervalSPtr interval, uint32_t bytePos)
