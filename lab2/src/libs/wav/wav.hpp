@@ -18,7 +18,7 @@ namespace wav_lib
         uint32_t byteRate;
         uint16_t blockAlign;    // All channels block size
         uint16_t bitsPerSample; // Per one channel
-        uint32_t subchunk2Size;
+        uint32_t subchunk2Size; // full wav data size
     } TWavHeader;
 
     class WavFile;
@@ -46,6 +46,7 @@ namespace wav_lib
 
         virtual void SetEffect(WavEffects effect) = 0;
         virtual void SetVolume(float value) = 0;
+        virtual bool IsChangedSound() = 0;
     };
 
     class WavFile
@@ -64,7 +65,7 @@ namespace wav_lib
         void Save();
 
         IWavIntervalSPtr GetInterval(float startSec, float endSec);
-        void WriteInterval(IWavIntervalSPtr intervalI, float destPos);
+        void WriteInterval(IWavIntervalSPtr intervalI, float destPos, bool isInsert = false);
 
         ~WavFile();
 
@@ -86,8 +87,9 @@ namespace wav_lib
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
         void updateSubchunkSize();
 
-        void writeIntervalToCur(WavIntervalSPtr interval, float destPos);
-        void writeIntervalFast(WavIntervalSPtr interval, float destPos);
+        void writeIntervalToCur(WavIntervalSPtr interval, uint32_t bytePos);
+        void writeIntervalFast(WavIntervalSPtr interval, uint32_t bytePos);
+        void writeIntervalSlow(WavIntervalSPtr interval, uint32_t bytePos);
         void writeSample(Sample &sample);
 
         bool cmpVolumeParams(WavFile *other);

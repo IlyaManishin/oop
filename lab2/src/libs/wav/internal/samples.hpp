@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../wav.hpp"
+#include "types.hpp"
 #include "wav_exceptions.hpp"
 
 #include <cinttypes>
@@ -10,9 +11,6 @@
 
 namespace wav_lib
 {
-    typedef char byte;
-    typedef std::vector<byte> byteVector;
-
     class Sample
     {
     public:

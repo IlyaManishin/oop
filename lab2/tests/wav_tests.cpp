@@ -1,5 +1,9 @@
 #include "../src/command_executor/cmd_commands.hpp"
 #include "cmd_parser/cmd_parser.hpp"
+#include "wav/internal/config.hpp"
+#include "wav/internal/types.hpp"
+#include "wav/internal/wav_utils.hpp"
+
 #include "wav/wav.hpp"
 
 #include <filesystem>
@@ -38,9 +42,6 @@ TEST(CmdMixTest, BasicMixToCreatedFile)
     args.push_back(outPath);
     args.push_back(0.0f);
 
-
-
-    
     args.push_back(10.0f); // overflow
 
     ok = executor::cmd_mix(args);
@@ -55,4 +56,41 @@ TEST(CmdMixTest, BasicMixToCreatedFile)
 
     ok = executor::cmd_mix(args);
     EXPECT_TRUE(ok);
+}
+
+TEST(InsertEmptySpace, BasicTest)
+{
+    const char *testFile = "test.bin";
+
+    // создаём исходный файл 2 МБ, заполненный 0xAA
+    {
+        std::ofstream out(testFile, std::ios::binary);
+        byteVector data(2 * 1024 * 1024, 0xAA);
+        out.write((char *)data.data(), data.size());
+    }
+
+    // открываем для чтения/записи
+    std::fstream file(testFile, std::ios::in | std::ios::out | std::ios::binary);
+    ASSERT_TRUE(file.is_open());
+
+    // вставляем 512 КБ пустого пространства в середину
+    bool res = insert_empty_space(file, 1024 * 1024, 512 * 1024);
+    ASSERT_TRUE(res);
+
+    // проверяем новый размер
+    file.seekg(0, std::ios::end);
+    std::streampos newSize = file.tellg();
+    EXPECT_EQ(newSize, 2 * 1024 * 1024 + 512 * 1024);
+
+    // проверяем вставленное пространство заполнено нулями
+    file.seekg(1024 * 1024);
+    byteVector check(512 * 1024);
+    file.read((char *)check.data(), check.size());
+    for (auto b : check)
+    {
+        EXPECT_EQ(b, 0);
+    }
+
+    file.close();
+    std::remove(testFile);
 }

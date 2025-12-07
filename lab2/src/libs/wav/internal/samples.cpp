@@ -3,7 +3,6 @@
 
 namespace wav_lib
 {
-
     Sample::Sample(uint32_t channels, uint32_t bitsPerSample)
     {
         this->channelsData.resize(channels);
