@@ -37,6 +37,10 @@ TEST(CmdMixTest, BasicMixToCreatedFile)
     args.push_back(0.0f);
     args.push_back(outPath);
     args.push_back(0.0f);
+
+
+
+    
     args.push_back(10.0f); // overflow
 
     ok = executor::cmd_mix(args);

@@ -14,19 +14,39 @@ namespace wav_lib
         uint32_t chunkSize;
         uint16_t audioFormat;
         uint16_t numChannels;
-        uint32_t sampleRate;
+        uint32_t sampleRate; // Freq per second
         uint32_t byteRate;
-        uint16_t blockAlign;    // all channels block size
-        uint16_t bitsPerSample; // per one channel
+        uint16_t blockAlign;    // All channels block size
+        uint16_t bitsPerSample; // Per one channel
         uint32_t subchunk2Size;
     } TWavHeader;
 
-    class WavInterval;
     class WavFile;
+    class IWavInterval;
+    class WavInterval;
     class Sample;
 
     using WavFileSPtr = std::shared_ptr<WavFile>;
+    using IWavIntervalSPtr = std::shared_ptr<IWavInterval>;
     using WavIntervalSPtr = std::shared_ptr<WavInterval>;
+
+    enum class WavEffects
+    {
+        NORMAL,
+        BASS,
+        ULTRA_BASS,
+        RAISE_HIGH,
+        RAISE_MIDDLE
+    };
+
+    class IWavInterval
+    {
+    public:
+        virtual ~IWavInterval() = default;
+
+        virtual void SetEffect(WavEffects effect) = 0;
+        virtual void SetVolume(float value) = 0;
+    };
 
     class WavFile
     {
@@ -37,14 +57,14 @@ namespace wav_lib
                                   uint32_t sampleRate,
                                   uint16_t bitsPerSample);
 
-        void PrintInfo();
-        TWavHeader GetHeader() { return this->header; };
+        void PrintInfo() const;
+        TWavHeader GetHeader() const { return this->header; };
 
         void PlayWav();
         void Save();
 
-        WavIntervalSPtr GetInterval(float startSec, float endSec);
-        void WriteInterval(WavIntervalSPtr interval, float destPos);
+        IWavIntervalSPtr GetInterval(float startSec, float endSec);
+        void WriteInterval(IWavIntervalSPtr intervalI, float destPos);
 
         ~WavFile();
 
@@ -66,15 +86,11 @@ namespace wav_lib
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
         void updateSubchunkSize();
 
+        void writeIntervalToCur(WavIntervalSPtr interval, float destPos);
+        void writeIntervalFast(WavIntervalSPtr interval, float destPos);
         void writeSample(Sample &sample);
-        // size_t getReadPos();
-        // size_t getWritePos();
 
-        // void setReadPos(size_t byteOffset);
-        // void setWritePos(size_t byteOffset);
-
-        // void rewindFilePos() { this->file.seekg(this->dataStart); };
-        // void rewindFilePos() { this->file.seekp(this->dataStart); };
+        bool cmpVolumeParams(WavFile *other);
     };
 
     class WavReader
