@@ -13,16 +13,16 @@ namespace wav_lib
         return std::string("Invalid wav interval: (") + interval + std::string(")");
     }
 
+    inline const std::string get_msg_with_path(const std::string &path, const std::string &msg)
+    {
+        if (path == "")
+            return msg;
+        return std::string("WAV file error (") + path + std::string("): ") + msg;
+    }
+
     class WavException : public std::runtime_error
     {
     private:
-        inline static const std::string get_msg_with_path(const std::string &path, const std::string &msg)
-        {
-            if (path == "")
-                return msg;
-            return std::string("WAV file error (") + path + std::string("): ") + msg;
-        }
-
     public:
         explicit WavException(const std::string &msg = "") : std::runtime_error(msg) {};
         explicit WavException(const std::string &msg, const std::string &path)
@@ -47,11 +47,11 @@ namespace wav_lib
             : WavException(msg, path) {};
     };
 
-    class OperationExc : public std::runtime_error
+    class OperationExc : public WavException
     {
     public:
         explicit OperationExc(const std::string &msg = "Invalid operation with wav file")
-            : std::runtime_error(msg) {};
+            : WavException(msg) {};
     };
 
 } // namespace wav_lib

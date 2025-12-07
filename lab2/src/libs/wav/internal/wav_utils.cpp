@@ -1,9 +1,11 @@
 #include "wav_utils.hpp"
 #include "config.hpp"
+#include "types.hpp"
 #include "wav_exceptions.hpp"
 
 #include <cinttypes>
 #include <fstream>
+#include <iostream>
 
 namespace wav_lib
 {
@@ -39,7 +41,7 @@ namespace wav_lib
         f.seekg(0, std::ios::end);
         std::streamsize size = f.tellg();
         f.seekg(cur);
-        
+
         f.clear();
         return (uint32_t)size;
     }
@@ -93,6 +95,106 @@ namespace wav_lib
         file.clear();
         file.seekg(dataStart + std::streamoff(byteOffset));
         return !file.fail();
+    }
+
+    byteVector *read_vector_from_file(std::fstream &file, uint32_t dataLength, std::streampos startPos)
+    {
+        set_read_pos(file, startPos);
+
+        byteVector *intervalData = new byteVector(dataLength);
+        file.read((char *)intervalData->data(), dataLength);
+        if (file.gcount() < static_cast<std::streamsize>(dataLength))
+        {
+            delete intervalData;
+            return nullptr;
+        }
+        return intervalData;
+    }
+
+    bool insert_empty_space(std::fstream &file, std::streampos startPos, uint32_t size)
+    {
+        file.seekg(0, std::ios::end);
+        std::streampos fileEnd = file.tellg();
+        if (startPos > fileEnd)
+            return false;
+
+        byteVector buffer(config::FILE_BUFFER_SIZE, 0);
+
+        std::streampos readPos = fileEnd;
+        std::streampos writePos = fileEnd + static_cast<std::streampos>(size);
+
+        while (readPos > startPos)
+        {
+            size_t chunk = static_cast<size_t>(std::min<std::streampos>(readPos - startPos, config::FILE_BUFFER_SIZE));
+            readPos -= chunk;
+            writePos -= chunk;
+
+            file.seekg(readPos);
+            file.read((char *)buffer.data(), chunk);
+
+            file.seekp(writePos);
+            file.write((char *)buffer.data(), chunk);
+        }
+
+        file.seekp(startPos);
+        byteVector emptyBlock(size, 0);
+        file.write((char *)emptyBlock.data(), size);
+        file.flush();
+        return true;
+    }
+
+    bool extend_file_with_zeros(std::fstream &file, uint32_t size)
+    {
+        if (!file.is_open())
+            return false;
+
+        file.seekp(0, std::ios::end);
+        byteVector buffer(config::FILE_BUFFER_SIZE, 0);
+        uint32_t remaining = size;
+
+        while (remaining > 0)
+        {
+            size_t chunk = std::min<size_t>(remaining, config::FILE_BUFFER_SIZE);
+            file.write((char *)buffer.data(), chunk);
+            remaining -= chunk;
+        }
+
+        file.flush();
+        return true;
+    }
+
+    bool write_big_vector_to_file(std::fstream &file, std::streampos pos, byteVector *data)
+    {
+        if (!file.is_open())
+            return false;
+
+        file.seekp(pos);
+        size_t written = 0;
+        size_t dataSize = data->size();
+        size_t bufferSize = config::FILE_BUFFER_SIZE;
+
+        while (written < dataSize)
+        {
+            size_t chunk = std::min(dataSize - written, bufferSize);
+            file.write((char *)(data->data() + written), chunk);
+            if (!file)
+                return false;
+            written += chunk;
+        }
+
+        file.flush();
+        return true;
+    }
+
+    bool write_vector_to_file(std::fstream &file, std::streampos pos,
+                              const byteVector *data, size_t dataLength)
+    {
+        if (!set_write_pos(file, pos))
+            return false;
+
+        file.write((char *)(data->data()), dataLength);
+        file.flush();
+        return !file.bad();
     }
 
 } // namespace wav_lib

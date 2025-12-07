@@ -1,8 +1,10 @@
 #include "internal/config.hpp"
 #include "internal/samples.hpp"
+#include "internal/types.hpp"
 #include "internal/wav_utils.hpp"
 #include "wav.hpp"
 
+#include <cassert>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -10,19 +12,27 @@
 #include <vector>
 
 const int MAX_CHAIN_COUNT = 12;
-const int EMPTY_WAV_CHUNK_SIZE = 36;
 
 namespace wav_lib
 {
-    class WavInterval
+    class WavInterval : public IWavInterval
     {
     public:
         WavFile *wavFile;
         uint32_t startPos;
         uint32_t samplesCount;
 
+        WavEffects effect = WavEffects::NORMAL;
+        bool isNewVolume = false;
+        float volumeValue;
+
         WavInterval(WavFile *wavFile, uint32_t startPos, uint32_t samplesCount)
             : wavFile(wavFile), startPos(startPos), samplesCount(samplesCount) {};
+
+        void SetEffect(WavEffects effect) override { this->effect = effect; }
+        void SetVolume(float value) override { this->volumeValue = value; }
+        bool IsChangedSound() { return isNewVolume || (this->effect != WavEffects::NORMAL); };
+
         ~WavInterval() {};
     };
 
@@ -34,7 +44,7 @@ namespace wav_lib
         auto mode = std::ios::in | std::ios::out | std::ios::binary;
         if (createNew)
             mode = mode | std::ios::trunc;
-            
+
         this->file.open(wavPath, mode);
         if (!this->file.is_open())
             throw InvalidWavFileExc("Cannot open file", this->path);
@@ -122,12 +132,12 @@ namespace wav_lib
         header.byteRate = calc_byte_rate(sampleRate, header.blockAlign);
 
         this->header.subchunk2Size = 0;
-        this->header.chunkSize = EMPTY_WAV_CHUNK_SIZE;
+        this->header.chunkSize = config::EMPTY_WAV_CHUNK_SIZE;
 
         this->isChanged = true;
     }
 
-    void WavFile::PrintInfo()
+    void WavFile::PrintInfo() const
     {
         std::cout << "File: " << path << "\n";
         std::cout << "Channels: " << this->header.numChannels << "\n";
@@ -175,7 +185,7 @@ namespace wav_lib
         this->isChanged = false;
     }
 
-    WavIntervalSPtr WavFile::GetInterval(float startSec, float endSec)
+    IWavIntervalSPtr WavFile::GetInterval(float startSec, float endSec)
     {
         if (startSec < 0 || endSec < 0 || startSec > endSec)
         {
@@ -190,17 +200,118 @@ namespace wav_lib
         if (end > dataEnd)
             end = dataEnd;
         uint32_t samplesCount = (end - start) / this->header.blockAlign;
-        WavIntervalSPtr interval = std::make_shared<WavInterval>(this, start, samplesCount);
+        IWavIntervalSPtr interval = std::make_shared<WavInterval>(this, start, samplesCount);
         return interval;
     }
 
-    void WavFile::WriteInterval(WavIntervalSPtr interval, float destPos)
+    void WavFile::WriteInterval(IWavIntervalSPtr intervalI, float destPos, bool isInsert)
     {
-        if (this == interval->wavFile)
+        WavIntervalSPtr interval = std::dynamic_pointer_cast<WavInterval>(intervalI);
+        if (interval == nullptr)
         {
-            throw OperationExc("Can't write interval to current file");
+            OperationExc("Invalid interval to write");
         }
 
+        uint32_t bytePos = sec_to_byte_pos(destPos, this->header.byteRate, this->header.blockAlign);
+        if (bytePos == config::MAX_WAV_DATA_SIZE)
+        {
+            std::string msg = std::string("Invalid write position: ") + std::to_string(destPos) + "sec";
+            throw OperationExc(msg);
+        }
+
+        if (bytePos > this->header.subchunk2Size)
+        {
+            set_write_pos(this->file, this->dataEnd);
+            uint32_t addBytes = bytePos - this->header.subchunk2Size;
+            bool res = extend_file_with_zeros(this->file, addBytes);
+            if (!res)
+            {
+                std::string msg = get_msg_with_path(this->path, "Can't extend file");
+                throw OperationExc(msg);
+            }
+        }
+
+        if (this == interval->wavFile)
+        {
+            this->writeIntervalToCur(interval, bytePos);
+        }
+        else if (this->cmpVolumeParams(interval->wavFile) && !interval->IsChangedSound())
+        {
+            this->writeIntervalFast(interval, bytePos);
+        }
+        else
+        {
+            this->writeIntervalSlow(interval, bytePos);
+        }
+        this->updateSubchunkSize();
+    }
+
+    void WavFile::writeIntervalToCur(WavIntervalSPtr interval, uint32_t bytePos)
+    {
+        assert(this == interval->wavFile);
+
+        uint32_t intervalLength = interval->samplesCount * this->header.blockAlign;
+        byteVector *data = read_vector_from_file(this->file, intervalLength, interval->startPos);
+        if (data == nullptr)
+        {
+            std::string msg = get_msg_with_path(this->path, "Can't read interval from file");
+            throw OperationExc(msg);
+        }
+
+        bool res = write_big_vector_to_file(this->file, get_offset_pos(this->dataStart, bytePos), data);
+        delete data;
+        if (!res)
+        {
+            std::string msg = get_msg_with_path(this->path, "Can't write interval to file");
+            throw OperationExc(msg);
+        }
+        
+        std::streampos endPos = get_offset_pos(this->dataStart, bytePos + intervalLength);
+        this->dataEnd = std::max(this->dataEnd, endPos);
+    }
+
+    void WavFile::writeIntervalFast(WavIntervalSPtr interval, uint32_t bytePos) // for only similar files
+    {
+        assert(this->cmpVolumeParams(interval->wavFile) && !interval->IsChangedSound());
+
+        uint32_t intervalLength = interval->samplesCount * this->header.blockAlign;
+        uint32_t remaining = intervalLength;
+
+        std::streampos srcPos = interval->startPos;
+        std::streampos dstPos = get_offset_pos(this->dataStart, bytePos);
+
+        byteVector *buffer = new byteVector(config::FILE_BUFFER_SIZE);
+
+        while (remaining > 0)
+        {
+            uint32_t chunk = std::min<uint32_t>(remaining, buffer->size());
+
+            set_read_pos(interval->wavFile->file, srcPos);
+            interval->wavFile->file.read((char *)buffer->data(), chunk);
+            if (interval->wavFile->file.gcount() < static_cast<std::streamsize>(chunk))
+            {
+                std::string msg = get_msg_with_path(this->path, "Can't write interval to file");
+                throw OperationExc(msg);
+            }
+
+            buffer->resize(chunk);
+            bool res = write_vector_to_file(this->file, dstPos, buffer, chunk);
+            if (!res)
+            {
+                std::string msg = get_msg_with_path(this->path, "Can't write interval to file");
+                throw OperationExc(msg);
+            }
+
+            srcPos += chunk;
+            dstPos += chunk;
+            remaining -= chunk;
+        }
+        std::streampos endPos = get_offset_pos(this->dataStart, bytePos + intervalLength);
+        this->dataEnd = std::max(this->dataEnd, endPos);
+    }
+
+    void WavFile::writeIntervalSlow(WavIntervalSPtr interval, uint32_t bytePos)
+    {
         WavFile *readingWav = interval->wavFile;
         SReaderConfig sconfig{
             .path = readingWav->path,
@@ -212,28 +323,7 @@ namespace wav_lib
         };
 
         SampleReader reader(sconfig);
-        uint32_t bytePos = sec_to_byte_pos(destPos, this->header.byteRate, this->header.blockAlign);
-        if (bytePos == config::MAX_WAV_DATA_SIZE)
-        {
-            std::string msg = std::string("Invalid write position: ") + std::to_string(destPos) + "sec";
-            throw OperationExc(msg);
-        }
 
-        if (bytePos > this->header.subchunk2Size)
-        {
-            set_write_pos(this->file, this->dataEnd);
-            uint32_t addSamplesCount = (bytePos - this->header.subchunk2Size) / this->header.blockAlign;
-
-            Sample empty;
-            for (uint32_t i = 0; i < addSamplesCount; i++)
-            {
-                this->writeSample(empty);
-            }
-        }
-        else
-        {
-            set_write_pos_off(this->file, this->dataStart, bytePos);
-        }
         Sample sample;
         while (reader.ReadSample(sample))
         {
@@ -244,7 +334,6 @@ namespace wav_lib
             throw InvalidWavFileExc(readingWav->path, "Can't read interval from wav file");
         }
         this->dataEnd = std::max(this->dataEnd, this->file.tellp());
-        this->updateSubchunkSize();
     }
 
     void WavFile::writeSample(Sample &sample)
@@ -253,6 +342,17 @@ namespace wav_lib
         {
             this->file.write(i.data(), i.size() * sizeof(byte));
         }
+    }
+
+    bool WavFile::cmpVolumeParams(WavFile *other)
+    {
+        const TWavHeader &header1 = this->header;
+        const TWavHeader &header2 = other->header;
+
+        bool res = header1.numChannels == header2.numChannels &&
+                   header1.blockAlign == header2.blockAlign &&
+                   header1.sampleRate == header2.sampleRate;
+        return res;
     }
 
     WavFile::~WavFile()
