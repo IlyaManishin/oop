@@ -65,7 +65,7 @@ namespace wav_lib
         void Save();
 
         IWavIntervalSPtr GetInterval(float startSec, float endSec);
-        void WriteInterval(IWavIntervalSPtr intervalI, float destPos, bool isInsert = false);
+        void WriteInterval(IWavIntervalSPtr intervalI, float destPosSec, bool isInsert = false);
 
         ~WavFile();
 
@@ -87,7 +87,7 @@ namespace wav_lib
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
         void updateSubchunkSize();
 
-        void writeIntervalToCur(WavIntervalSPtr interval, uint32_t bytePos);
+        void writeIntervalFromCurFast(WavIntervalSPtr interval, uint32_t bytePos);
         void writeIntervalFast(WavIntervalSPtr interval, uint32_t bytePos);
         void writeIntervalSlow(WavIntervalSPtr interval, uint32_t bytePos);
         void writeSample(Sample &sample);
