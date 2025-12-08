@@ -97,7 +97,7 @@ namespace wav_lib
         return !file.fail();
     }
 
-    byteVector *read_vector_from_file(std::fstream &file, uint32_t dataLength, std::streampos startPos)
+    byteVector *read_file_big_vector(std::fstream &file, uint32_t dataLength, std::streampos startPos)
     {
         set_read_pos(file, startPos);
 
@@ -109,6 +109,16 @@ namespace wav_lib
             return nullptr;
         }
         return intervalData;
+    }
+
+    bool read_file_chunk(std::fstream &file, uint32_t chunkSize, std::streampos startPos,
+                              byteVector *dest)
+    {
+        set_read_pos(file, startPos);
+        file.read((char *)dest->data(), chunkSize);
+
+        bool isValid = (file.gcount() == static_cast<std::streamsize>(chunkSize));
+        return isValid;
     }
 
     bool insert_empty_space(std::fstream &file, std::streampos startPos, uint32_t size)
@@ -139,6 +149,7 @@ namespace wav_lib
         file.seekp(startPos);
         byteVector emptyBlock(size, 0);
         file.write((char *)emptyBlock.data(), size);
+
         file.flush();
         return true;
     }
@@ -163,19 +174,18 @@ namespace wav_lib
         return true;
     }
 
-    bool write_big_vector_to_file(std::fstream &file, std::streampos pos, byteVector *data)
+    bool write_big_vector_to_file(std::fstream &file, std::streampos pos, byteVector *data, size_t size)
     {
         if (!file.is_open())
             return false;
 
         file.seekp(pos);
         size_t written = 0;
-        size_t dataSize = data->size();
         size_t bufferSize = config::FILE_BUFFER_SIZE;
 
-        while (written < dataSize)
+        while (written < size)
         {
-            size_t chunk = std::min(dataSize - written, bufferSize);
+            size_t chunk = std::min(size - written, bufferSize);
             file.write((char *)(data->data() + written), chunk);
             if (!file)
                 return false;
