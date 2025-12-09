@@ -87,6 +87,8 @@ namespace wav_lib
         void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
         void updateSubchunkSize();
 
+        bool allocIntervalSpace(WavIntervalSPtr interval, uint32_t intervalLength, std::streampos destPos);
+
         void writeIntervalFast(WavIntervalSPtr interval, bool isInsert, std::streampos destPos);
         void writeIntervalFromCurFast(WavIntervalSPtr interval, std::streampos destPos);
         void writeIntervalFromOtherFast(WavIntervalSPtr interval, std::streampos destPos);
@@ -98,6 +100,7 @@ namespace wav_lib
         void writeSample(Sample &sample);
 
         bool cmpVolumeParams(WavFile *other);
+        bool operator==(WavFile &file) { return this->path == file.path; };
     };
 
     class WavReader
