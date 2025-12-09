@@ -65,7 +65,7 @@ TEST(InsertEmptySpace, BasicTest)
     // создаём исходный файл 2 МБ, заполненный 0xAA
     {
         std::ofstream out(testFile, std::ios::binary);
-        byteVector data(2 * 1024 * 1024, 0xAA);
+        ByteVector data(2 * 1024 * 1024, 0xAA);
         out.write((char *)data.data(), data.size());
     }
 
@@ -84,7 +84,7 @@ TEST(InsertEmptySpace, BasicTest)
 
     // проверяем вставленное пространство заполнено нулями
     file.seekg(1024 * 1024);
-    byteVector check(512 * 1024);
+    ByteVector check(512 * 1024);
     file.read((char *)check.data(), check.size());
     for (auto b : check)
     {

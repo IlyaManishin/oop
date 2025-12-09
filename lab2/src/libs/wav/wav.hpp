@@ -24,6 +24,7 @@ namespace wav_lib
     class WavFile;
     class IWavInterval;
     class WavInterval;
+    class ISampleReader;
     class Sample;
 
     using WavFileSPtr = std::shared_ptr<WavFile>;
@@ -97,6 +98,8 @@ namespace wav_lib
         void writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos);
         void writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos);
 
+        void writeIntervalWithReader(WavIntervalSPtr interval, std::streampos destPos,
+             ISampleReader &reader, uint32_t maxSamples);
         void writeSample(Sample &sample);
 
         bool cmpVolumeParams(WavFile *other);

@@ -1,5 +1,5 @@
 #include "internal/config.hpp"
-#include "internal/samples.hpp"
+#include "internal/sample_reader.hpp"
 #include "internal/types.hpp"
 #include "internal/wav_utils.hpp"
 #include "wav.hpp"
@@ -273,7 +273,7 @@ namespace wav_lib
         assert(!interval->IsChangedSound());
 
         uint32_t intervalLength = interval->samplesCount * this->header.blockAlign;
-        byteVector *data = read_file_big_vector(this->file, intervalLength, interval->startPos);
+        ByteVector *data = read_file_big_vector(this->file, intervalLength, interval->startPos);
         if (data == nullptr)
         {
             std::string msg = get_msg_with_path(this->path, "Can't read interval from file");
@@ -304,7 +304,7 @@ namespace wav_lib
         std::streampos chunkSrc = interval->startPos;
         std::streampos chunkDest = destPos;
 
-        byteVector *buffer = new byteVector(config::FILE_BUFFER_SIZE);
+        ByteVector *buffer = new ByteVector(config::FILE_BUFFER_SIZE);
 
         while (remaining > 0)
         {
@@ -415,11 +415,16 @@ namespace wav_lib
         return res;
     }
 
+    void WavFile::writeIntervalWithReader(WavIntervalSPtr interval, std::streampos destPos,
+                                          ISampleReader &reader, uint32_t maxSamples)
+    {
+    }
+
     void WavFile::writeSample(Sample &sample)
     {
         for (auto &i : sample.channelsData)
         {
-            this->file.write(i.data(), i.size() * sizeof(byte));
+            this->file.write(i.data(), i.size() * sizeof(Byte));
         }
     }
 

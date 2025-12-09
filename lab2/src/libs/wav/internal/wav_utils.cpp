@@ -97,11 +97,11 @@ namespace wav_lib
         return !file.fail();
     }
 
-    byteVector *read_file_big_vector(std::fstream &file, uint32_t dataLength, std::streampos startPos)
+    ByteVector *read_file_big_vector(std::fstream &file, uint32_t dataLength, std::streampos startPos)
     {
         set_read_pos(file, startPos);
 
-        byteVector *intervalData = new byteVector(dataLength);
+        ByteVector *intervalData = new ByteVector(dataLength);
         file.read((char *)intervalData->data(), dataLength);
         if (file.gcount() < static_cast<std::streamsize>(dataLength))
         {
@@ -112,7 +112,7 @@ namespace wav_lib
     }
 
     bool read_file_chunk(std::fstream &file, uint32_t chunkSize, std::streampos startPos,
-                              byteVector *dest)
+                              ByteVector *dest)
     {
         set_read_pos(file, startPos);
         file.read((char *)dest->data(), chunkSize);
@@ -128,7 +128,7 @@ namespace wav_lib
         if (startPos > fileEnd)
             return false;
 
-        byteVector buffer(config::FILE_BUFFER_SIZE, 0);
+        ByteVector buffer(config::FILE_BUFFER_SIZE, 0);
 
         std::streampos readPos = fileEnd;
         std::streampos writePos = fileEnd + static_cast<std::streampos>(size);
@@ -147,7 +147,7 @@ namespace wav_lib
         }
 
         file.seekp(startPos);
-        byteVector emptyBlock(size, 0);
+        ByteVector emptyBlock(size, 0);
         file.write((char *)emptyBlock.data(), size);
 
         file.flush();
@@ -160,7 +160,7 @@ namespace wav_lib
             return false;
 
         file.seekp(0, std::ios::end);
-        byteVector buffer(config::FILE_BUFFER_SIZE, 0);
+        ByteVector buffer(config::FILE_BUFFER_SIZE, 0);
         uint32_t remaining = size;
 
         while (remaining > 0)
@@ -174,7 +174,7 @@ namespace wav_lib
         return true;
     }
 
-    bool write_big_vector_to_file(std::fstream &file, std::streampos pos, byteVector *data, size_t size)
+    bool write_big_vector_to_file(std::fstream &file, std::streampos pos, ByteVector *data, size_t size)
     {
         if (!file.is_open())
             return false;
@@ -197,7 +197,7 @@ namespace wav_lib
     }
 
     bool write_vector_to_file(std::fstream &file, std::streampos pos,
-                              const byteVector *data, size_t dataLength)
+                              const ByteVector *data, size_t dataLength)
     {
         if (!set_write_pos(file, pos))
             return false;
