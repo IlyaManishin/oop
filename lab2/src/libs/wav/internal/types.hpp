@@ -12,11 +12,11 @@ namespace wav_lib
     class Sample
     {
     public:
-        std::vector<ByteVector> channelsData;
+        ByteVector channels;
 
-        Sample() {};
-        Sample(std::vector<ByteVector> channelsData)
-            : channelsData(channelsData) {};
+        Sample(uint32_t size): channels(size){};
+        Sample(ByteVector channelsData)
+            : channels(channelsData) {};
     };
 
     using SampleBuffer = std::vector<Sample>;

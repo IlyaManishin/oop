@@ -51,7 +51,7 @@ namespace wav_lib
             float volumeValue;
         };
 
-        bool isSameSampleRate;
+        bool isDiffSampleRate;
         double sampleStep;
         double curSampleAccum;
 
@@ -76,7 +76,7 @@ namespace wav_lib
         virtual size_t extractSampleBuffer(SampleBufferSPtr buffer) = 0;
         virtual void addBufferEffects(SampleBufferSPtr buffer) = 0;
 
-        Sample normalizeSample(Sample sample);
+        Sample normalizeSample(const Sample& src);
     };
 
     class FileSReader : public ISampleReader

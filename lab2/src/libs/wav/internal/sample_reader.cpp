@@ -2,6 +2,8 @@
 #include "types.hpp"
 #include "wav_exceptions.hpp"
 
+#include "cassert"
+
 namespace wav_lib
 {
 
@@ -30,7 +32,7 @@ namespace wav_lib
     // }
 
     ISampleReader::ISampleReader(const SampleReaderConfig &cfg)
-        : isSameSampleRate(cfg.input.sampleRate == cfg.output.sampleRate),
+        : isDiffSampleRate(cfg.input.sampleRate != cfg.output.sampleRate),
           sampleStep(double(cfg.input.sampleRate) / double(cfg.output.sampleRate)),
           curSampleAccum(0.0),
           isSampleChanges(
@@ -53,8 +55,50 @@ namespace wav_lib
         changes.volumeValue = cfg.volumeValue;
     }
 
-    Sample ISampleReader::normalizeSample(Sample sample)
+    Sample ISampleReader::normalizeSample(const Sample &src)
     {
+        assert(this->isSampleChanges);
+
+        const uint32_t srcCh = changes.srcChannels;
+        const uint32_t dstCh = changes.destChannels;
+        const uint32_t srcDepth = changes.srcDepth;
+        const uint32_t dstDepth = changes.destDepth;
+
+        Sample out(dstCh);
+
+        int diff = static_cast<int>(dstDepth) - static_cast<int>(srcDepth);
+        int shift = diff > 0 ? diff : -diff;
+        bool upShift = diff > 0;
+
+        int64_t dstMax = (1LL << (dstDepth - 1)) - 1;
+        int64_t dstMin = -(1LL << (dstDepth - 1));
+
+        for (uint32_t i = 0; i < dstCh; i++)
+        {
+            uint32_t srcIdx = i < srcCh ? i : (srcCh ? (i % srcCh) : 0);
+            int64_t v = src.channels[srcIdx];
+
+            int64_t sign = v < 0 ? -1 : 1;
+            uint64_t absv = static_cast<uint64_t>(v < 0 ? -v : v);
+
+            if (upShift)
+                absv = absv << shift;
+            else
+            {
+                if (shift > 0)
+                    absv = (absv + (1ULL << (shift - 1))) >> shift;
+            }
+
+            int64_t vv = static_cast<int64_t>(absv) * sign;
+
+            if (vv > dstMax)
+                vv = dstMax;
+            if (vv < dstMin)
+                vv = dstMin;
+
+            out.channels[i] = static_cast<int32_t>(vv);
+        }
+        return out;
     }
 
     size_t VectorSReader::ReadSampleBuffer(SampleBufferSPtr outBuffer)
