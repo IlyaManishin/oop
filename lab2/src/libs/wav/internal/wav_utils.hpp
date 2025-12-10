@@ -33,12 +33,14 @@ namespace wav_lib
     bool set_read_pos(std::fstream &file, std::streampos pos);
     bool set_read_pos_off(std::fstream &file, std::streampos dataStart, uint32_t byteOffset);
 
-    byteVector *read_vector_from_file(std::fstream &file, uint32_t dataLength, std::streampos startPos);
+    ByteVector *read_file_big_vector(std::fstream &file, uint32_t dataLength, std::streampos startPos);
+    bool read_file_chunk(std::fstream &file, uint32_t chunkSize, std::streampos startPos,
+                         ByteVector *dest);
     bool insert_empty_space(std::fstream &file, std::streampos startPos, uint32_t size);
     bool extend_file_with_zeros(std::fstream &file, uint32_t size);
-    bool write_big_vector_to_file(std::fstream &file, std::streampos pos, byteVector *data);
+    bool write_big_vector_to_file(std::fstream &file, std::streampos pos, ByteVector *data, size_t size);
     bool write_vector_to_file(std::fstream &file, std::streampos pos,
-                              const byteVector *data, size_t dataLength);
+                              const ByteVector *data, size_t dataLength);
 
     uint32_t sec_to_byte_pos(float posSec, uint32_t byteRate, uint32_t blockAlign);
     inline std::streampos get_offset_pos(std::streampos pos, uint32_t offset)

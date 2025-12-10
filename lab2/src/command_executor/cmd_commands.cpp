@@ -97,6 +97,11 @@ namespace executor
         }
     }
 
+    bool cmd_sound_effect(const cmd_parser::Args &args) noexcept
+    {
+        return false;
+    }
+
     bool cmd_info(const Args &args) noexcept
     {
         std::string wavPath;

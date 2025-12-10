@@ -13,6 +13,7 @@ namespace executor
         HELP,
         INFO,
         MIX,
+        EFFECT,
         MUTE,
         CHANGE_SPEED
     };
@@ -26,6 +27,7 @@ namespace executor
         parser->registerCommand("help", (int)COMMANDS::HELP);
         parser->registerCommand("info", (int)COMMANDS::INFO);
         parser->registerCommand("mix", (int)COMMANDS::MIX);
+        parser->registerCommand("effect", (int)COMMANDS::EFFECT);
         parser->registerCommand("mute", (int)COMMANDS::MUTE);
         parser->registerCommand("speed", (int)COMMANDS::CHANGE_SPEED);
 
@@ -39,6 +41,7 @@ namespace executor
         res[(int)COMMANDS::HELP] = cmd_help;
         res[(int)COMMANDS::INFO] = cmd_info;
         res[(int)COMMANDS::MIX] = cmd_mix;
+        res[(int)COMMANDS::EFFECT] = cmd_sound_effect;
         res[(int)COMMANDS::MUTE] = cmd_mute;
         res[(int)COMMANDS::CHANGE_SPEED] = cmd_change_speed;
 
