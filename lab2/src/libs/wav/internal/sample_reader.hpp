@@ -3,6 +3,7 @@
 #include "../wav.hpp"
 #include "types.hpp"
 #include "wav_exceptions.hpp"
+#include "wav_utils.hpp"
 
 #include <cinttypes>
 #include <iostream>
@@ -14,35 +15,68 @@ namespace wav_lib
 {
     struct SReaderSoundParams
     {
-        uint32_t startPos;
-        uint32_t samplesCount;
         uint32_t channelsCount;
-        uint32_t bitsPerSample;
+        uint32_t bytesPerSample;
+        uint32_t blockAlign;
+        uint32_t sampleRate;
+    };
+
+    struct SampleReaderConfig
+    {
+        size_t maxSamples;
+
+        SReaderSoundParams input;
+        SReaderSoundParams output;
+
+        WavEffects effect;
+        bool isNewVolume = false;
+        float volumeValue = 1.0f;
     };
 
     class ISampleReader
     {
     protected:
-        SReaderSoundParams input;
-        SReaderSoundParams output;
+        struct SampleChanges
+        {
+            uint32_t srcBlockAlign;
+            uint32_t destBlockAlign;
+
+            uint32_t srcDepth;
+            uint32_t destDepth;
+            uint32_t srcChannels;
+            uint32_t destChannels;
+
+            WavEffects effect;
+            bool isNewVolume;
+            float volumeValue;
+        };
+
+        bool isSameSampleRate;
+        double sampleStep;
+        double curSampleAccum;
+
+        bool isSampleChanges;
+        SampleChanges changes;
+
         uint32_t maxSamples;
+        uint32_t samplesCount;
 
     public:
-        ISampleReader(SReaderSoundParams input, SReaderSoundParams output, size_t maxSamples)
-            : input(input), output(output), maxSamples(maxSamples) {};
+        ISampleReader(const SampleReaderConfig &cfg);
 
-        virtual bool IsBad() const = 0;
         SampleBufferSPtr InitBuffer(size_t size)
         {
             return std::make_unique<SampleBuffer>(size);
         }
-        virtual size_t ReadSampleBuffer(SampleBufferSPtr buffer) = 0;
-    };
 
-    struct FileSReaderConfig
-    {
-        std::fstream &srcFile;
-        std::streampos startPos;
+        virtual bool IsBad() const = 0;
+        virtual size_t ReadSampleBuffer(SampleBufferSPtr buffer) = 0;
+
+    private:
+        virtual size_t extractSampleBuffer(SampleBufferSPtr buffer) = 0;
+        virtual void addBufferEffects(SampleBufferSPtr buffer) = 0;
+
+        Sample normalizeSample(Sample sample);
     };
 
     class FileSReader : public ISampleReader
@@ -50,44 +84,47 @@ namespace wav_lib
     private:
         std::fstream &srcFile;
         std::streampos startPos;
-        uint32_t channelsCount;
-        uint32_t bytesPerChannel;
-
-        uint32_t curSampleCount = 0;
 
     public:
-        FileSReader(FileSReaderConfig cfg,
-                    SReaderSoundParams input, SReaderSoundParams output, size_t maxSamples)
-            : ISampleReader(input, output, maxSamples),
-              srcFile(cfg.srcFile),
-              startPos(cfg.startPos) {};
+        FileSReader(std::fstream &srcFile,
+                    std::streampos startPos,
+                    const SampleReaderConfig &cfg)
+            : ISampleReader(cfg),
+              srcFile(srcFile),
+              startPos(startPos)
+        {
+            set_read_pos(this->srcFile, this->startPos);
+        }
 
-        bool IsBad() const override { return this->srcFile.bad(); }
+        bool IsBad() const override
+        {
+            return srcFile.bad();
+        }
+
         size_t ReadSampleBuffer(SampleBufferSPtr buffer) override;
     };
 
     class VectorSReader : public ISampleReader
     {
     private:
-        const std::vector<char> &buffer;
+        const ByteVector &data;
         size_t offsetBytes;
-        uint32_t channelsCount;
-        uint32_t bytesPerChannel;
-
         uint32_t curSampleCount = 0;
 
     public:
-        VectorSReader(const std::vector<char> &buffer,
+        VectorSReader(const ByteVector &buffer,
                       size_t offsetBytes,
-                      SReaderSoundParams input,
-                      SReaderSoundParams output,
-                      size_t maxSamples)
-            : ISampleReader(input, output, maxSamples),
-              buffer(buffer),
-              offsetBytes(offsetBytes) {};
+                      const SampleReaderConfig &cfg)
+            : ISampleReader(cfg),
+              data(buffer),
+              offsetBytes(offsetBytes) {}
 
-        bool IsBad() const override { return false; };
-        size_t ReadSampleBuffer(SampleBufferSPtr buffer) override;
+        bool IsBad() const override
+        {
+            return false;
+        }
+
+        size_t ReadSampleBuffer(SampleBufferSPtr outBuffer) override;
     };
 
 } // namespace wav_lib
