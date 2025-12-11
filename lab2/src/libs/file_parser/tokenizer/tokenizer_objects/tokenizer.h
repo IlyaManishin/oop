@@ -1,6 +1,7 @@
 #pragma once
 
-#include "tokenizer_api.h"
+#include "syntax_errors.h"
+#include "token.h"
 
 #ifdef __cplusplus
 extern "C"

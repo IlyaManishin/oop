@@ -1,6 +1,6 @@
 #include "tokenizer.h"
 #include "token_buffer.h"
-#include "tokenizer_api.h"
+#include "syntax_errors.h"
 
 #include <assert.h>
 #include <stdio.h>
