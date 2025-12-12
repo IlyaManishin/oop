@@ -1,8 +1,10 @@
 #include "sample_reader.hpp"
+#include "config.hpp"
 #include "types.hpp"
 #include "wav_exceptions.hpp"
 
 #include "cassert"
+#include "cstring"
 
 namespace wav_lib
 {
@@ -39,70 +41,169 @@ namespace wav_lib
               cfg.input.channelsCount != cfg.output.channelsCount ||
               cfg.input.bytesPerSample != cfg.output.bytesPerSample),
           maxSamples((uint32_t)cfg.maxSamples),
-          samplesCount(0)
+          allSamplesCount(0)
     {
-        changes.srcBlockAlign = cfg.input.blockAlign;
-        changes.destBlockAlign = cfg.output.blockAlign;
+        params.srcBlockAlign = cfg.input.blockAlign;
+        params.destBlockAlign = cfg.output.blockAlign;
 
-        changes.srcDepth = cfg.input.bytesPerSample;
-        changes.destDepth = cfg.output.bytesPerSample;
+        params.srcDepth = cfg.input.bytesPerSample;
+        params.destDepth = cfg.output.bytesPerSample;
 
-        changes.srcChannels = cfg.input.channelsCount;
-        changes.destChannels = cfg.output.channelsCount;
+        params.srcChannels = cfg.input.channelsCount;
+        params.destChannels = cfg.output.channelsCount;
 
-        changes.effect = cfg.effect;
-        changes.isNewVolume = cfg.isNewVolume;
-        changes.volumeValue = cfg.volumeValue;
+        params.effect = cfg.effect;
+        params.isNewVolume = cfg.isNewVolume;
+        params.volumeValue = cfg.volumeValue;
     }
 
-    Sample ISampleReader::normalizeSample(const Sample &src)
+    size_t ISampleReader::ReadToSampleBuffer(ByteVector &dest)
     {
-        assert(this->isSampleChanges);
+        if (allSamplesCount >= maxSamples)
+            return 0;
 
-        const uint32_t srcCh = changes.srcChannels;
-        const uint32_t dstCh = changes.destChannels;
-        const uint32_t srcDepth = changes.srcDepth;
-        const uint32_t dstDepth = changes.destDepth;
+        size_t remainSamples = maxSamples - allSamplesCount;
+        size_t chunkSamples = std::min(remainSamples, config::SAMPLE_BUFFER_SIZE);
+        size_t needBytes = chunkSamples * params.destBlockAlign;
 
-        Sample out(dstCh);
+        if (dest.size() < needBytes)
+            dest.resize(needBytes);
 
-        int diff = static_cast<int>(dstDepth) - static_cast<int>(srcDepth);
-        int shift = diff > 0 ? diff : -diff;
-        bool upShift = diff > 0;
+        size_t readSamples = this->extractSampleBuffer(dest, chunkSamples);
+        allSamplesCount += readSamples;
 
-        int64_t dstMax = (1LL << (dstDepth - 1)) - 1;
-        int64_t dstMin = -(1LL << (dstDepth - 1));
+        this->addBufferEffects(dest);
+        return readSamples;
+    }
 
-        for (uint32_t i = 0; i < dstCh; i++)
+    void ISampleReader::addBufferEffects(ByteVector &buffer)
+    {
+    }
+
+    FileSReader::FileSReader(std::fstream &srcFile,
+                             std::streampos startPos,
+                             const SampleReaderConfig &cfg)
+        : ISampleReader(cfg),
+          srcFile(srcFile),
+          startPos(startPos)
+    {
+        this->srcFile.clear();
+        this->srcFile.seekg(this->startPos);
+    }
+
+    bool FileSReader::IsBad() const
+    {
+        return this->srcFile.bad() | this->isError;
+    }
+
+    size_t FileSReader::extractSampleBuffer(ByteVector &dest, size_t maxSamples)
+    {
+        if (isSampleChanges)
         {
-            uint32_t srcIdx = i < srcCh ? i : (srcCh ? (i % srcCh) : 0);
-            int64_t v = src.channels[srcIdx];
-
-            int64_t sign = v < 0 ? -1 : 1;
-            uint64_t absv = static_cast<uint64_t>(v < 0 ? -v : v);
-
-            if (upShift)
-                absv = absv << shift;
-            else
-            {
-                if (shift > 0)
-                    absv = (absv + (1ULL << (shift - 1))) >> shift;
-            }
-
-            int64_t vv = static_cast<int64_t>(absv) * sign;
-
-            if (vv > dstMax)
-                vv = dstMax;
-            if (vv < dstMin)
-                vv = dstMin;
-
-            out.channels[i] = static_cast<int32_t>(vv);
+            isError = true;
+            return 0;
         }
-        return out;
+
+        size_t toReadBytes = maxSamples * params.srcBlockAlign;
+        srcFile.read(dest.data(), toReadBytes);
+        size_t byteCount = srcFile.gcount();
+
+        return byteCount / params.srcBlockAlign;
     }
 
-    size_t VectorSReader::ReadSampleBuffer(SampleBufferSPtr outBuffer)
+    VectorSReader::VectorSReader(const ByteVector &buffer,
+                                 size_t offsetBytes,
+                                 const SampleReaderConfig &cfg)
+        : ISampleReader(cfg),
+          data(buffer),
+          offsetBytes(offsetBytes),
+          curSampleCount(0)
     {
     }
+
+    bool VectorSReader::IsBad() const
+    {
+        return this->isError;
+    }
+
+    size_t VectorSReader::extractSampleBuffer(ByteVector &dest, size_t maxSamples)
+    {
+        if (isSampleChanges)
+        {
+            isError = true;
+            return 0;
+        }
+
+        size_t remainLocal = data.size() > offsetBytes ? data.size() - offsetBytes : 0;
+        size_t samplesCount = std::min(maxSamples, remainLocal / params.srcBlockAlign);
+        if (samplesCount == 0)
+            return 0;
+
+        size_t takeBytes = samplesCount * params.srcBlockAlign;
+        if (dest.size() < takeBytes)
+            dest.resize(takeBytes);
+
+        std::memcpy(dest.data(), data.data() + offsetBytes, takeBytes);
+        offsetBytes += takeBytes;
+
+        return samplesCount;
+    }
+
+    // Sample ISampleReader::normalizeSample(const Sample &src)
+    // {
+    //     assert(this->isSampleChanges);
+
+    //     const uint32_t srcCh = params.srcChannels;
+    //     const uint32_t dstCh = params.destChannels;
+    //     const uint32_t srcDepth = params.srcDepth;
+    //     const uint32_t dstDepth = params.destDepth;
+
+    //     Sample out(dstCh);
+
+    //     int diff = int(dstDepth) - int(srcDepth);
+    //     int shift = diff > 0 ? diff : -diff;
+    //     bool upShift = diff > 0;
+
+    //     int64_t dstMax = (1LL << (dstDepth - 1)) - 1;
+    //     int64_t dstMin = -(1LL << (dstDepth - 1));
+
+    //     for (uint32_t i = 0; i < dstCh; i++)
+    //     {
+    //         uint32_t srcIdx = i < srcCh ? i : (srcCh ? (i % srcCh) : 0);
+
+    //         auto &srcVec = src.channels[srcIdx];
+    //         int64_t v = 0;
+
+    //         for (uint32_t b = 0; b < srcDepth; b++)
+    //             v = (v << 8) | uint8_t(srcVec[b]);
+
+    //         if (srcVec.back() & 0x80)
+    //             for (uint32_t b = srcDepth; b < 8; b++)
+    //                 v |= (0xFFLL << (b * 8));
+
+    //         uint64_t absv = v < 0 ? uint64_t(-v) : uint64_t(v);
+
+    //         if (upShift)
+    //             absv <<= shift;
+    //         else if (shift)
+    //             absv = (absv + (1ULL << (shift - 1))) >> shift;
+
+    //         int64_t vv = (v < 0) ? -int64_t(absv) : int64_t(absv);
+
+    //         if (vv > dstMax)
+    //             vv = dstMax;
+    //         if (vv < dstMin)
+    //             vv = dstMin;
+
+    //         out.channels[i].resize(dstDepth);
+    //         for (int b = dstDepth - 1; b >= 0; b--)
+    //         {
+    //             out.channels[i][b] = Byte(vv & 0xFF);
+    //             vv >>= 8;
+    //         }
+    //     }
+
+    //     return out;
+    // }
 
 } // namespace wav_lib

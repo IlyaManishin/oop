@@ -36,7 +36,7 @@ namespace wav_lib
     class ISampleReader
     {
     protected:
-        struct SampleChanges
+        struct ReaderParams
         {
             uint32_t srcBlockAlign;
             uint32_t destBlockAlign;
@@ -56,27 +56,22 @@ namespace wav_lib
         double curSampleAccum;
 
         bool isSampleChanges;
-        SampleChanges changes;
+        ReaderParams params;
 
         uint32_t maxSamples;
-        uint32_t samplesCount;
+        uint32_t allSamplesCount;
+
+        bool isError;
 
     public:
         ISampleReader(const SampleReaderConfig &cfg);
 
-        SampleBufferSPtr InitBuffer(size_t size)
-        {
-            return std::make_unique<SampleBuffer>(size);
-        }
-
         virtual bool IsBad() const = 0;
-        virtual size_t ReadSampleBuffer(SampleBufferSPtr buffer) = 0;
+        size_t ReadToSampleBuffer(ByteVector& dest);
 
     private:
-        virtual size_t extractSampleBuffer(SampleBufferSPtr buffer) = 0;
-        virtual void addBufferEffects(SampleBufferSPtr buffer) = 0;
-
-        Sample normalizeSample(const Sample& src);
+        virtual size_t extractSampleBuffer(ByteVector &dest, size_t maxSamples) = 0;
+        void addBufferEffects(ByteVector& buffer);
     };
 
     class FileSReader : public ISampleReader
@@ -88,20 +83,12 @@ namespace wav_lib
     public:
         FileSReader(std::fstream &srcFile,
                     std::streampos startPos,
-                    const SampleReaderConfig &cfg)
-            : ISampleReader(cfg),
-              srcFile(srcFile),
-              startPos(startPos)
-        {
-            set_read_pos(this->srcFile, this->startPos);
-        }
+                    const SampleReaderConfig &cfg);
 
-        bool IsBad() const override
-        {
-            return srcFile.bad();
-        }
+        bool IsBad() const override;
 
-        size_t ReadSampleBuffer(SampleBufferSPtr buffer) override;
+    private:
+        size_t extractSampleBuffer(ByteVector &dest, size_t maxSamples) override;
     };
 
     class VectorSReader : public ISampleReader
@@ -114,17 +101,14 @@ namespace wav_lib
     public:
         VectorSReader(const ByteVector &buffer,
                       size_t offsetBytes,
-                      const SampleReaderConfig &cfg)
-            : ISampleReader(cfg),
-              data(buffer),
-              offsetBytes(offsetBytes) {}
+                      const SampleReaderConfig &cfg);
 
-        bool IsBad() const override
-        {
-            return false;
-        }
+        bool IsBad() const override;
 
-        size_t ReadSampleBuffer(SampleBufferSPtr outBuffer) override;
+    private:
+        size_t extractSampleBuffer(ByteVector &dest, size_t maxSamples) override;
     };
+
+
 
 } // namespace wav_lib
