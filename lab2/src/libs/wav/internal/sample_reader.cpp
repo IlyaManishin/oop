@@ -1,37 +1,24 @@
 #include "sample_reader.hpp"
+#include "../wav.hpp"
 #include "config.hpp"
+#include "sound_effects/effects.hpp"
 #include "types.hpp"
 #include "wav_exceptions.hpp"
 
 #include "cassert"
 #include "cstring"
+#include "unordered_map"
 
 namespace wav_lib
 {
+    using EffectFunc = void (*)(ByteVector &, uint32_t, uint32_t);
 
-    // bool FileSReader::ReadSample(Sample &dest)
-    // {
-    //     if (this->curSampleCount == this->samplesCount)
-    //     {
-    //         dest.channelsData.clear();
-    //         return false;
-    //     }
-    //     std::vector<byteVector> data(this->channelsCount, byteVector(this->bytesPerChannel));
-    //     for (size_t i = 0; i < this->channelsCount; i++)
-    //     {
-    //         byte *channelData = data[i].data();
-    //         this->srcFile.read(channelData, this->bytesPerChannel);
-    //         if (this->srcFile.bad())
-    //         {
-    //             dest.isError = true;
-    //             return false;
-    //         }
-    //     }
-    //     dest.channelsData = data;
-
-    //     this->curSampleCount++;
-    //     return true;
-    // }
+    static const std::unordered_map<int, EffectFunc> effectMap = {
+        {(int)WavEffects::BASS, (EffectFunc)bass_effect},
+        {(int)WavEffects::ULTRA_BASS, (EffectFunc)ultra_bass_effect},
+        {(int)WavEffects::RAISE_HIGH, (EffectFunc)high_boost_effect},
+        {(int)WavEffects::DISTORTION, (EffectFunc)distortion_effect},
+        {(int)WavEffects::HACH_LADA, (EffectFunc)hach_lada_effect}};
 
     ISampleReader::ISampleReader(const SampleReaderConfig &cfg)
         : isDiffSampleRate(cfg.input.sampleRate != cfg.output.sampleRate),
@@ -78,6 +65,13 @@ namespace wav_lib
 
     void ISampleReader::addBufferEffects(ByteVector &buffer)
     {
+        if (params.effect == WavEffects::NORMAL)
+            return;
+        if (!effectMap.contains((int)params.effect))
+            return;
+
+        auto it = effectMap.find((int)this->params.effect);
+        it->second(buffer, params.destChannels, params.destDepth);
     }
 
     FileSReader::FileSReader(std::fstream &srcFile,
@@ -148,6 +142,30 @@ namespace wav_lib
 
         return samplesCount;
     }
+
+    // bool FileSReader::ReadSample(Sample &dest)
+    // {
+    //     if (this->curSampleCount == this->samplesCount)
+    //     {
+    //         dest.channelsData.clear();
+    //         return false;
+    //     }
+    //     std::vector<byteVector> data(this->channelsCount, byteVector(this->bytesPerChannel));
+    //     for (size_t i = 0; i < this->channelsCount; i++)
+    //     {
+    //         byte *channelData = data[i].data();
+    //         this->srcFile.read(channelData, this->bytesPerChannel);
+    //         if (this->srcFile.bad())
+    //         {
+    //             dest.isError = true;
+    //             return false;
+    //         }
+    //     }
+    //     dest.channelsData = data;
+
+    //     this->curSampleCount++;
+    //     return true;
+    // }
 
     // Sample ISampleReader::normalizeSample(const Sample &src)
     // {

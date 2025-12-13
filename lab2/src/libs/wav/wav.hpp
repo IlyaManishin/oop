@@ -25,20 +25,20 @@ namespace wav_lib
     class IWavInterval;
     class WavInterval;
     class ISampleReader;
-    class Sample;
 
     using WavFileSPtr = std::shared_ptr<WavFile>;
     using IWavIntervalSPtr = std::shared_ptr<IWavInterval>;
     using WavIntervalSPtr = std::shared_ptr<WavInterval>;
 
-    enum class WavEffects
-    {
-        NORMAL,
-        BASS,
-        ULTRA_BASS,
-        RAISE_HIGH,
-        RAISE_MIDDLE
-    };
+enum class WavEffects
+{
+    NORMAL,
+    BASS,
+    ULTRA_BASS,
+    RAISE_HIGH,
+    DISTORTION,
+    HACH_LADA
+};
 
     class IWavInterval
     {
@@ -100,7 +100,6 @@ namespace wav_lib
 
         void writeIntervalWithReader(WavIntervalSPtr interval, std::streampos destPos,
              ISampleReader &reader, uint32_t maxSamples);
-        void writeSample(Sample &sample);
 
         bool cmpVolumeParams(WavFile *other);
         bool operator==(WavFile &file) { return this->path == file.path; };

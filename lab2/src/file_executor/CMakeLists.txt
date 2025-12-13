@@ -1,0 +1,1 @@
+add_library(file_executor STATIC file_commands.cpp)

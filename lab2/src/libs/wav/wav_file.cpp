@@ -420,13 +420,13 @@ namespace wav_lib
     {
     }
 
-    void WavFile::writeSample(Sample &sample)
-    {
-        for (auto &i : sample.channelsData)
-        {
-            this->file.write(i.data(), i.size() * sizeof(Byte));
-        }
-    }
+    // void WavFile::writeSample(Sample &sample)
+    // {
+    //     for (auto &i : sample.channelsData)
+    //     {
+    //         this->file.write(i.data(), i.size() * sizeof(Byte));
+    //     }
+    // }
 
     bool WavFile::cmpVolumeParams(WavFile *other)
     {
