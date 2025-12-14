@@ -77,6 +77,35 @@ TEST(WavMixTest, UltraBassTest)
     dst->Save();
 }
 
+TEST(WavMixTest, multyEffects)
+{
+    auto src = wav_lib::WavFile::Open(WAV_LIB_MEDIA_DIR + "/Smoke.wav");
+
+    auto dst = wav_lib::WavFile::Create(
+        WAV_LIB_MEDIA_DIR + "/multyEffects.wav",
+        src->GetHeader().numChannels,
+        src->GetHeader().sampleRate,
+        src->GetHeader().bitsPerSample);
+
+    wav_lib::WavEffects effects[] = {
+        wav_lib::WavEffects::BASS,
+        wav_lib::WavEffects::HACH_LADA,
+        wav_lib::WavEffects::RAISE_HIGH,
+        wav_lib::WavEffects::DISTORTION};
+
+    const float start = 55.0f;
+    const float len = 10.0f;
+
+    for (size_t i = 0; i < std::size(effects); ++i)
+    {
+        auto interval = src->GetInterval(start + i * len, start + (i + 1) * len);
+        interval->SetEffect(effects[i]);
+        dst->WriteInterval(interval, i * len, false);
+        dst->Save();
+        dst->PrintInfo();
+    }
+}
+
 TEST(InsertEmptySpace, BasicTest)
 {
     const char *testFile = "test.bin";
