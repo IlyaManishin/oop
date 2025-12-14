@@ -14,7 +14,9 @@ namespace wav_lib
         std::vector<int64_t> filtered(channels, 0);
 
         double alpha = 0.1;
-        double gain = 1.5;
+        // double gain = 1.5;
+        double gain = 0.5;
+        
 
         size_t offset = 0;
         for (size_t i = 0; i < samplesCount; ++i)

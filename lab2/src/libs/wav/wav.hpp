@@ -64,7 +64,6 @@ namespace wav_lib
         void PrintInfo() const;
         TWavHeader GetHeader() const { return this->header; };
 
-        void PlayWav();
         void Save();
 
         IWavIntervalSPtr GetInterval(float startSec, float endSec);

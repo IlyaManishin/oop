@@ -1,6 +1,6 @@
-#include "executor.hpp"
 #include "cmd_commands.hpp"
 #include "cmd_parser/cmd_parser.hpp"
+#include "command_executor.hpp"
 
 #include <iostream>
 #include <unordered_map>
@@ -56,7 +56,7 @@ namespace executor
         {
             command = parser->parse(argc, argv);
         }
-        catch (const std::runtime_error& e)
+        catch (const std::runtime_error &e)
         {
             std::cerr << e.what() << '\n';
             delete parser;
@@ -70,4 +70,4 @@ namespace executor
         delete parser;
         return res;
     }
-}//namespace executor
+} // namespace executor
