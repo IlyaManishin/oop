@@ -22,13 +22,12 @@ namespace wav_lib
 
     ISampleReader::ISampleReader(const SampleReaderConfig &cfg)
         : isDiffSampleRate(cfg.input.sampleRate != cfg.output.sampleRate),
-          sampleStep(double(cfg.input.sampleRate) / double(cfg.output.sampleRate)),
-          curSampleAccum(0.0),
-          isSampleChanges(
+          isSoundChanges(
               cfg.input.channelsCount != cfg.output.channelsCount ||
               cfg.input.bytesPerSample != cfg.output.bytesPerSample),
           maxSamples((uint32_t)cfg.maxSamples),
-          allSamplesCount(0)
+          bufChunkCount(cfg.bufferSize),
+          sampleStep(double(cfg.input.sampleRate) / double(cfg.output.sampleRate))
     {
         params.srcBlockAlign = cfg.input.blockAlign;
         params.destBlockAlign = cfg.output.blockAlign;
@@ -42,28 +41,42 @@ namespace wav_lib
         params.effect = cfg.effect;
         params.isNewVolume = cfg.isNewVolume;
         params.volumeValue = cfg.volumeValue;
+
+        size_t byteSize = cfg.bufferSize * this->params.destBlockAlign;
+        this->buffer = new ByteVector(byteSize);
     }
 
-    size_t ISampleReader::ReadToSampleBuffer(ByteVector &dest)
+    size_t ISampleReader::ReadToSampleBuffer()
     {
         if (allSamplesCount >= maxSamples)
             return 0;
 
         size_t remainSamples = maxSamples - allSamplesCount;
-        size_t chunkSamples = std::min(remainSamples, config::SAMPLE_BUFFER_SIZE);
-        size_t needBytes = chunkSamples * params.destBlockAlign;
+        size_t takeSamples = std::min(remainSamples, this->bufChunkCount);
+        size_t takeBytes = takeSamples * this->params.destBlockAlign;
 
-        if (dest.size() < needBytes)
-            dest.resize(needBytes);
+        if (this->buffer->size() != takeBytes)
+            this->buffer->resize(takeBytes);
 
-        size_t readSamples = this->extractSampleBuffer(dest, chunkSamples);
+        size_t readSamples = this->readDataToBuf(takeSamples);
+        if (this->buffer->size() != readSamples * this->params.destBlockAlign)
+            this->buffer->resize(readSamples * this->params.destBlockAlign);
         allSamplesCount += readSamples;
 
-        this->addBufferEffects(dest);
+        this->addBufferEffects();
         return readSamples;
     }
 
-    void ISampleReader::addBufferEffects(ByteVector &buffer)
+    ISampleReader::~ISampleReader()
+    {
+        if (this->buffer)
+        {
+            delete this->buffer;
+            this->buffer = nullptr;
+        }
+    }
+
+    void ISampleReader::addBufferEffects()
     {
         if (params.effect == WavEffects::NORMAL)
             return;
@@ -71,7 +84,7 @@ namespace wav_lib
             return;
 
         auto it = effectMap.find((int)this->params.effect);
-        it->second(buffer, params.destChannels, params.destDepth);
+        it->second(*this->buffer, params.destChannels, params.destDepth);
     }
 
     FileSReader::FileSReader(std::fstream &srcFile,
@@ -87,58 +100,53 @@ namespace wav_lib
 
     bool FileSReader::IsBad() const
     {
-        return this->srcFile.bad() | this->isError;
+        return this->srcFile.bad() || this->isError;
     }
 
-    size_t FileSReader::extractSampleBuffer(ByteVector &dest, size_t maxSamples)
+    size_t FileSReader::readDataToBuf(size_t maxSamples)
     {
-        if (isSampleChanges)
+        if (isSoundChanges)
         {
             isError = true;
             return 0;
         }
 
-        size_t toReadBytes = maxSamples * params.srcBlockAlign;
-        srcFile.read(dest.data(), toReadBytes);
+        size_t size = maxSamples * this->params.srcBlockAlign;
+        srcFile.read(this->buffer->data(), size);
         size_t byteCount = srcFile.gcount();
 
-        return byteCount / params.srcBlockAlign;
+        return byteCount / this->params.srcBlockAlign;
     }
 
-    VectorSReader::VectorSReader(const ByteVector &buffer,
+    VectorSReader::VectorSReader(const ByteVector &wavData,
                                  size_t offsetBytes,
                                  const SampleReaderConfig &cfg)
         : ISampleReader(cfg),
-          data(buffer),
+          wavData(wavData),
           offsetBytes(offsetBytes),
-          curSampleCount(0)
-    {
-    }
+          curSampleCount(0) {}
 
     bool VectorSReader::IsBad() const
     {
         return this->isError;
     }
 
-    size_t VectorSReader::extractSampleBuffer(ByteVector &dest, size_t maxSamples)
+    size_t VectorSReader::readDataToBuf(size_t maxSamples)
     {
-        if (isSampleChanges)
+        if (isSoundChanges)
         {
             isError = true;
             return 0;
         }
 
-        size_t remainLocal = data.size() > offsetBytes ? data.size() - offsetBytes : 0;
+        size_t remainLocal = wavData.size() > offsetBytes ? wavData.size() - offsetBytes : 0;
         size_t samplesCount = std::min(maxSamples, remainLocal / params.srcBlockAlign);
         if (samplesCount == 0)
             return 0;
 
-        size_t takeBytes = samplesCount * params.srcBlockAlign;
-        if (dest.size() < takeBytes)
-            dest.resize(takeBytes);
-
-        std::memcpy(dest.data(), data.data() + offsetBytes, takeBytes);
-        offsetBytes += takeBytes;
+        size_t byteSize = samplesCount * this->params.srcBlockAlign;
+        std::memcpy(this->buffer->data(), this->wavData.data() + offsetBytes, byteSize); // delete memcpy, only ptrs
+        this->offsetBytes += byteSize;
 
         return samplesCount;
     }

@@ -18,7 +18,7 @@ namespace wav_lib
         uint32_t byteRate;
         uint16_t blockAlign;    // All channels block size
         uint16_t bitsPerSample; // Per one channel
-        uint32_t subchunk2Size; // full wav data size
+        uint32_t subchunk2Size; // Full wav data size
     } TWavHeader;
 
     class WavFile;
@@ -26,19 +26,22 @@ namespace wav_lib
     class WavInterval;
     class ISampleReader;
 
+    struct TWavSoundParams;
+    struct SampleReaderConfig;
+
     using WavFileSPtr = std::shared_ptr<WavFile>;
     using IWavIntervalSPtr = std::shared_ptr<IWavInterval>;
     using WavIntervalSPtr = std::shared_ptr<WavInterval>;
 
-enum class WavEffects
-{
-    NORMAL,
-    BASS,
-    ULTRA_BASS,
-    RAISE_HIGH,
-    DISTORTION,
-    HACH_LADA
-};
+    enum class WavEffects
+    {
+        NORMAL,
+        BASS,
+        ULTRA_BASS,
+        RAISE_HIGH,
+        DISTORTION,
+        HACH_LADA
+    };
 
     class IWavInterval
     {
@@ -95,13 +98,16 @@ enum class WavEffects
         void writeIntervalFromOtherFast(WavIntervalSPtr interval, std::streampos destPos);
 
         void writeIntervalSlow(WavIntervalSPtr interval, bool isInsert, std::streampos destPos);
-        void writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos);
-        void writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos);
+        void writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
+        void writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
 
-        void writeIntervalWithReader(WavIntervalSPtr interval, std::streampos destPos,
-             ISampleReader &reader, uint32_t maxSamples);
+        bool writeIntervalWithReader(std::streampos destPos, ISampleReader &reader, uint32_t maxSamples);
 
         bool cmpVolumeParams(WavFile *other);
+        void getSampleReaderConfig(WavIntervalSPtr interval,
+                                   SampleReaderConfig &config,
+                                   uint64_t maxSamples) const;
+        void getReaderSoundParams(TWavSoundParams &params) const;
         bool operator==(WavFile &file) { return this->path == file.path; };
     };
 
