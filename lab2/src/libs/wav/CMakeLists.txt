@@ -5,4 +5,7 @@ add_library(wav_lib
     wav_file.cpp
     wav_reader.cpp
     ${INTERNAL_FOLDER}/wav_utils.cpp
-    ${INTERNAL_FOLDER}/sample_reader.cpp)
+    ${INTERNAL_FOLDER}/sample_reader.cpp
+
+    ${INTERNAL_FOLDER}/sound_effects/effects.cpp
+)

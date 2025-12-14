@@ -18,14 +18,16 @@ namespace wav_lib
         uint32_t byteRate;
         uint16_t blockAlign;    // All channels block size
         uint16_t bitsPerSample; // Per one channel
-        uint32_t subchunk2Size; // full wav data size
+        uint32_t subchunk2Size; // Full wav data size
     } TWavHeader;
 
     class WavFile;
     class IWavInterval;
     class WavInterval;
     class ISampleReader;
-    class Sample;
+
+    struct TWavSoundParams;
+    struct SampleReaderConfig;
 
     using WavFileSPtr = std::shared_ptr<WavFile>;
     using IWavIntervalSPtr = std::shared_ptr<IWavInterval>;
@@ -35,9 +37,9 @@ namespace wav_lib
     {
         NORMAL,
         BASS,
-        ULTRA_BASS,
+        HACH_LADA,
         RAISE_HIGH,
-        RAISE_MIDDLE
+        DISTORTION,
     };
 
     class IWavInterval
@@ -95,14 +97,16 @@ namespace wav_lib
         void writeIntervalFromOtherFast(WavIntervalSPtr interval, std::streampos destPos);
 
         void writeIntervalSlow(WavIntervalSPtr interval, bool isInsert, std::streampos destPos);
-        void writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos);
-        void writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos);
+        void writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
+        void writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
 
-        void writeIntervalWithReader(WavIntervalSPtr interval, std::streampos destPos,
-             ISampleReader &reader, uint32_t maxSamples);
-        void writeSample(Sample &sample);
+        bool writeIntervalWithReader(std::streampos destPos, ISampleReader &reader, uint32_t maxSamples);
 
         bool cmpVolumeParams(WavFile *other);
+        void getSampleReaderConfig(WavIntervalSPtr interval,
+                                   SampleReaderConfig &config,
+                                   uint64_t maxSamples) const;
+        void getReaderSoundParams(TWavSoundParams &params) const;
         bool operator==(WavFile &file) { return this->path == file.path; };
     };
 

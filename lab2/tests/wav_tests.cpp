@@ -9,14 +9,16 @@
 #include <filesystem>
 #include <gtest/gtest.h>
 
-const char *WAV_LIB_TESTS_DIR = "./tests_data/wav_lib";
+const std::string WAV_LIB_TESTS_DIR = "./tests_data/wav_lib";
+const std::string WAV_LIB_MEDIA_DIR = WAV_LIB_TESTS_DIR + "/media";
 
 using namespace wav_lib;
-TEST(CmdMixTest, BasicMixToCreatedFile)
+
+TEST(WavMixTest, BasicMixToCreatedFile)
 {
-    std::string inPath = std::string(WAV_LIB_TESTS_DIR) + "/test1/Smoke.wav"; // background
-    std::string outPath = std::string(WAV_LIB_TESTS_DIR) + "/test1/Alive.wav";
-    std::string destPath = std::string(WAV_LIB_TESTS_DIR) + "/test1/Mixed.wav"; // interval
+    std::string inPath = WAV_LIB_MEDIA_DIR + "/Smoke.wav"; // background
+    std::string outPath = WAV_LIB_MEDIA_DIR + "/Alive.wav";
+    std::string destPath = WAV_LIB_TESTS_DIR + "/Mixed.wav"; // interval
 
     if (std::filesystem::exists(destPath))
         std::filesystem::remove(destPath);
@@ -56,6 +58,23 @@ TEST(CmdMixTest, BasicMixToCreatedFile)
 
     ok = executor::cmd_mix(args);
     EXPECT_TRUE(ok);
+}
+
+TEST(WavMixTest, UltraBassTest)
+{
+    auto src = wav_lib::WavFile::Open(WAV_LIB_MEDIA_DIR + "/Smoke.wav");
+
+    auto dst = wav_lib::WavFile::Create(
+        WAV_LIB_MEDIA_DIR + "UltraBass.wav",
+        src->GetHeader().numChannels,
+        src->GetHeader().sampleRate,
+        src->GetHeader().bitsPerSample);
+
+    auto interval = src->GetInterval(0.0f, 100.0f);
+    interval->SetEffect(wav_lib::WavEffects::DISTORTION);
+
+    dst->WriteInterval(interval, 0.0f, false);
+    dst->Save();
 }
 
 TEST(InsertEmptySpace, BasicTest)

@@ -1,8 +1,8 @@
 #include "cmd_parser/cmd_parser.hpp"
 #include "wav/wav.hpp"
 
+#include "../file_executor/file_exec.hpp"
 #include "base_commands/core_commands.hpp"
-#include "base_commands/file_commands.hpp"
 #include "executor.hpp"
 #include "utils/utils.hpp"
 
@@ -42,7 +42,7 @@ namespace executor
             std::cerr << "Usage: file <config_file> ";
             return false;
         }
-        bool res = run_from_config_file(configPath);
+        bool res = executor::run_from_config_file(configPath);
         return res;
     }
 

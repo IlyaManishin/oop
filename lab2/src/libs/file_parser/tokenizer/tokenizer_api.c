@@ -1,10 +1,9 @@
-#include "tokenizer.h"
 #include "tokenizer_api.h"
 #include "tokenizer_objects/token_buffer.h"
+#include "tokenizer_objects/tokenizer.h"
 
 #include <assert.h>
 #include <string.h>
-
 
 typedef struct TFileData
 {

@@ -12,6 +12,8 @@
 #include <vector>
 
 constexpr int MAX_CHAIN_COUNT = 12;
+constexpr double INTERVAL_SAMPLES_ACCURANCY = 0.000001;
+// const std::string interval_read_error = "";
 
 namespace wav_lib
 {
@@ -37,6 +39,11 @@ namespace wav_lib
 
         ~WavInterval() {};
     };
+
+    OperationExc write_interval_error()
+    {
+        return OperationExc();
+    }
 
     WavFile::WavFile(const std::string &wavPath, bool createNew)
     {
@@ -140,14 +147,10 @@ namespace wav_lib
         this->isChanged = true;
     }
 
-    void WavFile::PrintInfo() const
+    void WavFile::updateSubchunkSize()
     {
-        std::cout << "File: " << path << "\n";
-        std::cout << "Channels: " << this->header.numChannels << "\n";
-        std::cout << "Sample rate: " << this->header.sampleRate << " Hz\n";
-        std::cout << "Bits per sample: " << this->header.bitsPerSample << "\n";
-        std::cout << "Byte rate: " << this->header.byteRate << "\n";
-        std::cout << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
+        this->header.subchunk2Size = static_cast<uint32_t>(this->dataEnd - this->dataStart);
+        this->isChanged = true;
     }
 
     void WavFile::saveHeader()
@@ -174,10 +177,14 @@ namespace wav_lib
         this->file.flush();
     }
 
-    void WavFile::updateSubchunkSize()
+    void WavFile::PrintInfo() const
     {
-        this->header.subchunk2Size = static_cast<uint32_t>(this->dataEnd - this->dataStart);
-        this->isChanged = true;
+        std::cout << "File: " << path << "\n";
+        std::cout << "Channels: " << this->header.numChannels << "\n";
+        std::cout << "Sample rate: " << this->header.sampleRate << " Hz\n";
+        std::cout << "Bits per sample: " << this->header.bitsPerSample << "\n";
+        std::cout << "Byte rate: " << this->header.byteRate << "\n";
+        std::cout << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
     }
 
     void WavFile::Save()
@@ -338,14 +345,15 @@ namespace wav_lib
         uint32_t srcSampleRate = srcWav->header.sampleRate;
         uint32_t dstSampleRate = this->header.sampleRate;
 
-        uint64_t intervalBytes;
+        uint64_t intervalBytes, dstSamplesCount;
         if (this->header.sampleRate != srcWav->header.sampleRate)
         {
-            uint64_t dstSamplesCount = (uint64_t)((double)(interval->samplesCount) * dstSampleRate / srcSampleRate);
+            dstSamplesCount = (uint64_t)((double)(interval->samplesCount) * dstSampleRate / srcSampleRate);
             intervalBytes = dstSamplesCount * this->header.blockAlign;
         }
         else
         {
+            dstSamplesCount = interval->samplesCount;
             intervalBytes = interval->samplesCount * this->header.blockAlign;
         }
 
@@ -359,22 +367,77 @@ namespace wav_lib
 
         if (*this == *interval->wavFile)
         {
-            this->writeIntervalFromCurSlow(interval, destPos);
+            this->writeIntervalFromCurSlow(interval, destPos, dstSamplesCount);
         }
         else
         {
-            this->writeIntervalFromOtherSlow(interval, destPos);
+            this->writeIntervalFromOtherSlow(interval, destPos, dstSamplesCount);
         }
     }
 
-    void WavFile::writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos)
+    void WavFile::writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples)
     {
         assert(*this == *interval->wavFile);
+
+        uint32_t dataLength = interval->samplesCount * this->header.blockAlign;
+        ByteVector *data = read_file_big_vector(file, dataLength, interval->startPos);
+        if (data == nullptr)
+        {
+        }
+
+        SampleReaderConfig config;
+        this->getSampleReaderConfig(interval, config, maxSamples);
+        VectorSReader reader(*data, 0, config);
+
+        bool res = this->writeIntervalWithReader(destPos, reader, maxSamples);
+        delete data;
+
+        if (!res)
+        {
+            throw write_interval_error();
+        }
     }
 
-    void WavFile::writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos)
+    void WavFile::writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples)
     {
         assert(*this != *interval->wavFile);
+
+        SampleReaderConfig config;
+        this->getSampleReaderConfig(interval, config, maxSamples);
+
+        FileSReader reader(interval->wavFile->file, interval->startPos, config);
+
+        bool res = this->writeIntervalWithReader(destPos, reader, maxSamples);
+        if (!res)
+            throw write_interval_error();
+    }
+
+    bool WavFile::writeIntervalWithReader(std::streampos destPos, ISampleReader &reader, uint32_t maxSamples)
+    {
+        set_read_pos(this->file, destPos);
+
+        const ByteVector *buffer = reader.GetBuffer();
+        if (buffer == nullptr)
+        {
+            throw write_interval_error();
+        }
+
+        size_t allSamples = 0, samplesCount = 0;
+        std::streampos curPos = destPos;
+        while ((samplesCount = reader.ReadToSampleBuffer()))
+        {
+            size_t byteSize = samplesCount * this->header.blockAlign;
+            bool res = write_vector_to_file(this->file, curPos, buffer, byteSize);
+            if (!res)
+                return false;
+            allSamples += samplesCount;
+            curPos += byteSize;
+        }
+        uint32_t delta = std::labs((long long)maxSamples - allSamples);
+        if ((double)delta / maxSamples > INTERVAL_SAMPLES_ACCURANCY)
+            return false;
+
+        return true;
     }
 
     // void WavFile::writeIntervalSlow(WavIntervalSPtr interval, bool isInsert, std::streampos destPos)
@@ -415,18 +478,13 @@ namespace wav_lib
         return res;
     }
 
-    void WavFile::writeIntervalWithReader(WavIntervalSPtr interval, std::streampos destPos,
-                                          ISampleReader &reader, uint32_t maxSamples)
-    {
-    }
-
-    void WavFile::writeSample(Sample &sample)
-    {
-        for (auto &i : sample.channelsData)
-        {
-            this->file.write(i.data(), i.size() * sizeof(Byte));
-        }
-    }
+    // void WavFile::writeSample(Sample &sample)
+    // {
+    //     for (auto &i : sample.channelsData)
+    //     {
+    //         this->file.write(i.data(), i.size() * sizeof(Byte));
+    //     }
+    // }
 
     bool WavFile::cmpVolumeParams(WavFile *other)
     {
@@ -437,6 +495,28 @@ namespace wav_lib
                    header1.blockAlign == header2.blockAlign &&
                    header1.sampleRate == header2.sampleRate;
         return res;
+    }
+
+    void WavFile::getSampleReaderConfig(WavIntervalSPtr interval,
+                                        SampleReaderConfig &config,
+                                        uint64_t maxSamples) const
+    {
+        config.maxSamples = maxSamples;
+
+        interval->wavFile->getReaderSoundParams(config.input);
+        this->getReaderSoundParams(config.output);
+
+        config.effect = interval->effect;
+        config.isNewVolume = interval->isNewVolume;
+        config.volumeValue = interval->volumeValue;
+    }
+
+    void WavFile::getReaderSoundParams(TWavSoundParams &dest) const
+    {
+        dest.channelsCount = this->header.numChannels;
+        dest.bytesPerSample = this->header.bitsPerSample / 8;
+        dest.blockAlign = this->header.blockAlign;
+        dest.sampleRate = this->header.sampleRate;
     }
 
     WavFile::~WavFile()
