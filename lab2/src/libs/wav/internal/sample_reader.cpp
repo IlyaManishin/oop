@@ -15,10 +15,9 @@ namespace wav_lib
 
     static const std::unordered_map<int, EffectFunc> effectMap = {
         {(int)WavEffects::BASS, (EffectFunc)bass_effect},
-        {(int)WavEffects::ULTRA_BASS, (EffectFunc)ultra_bass_effect},
+        {(int)WavEffects::HACH_LADA, (EffectFunc)hach_lada_effect},
         {(int)WavEffects::RAISE_HIGH, (EffectFunc)high_boost_effect},
-        {(int)WavEffects::DISTORTION, (EffectFunc)distortion_effect},
-        {(int)WavEffects::HACH_LADA, (EffectFunc)hach_lada_effect}};
+        {(int)WavEffects::DISTORTION, (EffectFunc)distortion_effect}};
 
     ISampleReader::ISampleReader(const SampleReaderConfig &cfg)
         : isDiffSampleRate(cfg.input.sampleRate != cfg.output.sampleRate),

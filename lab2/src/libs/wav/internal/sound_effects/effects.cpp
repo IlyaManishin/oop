@@ -48,7 +48,7 @@ namespace wav_lib
     }
 
 
-    void ultra_bass_effect(ByteVector &buffer, uint32_t channels, uint32_t bytesPerSample)
+    void hach_lada_effect(ByteVector &buffer, uint32_t channels, uint32_t bytesPerSample)
     {
         size_t samplesCount = buffer.size() / (bytesPerSample * channels);
         std::vector<int64_t> prev(channels, 0);
@@ -147,60 +147,6 @@ namespace wav_lib
                 sample = std::clamp(sample * 2, -clip, clip);
 
                 int64_t tmp = sample;
-                for (uint32_t b = 0; b < bytesPerSample; ++b)
-                {
-                    buffer[offset + b] = tmp & 0xFF;
-                    tmp >>= 8;
-                }
-
-                offset += bytesPerSample;
-            }
-        }
-    }
-    
-    void hach_lada_effect(ByteVector &buffer, uint32_t channels, uint32_t bytesPerSample)
-    {
-        size_t samplesCount = buffer.size() / (channels * bytesPerSample);
-
-        std::mt19937 rng(42);
-        std::uniform_int_distribution<int64_t> noiseDist(-1, 1);
-
-        std::vector<int64_t> prevLow(channels, 0);
-        std::vector<int64_t> prevHigh(channels, 0);
-
-        double alphaLow = 0.05;
-        double alphaHigh = 0.2;
-
-        size_t offset = 0;
-        for (size_t i = 0; i < samplesCount; ++i)
-        {
-            for (uint32_t ch = 0; ch < channels; ++ch)
-            {
-                int64_t sample = 0;
-                for (uint32_t b = 0; b < bytesPerSample; ++b)
-                    sample |= int64_t(uint8_t(buffer[offset + b])) << (8 * b);
-
-                int64_t signBit = 1LL << (bytesPerSample * 8 - 1);
-                if (sample & signBit)
-                    sample -= 1LL << (bytesPerSample * 8);
-
-                int64_t low = static_cast<int64_t>(prevLow[ch] + alphaLow * (sample - prevLow[ch]));
-                int64_t high = sample - prevHigh[ch];
-                prevLow[ch] = low;
-                prevHigh[ch] = static_cast<int64_t>(prevHigh[ch] + alphaHigh * high);
-
-                int64_t processed = low + high;
-
-                processed += noiseDist(rng);
-
-                int64_t qbits = bytesPerSample * 8;
-                int64_t shift = qbits > 12 ? qbits - 12 : 0;
-                if (shift)
-                    processed = (processed >> shift) << shift;
-
-                processed = std::clamp(processed, -signBit, signBit - 1);
-
-                int64_t tmp = processed;
                 for (uint32_t b = 0; b < bytesPerSample; ++b)
                 {
                     buffer[offset + b] = tmp & 0xFF;

@@ -37,10 +37,9 @@ namespace wav_lib
     {
         NORMAL,
         BASS,
-        ULTRA_BASS,
+        HACH_LADA,
         RAISE_HIGH,
         DISTORTION,
-        HACH_LADA
     };
 
     class IWavInterval
