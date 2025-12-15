@@ -1,6 +1,6 @@
-#include "executor.hpp"
 #include "cmd_commands.hpp"
 #include "cmd_parser/cmd_parser.hpp"
+#include "command_executor.hpp"
 
 #include <iostream>
 #include <unordered_map>
@@ -43,7 +43,7 @@ namespace executor
         res[(int)COMMANDS::MIX] = cmd_mix;
         res[(int)COMMANDS::EFFECT] = cmd_sound_effect;
         res[(int)COMMANDS::MUTE] = cmd_mute;
-        res[(int)COMMANDS::CHANGE_SPEED] = cmd_change_speed;
+        // res[(int)COMMANDS::CHANGE_SPEED] = cmd_change_speed;
 
         return res;
     }
@@ -56,7 +56,7 @@ namespace executor
         {
             command = parser->parse(argc, argv);
         }
-        catch (const std::runtime_error& e)
+        catch (const std::runtime_error &e)
         {
             std::cerr << e.what() << '\n';
             delete parser;
@@ -70,4 +70,4 @@ namespace executor
         delete parser;
         return res;
     }
-}//namespace executor
+} // namespace executor

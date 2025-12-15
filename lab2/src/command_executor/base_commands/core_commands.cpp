@@ -36,10 +36,4 @@ namespace executor
         return true;
     }
 
-    bool cmd_change_speed_impl(WavFileSPtr wavFile, float start, float end, float speed)
-    {
-        std::cout << "Speed changed successfully (stub)\n";
-        return true;
-    }
-
 } // namespace executor

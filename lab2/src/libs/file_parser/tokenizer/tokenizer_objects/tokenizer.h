@@ -1,6 +1,6 @@
 #pragma once
 
-#include "syntax_errors.h"
+#include "../syntax_errors.h"
 #include "token.h"
 
 #ifdef __cplusplus

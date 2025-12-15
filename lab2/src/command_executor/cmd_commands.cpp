@@ -1,10 +1,11 @@
-#include "cmd_parser/cmd_parser.hpp"
-#include "wav/wav.hpp"
-
-#include "../file_executor/file_exec.hpp"
 #include "base_commands/core_commands.hpp"
-#include "executor.hpp"
 #include "utils/utils.hpp"
+
+#include "cmd_parser/cmd_parser.hpp"
+#include "command_executor.hpp"
+#include "file_exec.hpp"
+#include "file_parser/parser.hpp"
+#include "wav/wav.hpp"
 
 #include <iostream>
 #include <variant>
@@ -159,35 +160,35 @@ namespace executor
         }
     }
 
-    bool cmd_change_speed(const Args &args) noexcept
-    {
-        std::string wavPath;
-        float start = 0, end = 0, speed = 1.0;
+    // bool cmd_change_speed(const Args &args) noexcept
+    // {
+    //     std::string wavPath;
+    //     float start = 0, end = 0, speed = 1.0;
 
-        if (!get_arg(args, 0, wavPath) ||
-            !get_arg(args, 1, start) ||
-            !get_arg(args, 2, end) ||
-            !get_arg(args, 3, speed))
-        {
-            std::cerr << "Usage: speed <wavfile> <start> <end> <speed>\n";
-            return false;
-        }
+    //     if (!get_arg(args, 0, wavPath) ||
+    //         !get_arg(args, 1, start) ||
+    //         !get_arg(args, 2, end) ||
+    //         !get_arg(args, 3, speed))
+    //     {
+    //         std::cerr << "Usage: speed <wavfile> <start> <end> <speed>\n";
+    //         return false;
+    //     }
 
-        WavReader reader;
-        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
-        if (!wavFile)
-        {
-            return false;
-        }
+    //     WavReader reader;
+    //     WavFileSPtr wavFile = try_read_wav(reader, wavPath);
+    //     if (!wavFile)
+    //     {
+    //         return false;
+    //     }
 
-        try
-        {
-            return cmd_change_speed_impl(wavFile, start, end, speed);
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << e.what() << "\n";
-            return false;
-        }
-    }
+    //     try
+    //     {
+    //         return cmd_change_speed_impl(wavFile, start, end, speed);
+    //     }
+    //     catch (const std::exception &e)
+    //     {
+    //         std::cerr << e.what() << "\n";
+    //         return false;
+    //     }
+    // }
 } // namespace executor

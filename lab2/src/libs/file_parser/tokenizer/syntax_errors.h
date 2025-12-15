@@ -1,13 +1,15 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdlib.h>
+
+#define CRIT_ERR_MSG_LENGTH 256
+#define TOK_ERROR_BUF_SIZE 256
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#define CRIT_ERR_MSG_LENGTH 256
 
     typedef struct TErrorFilePos
     {
@@ -37,6 +39,7 @@ extern "C"
     void print_error_msg(const char *textMsg);
     void print_error_with_pos(const char *errMsg, TErrorFilePos errorPosInfo);
     TErrorFilePos get_error_file_pos(const char *errStart, const char *errLineStart, int errLineIndex, const char *bufferEnd);
+    void format_error_with_pos(const char *textMsg, TErrorFilePos pos, char *outBuf, size_t bufSize);
 
 #ifdef __cplusplus
 }

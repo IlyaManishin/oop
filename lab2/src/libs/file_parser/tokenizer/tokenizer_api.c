@@ -106,8 +106,24 @@ TTokenizerError get_tokenizer_error(TTokenizer *tokenizer)
     return tokenizer->tokError;
 }
 
+char *tokenizer_error_to_str(TTokenizerError error)
+{
+    if (!error.withPos)
+    {
+        char *buffer = (char *)malloc((strlen(error.textMsg) + 1) * sizeof(char));
+        strcpy(buffer, error.textMsg);
+        return buffer;
+    }
+
+    char *buffer = (char *)malloc(TOK_ERROR_BUF_SIZE * sizeof(char));
+    format_error_with_pos(error.textMsg, error.pos, buffer, TOK_ERROR_BUF_SIZE);
+    return buffer;
+}
+
 size_t token_strlen(TToken token)
 {
+    if (token.start == NULL)
+        return 0;
     if (token.end <= token.start)
         return 0;
     size_t res = token.end - token.start;

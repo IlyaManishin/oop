@@ -9,8 +9,6 @@ extern "C"
 
 #define BASE_SIZE 128
 
-    // incaplusate!!!
-
     typedef struct TTokenBuffer TTokenBuffer;
 
     TTokenBuffer *get_token_buf();

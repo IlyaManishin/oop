@@ -1,16 +1,21 @@
 #include "parser.hpp"
 #include "types.hpp"
 
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace file_parser
 {
     Parser::Parser(std::string filePath)
-        : filePath(filePath)
+        : filePath(std::move(filePath))
     {
         this->file = fopen(this->filePath.c_str(), "r");
-        this->tokenizer = tokenizer_from_file_data(this->file);
-        this->nextToken();
+        if (!this->file)
+            return;
+
+        this->tokenizer = tokenizer_from_file_data(file);
+        this->isParserInit = true;
     }
 
     Parser::~Parser()
@@ -21,142 +26,71 @@ namespace file_parser
             fclose(this->file);
     }
 
+    FileUPtr Parser::ParseFileTree()
+    {
+        if (this->file == NULL)
+            throw ParserException("Can't open file");
+        if (this->isErr())
+            throw ParserException("Invalid file to parse");
+
+        return this->parseFileRule();
+    }
+
     void Parser::nextToken()
     {
-        this->current = token_soft_read(this->tokenizer);
+        this->curTok = token_soft_read(this->tokenizer);
+        if (is_tokenizer_error(this->tokenizer))
+        {
+            TTokenizerError error = get_tokenizer_error(this->tokenizer);
+            char *errMsg = tokenizer_error_to_str(error);
+
+            auto exc = ParserException(std::string(errMsg));
+            free(errMsg);
+            throw exc;
+        }
     }
 
     int Parser::save()
     {
-        return get_tokenizer_pos(this->tokenizer);
+        return get_tokenizer_pos(tokenizer);
     }
 
     void Parser::rewind(int pos)
     {
-        set_tokenizer_pos(this->tokenizer, pos);
+        set_tokenizer_pos(tokenizer, pos);
+    }
+
+    bool Parser::checkTokType(TokenTypes type)
+    {
+        return curTok.type == type;
+    }
+
+    bool Parser::acceptTok(TokenTypes type)
+    {
+        int pos = this->save();
         this->nextToken();
-    }
-
-    bool Parser::checkType(TokenTypes type)
-    {
-        return this->current.type == type;
-    }
-
-    bool Parser::accept(TokenTypes type)
-    {
-        if (!this->checkType(type))
+        if (!this->checkTokType(type))
+        {
+            this->rewind(pos);
             return false;
-        this->nextToken();
+        }
         return true;
     }
 
-    Assign *Parser::parseAssign()
+    void Parser::readPassTokens()
     {
-        int pos = this->save();
-
-        auto id = this->identRule();
-        if (!id)
+        while (acceptTok(NEWLINE))
         {
-            this->rewind(pos);
-            return nullptr;
+            continue;
         }
-
-        if (!this->accept(ASSIGN))
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
-        auto func = this->parseFuncRun();
-        if (!func)
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
-        return new Assign{*id, *func};
     }
 
-    FuncRun *Parser::parseFuncRun()
+    std::string Parser::tokToStr(TToken token)
     {
-        int pos = this->save();
-
-        auto id = this->identRule();
-        if (!id)
+        if (token.start == NULL)
         {
-            this->rewind(pos);
-            return nullptr;
+            return std::string();
         }
-
-        if (!this->accept(LPAREN))
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
-        auto args = this->readArgsRule();
-
-        if (!this->accept(RPAREN))
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
-        return new FuncRun{*id, args};
+        return std::string(token.start, token_strlen(token));
     }
-
-    MethodRun *Parser::parseMethodRun()
-    {
-        int pos = this->save();
-
-        auto id = this->identRule();
-        if (!id)
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
-        if (!this->accept(DOT))
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
-        auto func = this->parseFuncRun();
-        if (!func)
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
-        return new MethodRun{*id, *func};
-    }
-
-    std::vector<Arg> Parser::readArgsRule()
-    {
-        std::vector<Arg> args;
-        while (auto arg = this->argRule()){
-            args.push_back(arg.value());
-        }
-            //????
-        return args;
-    }
-
-    std::optional<Arg> Parser::argRule()
-    {
-        return std::optional<Arg>();
-    }
-
-    std::optional<std::string> Parser::identRule()
-    {
-        int pos = this->save();
-        if (!this->checkType(IDENT))
-        {
-            this->rewind(pos);
-            return {};
-        }
-        std::string value(this->current.start, this->current.end);
-        this->nextToken();
-        return value;
-    }
-}
+} // namespace file_parser

@@ -64,7 +64,6 @@ namespace wav_lib
         void PrintInfo() const;
         TWavHeader GetHeader() const { return this->header; };
 
-        void PlayWav();
         void Save();
 
         IWavIntervalSPtr GetInterval(float startSec, float endSec);
@@ -97,10 +96,9 @@ namespace wav_lib
         void writeIntervalFromOtherFast(WavIntervalSPtr interval, std::streampos destPos);
 
         void writeIntervalSlow(WavIntervalSPtr interval, bool isInsert, std::streampos destPos);
-        void writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
-        void writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
-
-        bool writeIntervalWithReader(std::streampos destPos, ISampleReader &reader, uint32_t maxSamples);
+        uint32_t writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
+        uint32_t writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
+        uint32_t writeIntervalWithReader(std::streampos destPos, ISampleReader &reader, uint32_t maxSamples);
 
         bool cmpVolumeParams(WavFile *other);
         void getSampleReaderConfig(WavIntervalSPtr interval,
