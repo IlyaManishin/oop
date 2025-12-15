@@ -8,6 +8,7 @@
 namespace file_parser
 {
     struct Arg;
+    struct FuncCall;
     struct FuncRun;
     struct Assign;
     struct MethodRun;
@@ -17,6 +18,7 @@ namespace file_parser
 
     using ArgUPtr = std::unique_ptr<Arg>;
     using ArgsUPtr = std::unique_ptr<std::vector<ArgUPtr>>;
+    using FuncCallUPtr = std::unique_ptr<FuncCall>;
     using FuncRunUPtr = std::unique_ptr<FuncRun>;
     using AssignUPtr = std::unique_ptr<Assign>;
     using MethodRunUPtr = std::unique_ptr<MethodRun>;
@@ -45,39 +47,47 @@ namespace file_parser
             : value(v), type(Type::NUMBER) {}
     };
 
-    struct FuncRun
+    struct FuncCall
     {
         std::string name;
         ArgsUPtr args;
 
-        FuncRun(std::string name, ArgsUPtr args)
+        FuncCall(std::string name, ArgsUPtr args)
             : name(std::move(name)), args(std::move(args)) {}
+    };
+
+    struct FuncRun
+    {
+        FuncCallUPtr fCall;
+
+        FuncRun(FuncCallUPtr fCall)
+            : fCall(std::move(fCall)) {}
     };
 
     struct Assign
     {
         std::string ident;
-        FuncRunUPtr right;
+        FuncCallUPtr right;
 
-        Assign(std::string ident, FuncRunUPtr right)
+        Assign(std::string ident, FuncCallUPtr right)
             : ident(std::move(ident)), right(std::move(right)) {}
     };
 
     struct MethodRun
     {
         std::string object;
-        FuncRunUPtr call;
+        FuncCallUPtr call;
 
-        MethodRun(std::string object, FuncRunUPtr call)
+        MethodRun(std::string object, FuncCallUPtr call)
             : object(std::move(object)), call(std::move(call)) {}
     };
 
     struct IfStat
     {
-        FuncRunUPtr condition;
+        FuncCallUPtr condition;
         StatementsUPtr statements;
 
-        IfStat(FuncRunUPtr condition, StatementsUPtr statements)
+        IfStat(FuncCallUPtr condition, StatementsUPtr statements)
             : condition(std::move(condition)), statements(std::move(statements)) {}
     };
 
