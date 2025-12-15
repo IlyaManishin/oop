@@ -4,6 +4,7 @@
 #include "types.hpp"
 
 #include <cstdio>
+#include <memory>
 #include <optional>
 #include <string>
 #include <variant>
@@ -17,16 +18,18 @@ namespace file_parser
         Parser(std::string filePath);
         ~Parser();
 
-        void parse();
+        FileUPtr parse();
 
     private:
-        Assign *parseAssign();
-        FuncRun *parseFuncRun();
-        MethodRun *parseMethodRun();
-        std::vector<std::variant<Assign, FuncRun, MethodRun>> parseStatements();
+        AssignUPtr parseAssign();
+        FuncRunUPtr parseFuncRun();
+        MethodRunUPtr parseMethodRun();
+        IfStatUPtr parseIfStat();
+        StatementUPtr parseStatement();
+        std::vector<StatementUPtr> parseStatements();
 
-        std::vector<Arg> readArgsRule();
-        std::optional<Arg> argRule();
+        std::vector<ArgUPtr> readArgsRule();
+        ArgUPtr argRule();
 
         std::optional<std::string> identRule();
         std::optional<std::string> numberRule();
@@ -44,4 +47,4 @@ namespace file_parser
         TTokenizer *tokenizer = nullptr;
         TToken current;
     };
-} // namespace file_parser
+}// namespace file_parser
