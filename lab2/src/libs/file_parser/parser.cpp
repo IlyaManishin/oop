@@ -25,6 +25,8 @@ namespace file_parser
 
     FileUPtr Parser::ParseFileTree()
     {
+        if (this->file == NULL)
+            throw ParserException("Can't open file");
         if (this->isErr())
             throw ParserException("Invalid file to parse");
 

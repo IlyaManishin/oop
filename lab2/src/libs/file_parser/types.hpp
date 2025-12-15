@@ -101,9 +101,9 @@ namespace file_parser
 
     struct FileTree
     {
-        std::vector<StatementUPtr> statements;
+        StatementsUPtr statements;
 
-        FileTree(std::vector<StatementUPtr> statements)
+        FileTree(StatementsUPtr statements)
             : statements(std::move(statements)) {}
     };
 

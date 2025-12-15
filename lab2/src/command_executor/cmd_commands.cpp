@@ -1,10 +1,10 @@
-#include "../file_executor/file_exec.hpp"
 #include "base_commands/core_commands.hpp"
 #include "utils/utils.hpp"
 
-#include "file_parser/parser.hpp"
 #include "cmd_parser/cmd_parser.hpp"
 #include "command_executor.hpp"
+#include "file_exec.hpp"
+#include "file_parser/parser.hpp"
 #include "wav/wav.hpp"
 
 #include <iostream>

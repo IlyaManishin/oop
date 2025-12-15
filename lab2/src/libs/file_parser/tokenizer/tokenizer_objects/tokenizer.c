@@ -1,6 +1,6 @@
 #include "tokenizer.h"
-#include "../tokenizer_api.h"
 #include "../syntax_errors.h"
+#include "../tokenizer_api.h"
 #include "token_buffer.h"
 
 #include <assert.h>
@@ -18,7 +18,7 @@ static void set_pos_tokenizer_error(TTokenizer *tokenizer, const char *errStart,
     tokenizer->tokError.textMsg = textMsg;
     tokenizer->tokError.withPos = true;
     tokenizer->tokError.pos = get_error_file_pos(errStart, tokenizer->curLine, tokenizer->lineno, tokenizer->end);
-
+    tokenizer->tokError.type = type;
     tokenizer->isError = true;
 }
 
@@ -31,6 +31,7 @@ static void set_base_tokenizer_error(TTokenizer *tokenizer, char *textMsg, TokEr
 {
     tokenizer->tokError.textMsg = textMsg;
     tokenizer->tokError.withPos = false;
+    tokenizer->tokError.type = type;
 
     tokenizer->isError = true;
 }

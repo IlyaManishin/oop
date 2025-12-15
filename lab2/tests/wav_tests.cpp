@@ -113,7 +113,7 @@ TEST(InsertEmptySpace, BasicTest)
     // создаём исходный файл 2 МБ, заполненный 0xAA
     {
         std::ofstream out(testFile, std::ios::binary);
-        ByteVector data(2 * 1024 * 1024, 0xAA);
+        ByteVector data(2 * 1024 * 1024, 1);
         out.write((char *)data.data(), data.size());
     }
 
