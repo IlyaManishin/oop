@@ -15,14 +15,22 @@ namespace file_parser
         {
             throw ParserException("Can't parse file");
         }
+
+        this->readPassTokens();
         if (!this->isEOF())
         {
+            this->nextToken();
             const std::string msg = std::string("Can't parse rule(line ") +
                                     std::to_string(this->curTok.lineno) +
                                     std::string(")\n");
-            const std::string tokenStr = std::string(this->curTok.start, token_strlen(this->curTok));
-            const std::string errMsg = std::string("invalid token - ") + tokenStr;
-            throw ParserException(errMsg);
+            if (token_strlen(this->curTok) != 0)
+            {
+                const std::string tokenStr = std::string(this->curTok.start, token_strlen(this->curTok));
+                const std::string tokenMsg = std::string("invalid token - ") + tokenStr;
+                throw ParserException(msg + tokenMsg);
+            }
+            else
+                throw ParserException(msg);
         }
         if (statements)
         {
@@ -89,7 +97,7 @@ namespace file_parser
         FuncRunUPtr funcRun;
 
         if (ident &&
-            accept(ASSIGN) &&
+            acceptTok(ASSIGN) &&
             (funcRun = parseFuncRun()))
         {
             return file_parser::AssignUPtr(
@@ -106,9 +114,9 @@ namespace file_parser
         auto ident = this->identRule();
         ArgsUPtr args;
         if (ident &&
-            this->accept(LPAREN) &&
+            this->acceptTok(LPAREN) &&
             (args = this->readArgsRule()) &&
-            this->accept(RPAREN))
+            this->acceptTok(RPAREN))
         {
             return std::make_unique<FuncRun>(*ident, std::move(args));
         }
@@ -125,7 +133,7 @@ namespace file_parser
         FuncRunUPtr func;
 
         if (ident &&
-            this->accept(DOT) &&
+            this->acceptTok(DOT) &&
             (func = this->parseFuncRun()))
         {
             return std::make_unique<MethodRun>(*ident, std::move(func));
@@ -144,7 +152,7 @@ namespace file_parser
             if (!arg)
                 break;
             args->push_back(std::move(arg));
-            if (!accept(COMMA))
+            if (!acceptTok(COMMA))
                 break;
         }
         return args;
@@ -154,26 +162,24 @@ namespace file_parser
     {
         int pos = save();
 
-        if (checkType(IDENT))
+        nextToken();
+        if (checkTokType(IDENT))
         {
             std::string v(curTok.start, curTok.end);
-            nextToken();
             return file_parser::ArgUPtr(
                 new file_parser::Arg(std::move(v), file_parser::Arg::Type::IDENT));
         }
 
-        if (checkType(NUMBER))
+        if (checkTokType(NUMBER))
         {
             float v = std::stof(std::string(curTok.start, curTok.end));
-            nextToken();
             return file_parser::ArgUPtr(
                 new file_parser::Arg(v));
         }
 
-        if (checkType(STRING))
+        if (checkTokType(STRING))
         {
             std::string v(curTok.start, curTok.end);
-            nextToken();
             return file_parser::ArgUPtr(
                 new file_parser::Arg(std::move(v), file_parser::Arg::Type::STRING));
         }
@@ -186,14 +192,14 @@ namespace file_parser
     {
         int pos = save();
 
-        if (!checkType(IDENT))
+        nextToken();
+        if (!checkTokType(IDENT))
         {
             rewind(pos);
             return {};
         }
 
         std::string value(curTok.start, curTok.end);
-        nextToken();
         return value;
     }
 } // namespace file_parser

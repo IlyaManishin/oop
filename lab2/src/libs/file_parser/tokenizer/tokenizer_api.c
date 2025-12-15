@@ -122,6 +122,8 @@ char *tokenizer_error_to_str(TTokenizerError error)
 
 size_t token_strlen(TToken token)
 {
+    if (token.start == NULL)
+        return 0;
     if (token.end <= token.start)
         return 0;
     size_t res = token.end - token.start;

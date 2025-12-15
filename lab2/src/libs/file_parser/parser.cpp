@@ -11,8 +11,11 @@ namespace file_parser
         : filePath(std::move(filePath))
     {
         this->file = fopen(this->filePath.c_str(), "r");
+        if (!this->file)
+            return;
+
         this->tokenizer = tokenizer_from_file_data(file);
-        this->nextToken();
+        this->isParserInit = true;
     }
 
     Parser::~Parser()
@@ -55,21 +58,33 @@ namespace file_parser
     void Parser::rewind(int pos)
     {
         set_tokenizer_pos(tokenizer, pos);
-        this->nextToken();
     }
 
-    bool Parser::checkType(TokenTypes type)
+    bool Parser::checkTokType(TokenTypes type)
     {
         return curTok.type == type;
     }
 
-    bool Parser::accept(TokenTypes type)
+    bool Parser::acceptTok(TokenTypes type)
     {
-        if (!checkType(type))
+        int pos = this->save();
+        this->nextToken();
+        if (!this->checkTokType(type))
+        {
+            this->rewind(pos);
             return false;
-        nextToken();
+        }
         return true;
     }
+
+    void Parser::readPassTokens()
+    {
+        while (acceptTok(NEWLINE))
+        {
+            continue;
+        }
+    }
+
     std::string Parser::tokToStr(TToken token)
     {
         if (token.start == NULL)

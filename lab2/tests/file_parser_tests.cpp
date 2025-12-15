@@ -6,7 +6,7 @@ using namespace file_parser;
 
 static std::string P(const std::string &name)
 {
-    return "./tests_data/parser_tests/" + name;
+    return "./tests_data/file_parser/" + name;
 }
 
 TEST(ParserTest, SimpleAssign)

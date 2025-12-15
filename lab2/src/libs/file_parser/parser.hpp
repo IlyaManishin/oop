@@ -28,6 +28,13 @@ namespace file_parser
         FileUPtr ParseFileTree();
 
     private:
+        FILE *file = nullptr;
+        bool isParserInit = false;
+
+        std::string filePath;
+        TTokenizer *tokenizer = nullptr;
+        TToken curTok;
+
         FileUPtr parseFileRule();
         StatementsUPtr parseStatements();
         StatementUPtr parseStatement();
@@ -41,21 +48,15 @@ namespace file_parser
 
         std::optional<std::string> identRule();
 
-        void nextToken();
         int save();
         void rewind(int pos);
-        bool checkType(TokenTypes type);
-        bool accept(TokenTypes type);
+        bool checkTokType(TokenTypes type);
+        void nextToken();
+        bool acceptTok(TokenTypes type);
+        void readPassTokens();
         bool isEOF() { return curTok.type == EOF_TOKEN; };
         bool isErr() { return curTok.type == ERROR_TOKEN; };
 
         std::string tokToStr(TToken token);
-
-    private:
-        FILE *file = nullptr;
-        
-        std::string filePath;
-        TTokenizer *tokenizer = nullptr;
-        TToken curTok;
     };
 } // namespace file_parser
