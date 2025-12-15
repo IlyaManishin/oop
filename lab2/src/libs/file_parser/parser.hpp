@@ -27,9 +27,9 @@ namespace file_parser
         IfStatUPtr parseIfStat();
         StatementUPtr parseStatement();
         std::vector<StatementUPtr> parseStatements();
-
-        std::vector<ArgUPtr> readArgsRule();
+        
         ArgUPtr argRule();
+        ArgsUPtr readArgsRule();
 
         std::optional<std::string> identRule();
         std::optional<std::string> numberRule();

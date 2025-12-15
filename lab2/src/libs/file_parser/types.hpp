@@ -16,6 +16,7 @@ namespace file_parser
     struct File;
 
     using ArgUPtr = std::unique_ptr<Arg>;
+    using ArgsUPtr = std::unique_ptr<std::vector<ArgUPtr>>;
     using FuncRunUPtr = std::unique_ptr<FuncRun>;
     using AssignUPtr = std::unique_ptr<Assign>;
     using MethodRunUPtr = std::unique_ptr<MethodRun>;
@@ -45,9 +46,9 @@ namespace file_parser
     struct FuncRun
     {
         std::string name;
-        std::vector<ArgUPtr> args;
+        ArgsUPtr args;
 
-        FuncRun(std::string name, std::vector<ArgUPtr> args)
+        FuncRun(std::string name, ArgsUPtr args)
             : name(std::move(name)), args(std::move(args)) {}
     };
 

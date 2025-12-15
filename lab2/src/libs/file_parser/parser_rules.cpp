@@ -7,103 +7,125 @@
 
 namespace file_parser
 {
+    std::vector<StatementUPtr> Parser::parseStatements()
+    {
+        std::vector<StatementUPtr> stmts;
+        while (auto stmt = this->parseStatement())
+            stmts.push_back(std::move(stmt));
+        return stmts;
+    }
+
+    StatementUPtr Parser::parseStatement()
+    {
+        int pos = this->save();
+
+        if (auto ifstmt = this->parseIfStat())
+            return std::make_unique<Statement>(Statement{IfStatUPtr(std::move(ifstmt)),
+                                                         (size_t)this->current.lineno});
+
+        this->rewind(pos);
+        if (auto assign = this->parseAssign())
+            return std::make_unique<Statement>(Statement{AssignUPtr(std::move(assign)),
+                                                         (size_t)this->current.lineno});
+
+        this->rewind(pos);
+        if (auto func = this->parseFuncRun())
+            return std::make_unique<Statement>(Statement{FuncRunUPtr(std::move(func)),
+                                                         (size_t)this->current.lineno});
+
+        this->rewind(pos);
+        if (auto method = this->parseMethodRun())
+            return std::make_unique<Statement>(Statement{MethodRunUPtr(std::move(method)),
+                                                         (size_t)this->current.lineno});
+
+        this->rewind(pos);
+        return nullptr;
+    }
+
+    IfStatUPtr Parser::parseIfStat()
+    {
+        int pos = this->save();
+
+        auto condition = this->parseFuncRun();
+        if (!condition)
+        {
+            this->rewind(pos);
+            return nullptr;
+        }
+
+        auto body = this->parseStatements();
+        if (body.empty())
+        {
+            this->rewind(pos);
+            return nullptr;
+        }
+
+        return std::make_unique<IfStat>(IfStat{std::move(condition), std::move(body)});
+    }
+
     AssignUPtr Parser::parseAssign()
     {
         int pos = save();
 
-        auto id = identRule();
-        if (!id)
-        {
-            rewind(pos);
-            return nullptr;
-        }
+        auto ident = identRule();
+        FuncRunUPtr funcRun;
 
-        if (!accept(ASSIGN))
+        if (ident &&
+            accept(ASSIGN) &&
+            (funcRun = parseFuncRun()))
         {
-            rewind(pos);
-            return nullptr;
+            return file_parser::AssignUPtr(
+                new file_parser::Assign(*ident, std::move(funcRun)));
         }
-
-        auto func = parseFuncRun();
-        if (!func)
-        {
-            rewind(pos);
-            return nullptr;
-        }
-
-        return file_parser::AssignUPtr(
-            new file_parser::Assign(*id, std::move(func))
-        );
+        this->rewind(pos);
+        return nullptr;
     }
 
     FuncRunUPtr Parser::parseFuncRun()
     {
-        int pos = save();
+        int pos = this->save();
 
-        auto id = identRule();
-        if (!id)
+        auto ident = this->identRule();
+        ArgsUPtr args;
+        if (ident &&
+            this->accept(LPAREN) &&
+            (args = this->readArgsRule()) &&
+            this->accept(RPAREN))
         {
-            rewind(pos);
-            return nullptr;
+            return std::make_unique<FuncRun>(*ident, std::move(args));
         }
 
-        if (!accept(LPAREN))
-        {
-            rewind(pos);
-            return nullptr;
-        }
-
-        auto args = readArgsRule();
-
-        if (!accept(RPAREN))
-        {
-            rewind(pos);
-            return nullptr;
-        }
-
-        return file_parser::FuncRunUPtr(
-            new file_parser::FuncRun(*id, std::move(args))
-        );
+        this->rewind(pos);
+        return nullptr;
     }
 
     MethodRunUPtr Parser::parseMethodRun()
     {
-        int pos = save();
+        int pos = this->save();
 
-        auto ident = identRule();
-        if (!ident)
+        auto ident = this->identRule();
+        FuncRunUPtr func;
+
+        if (ident &&
+            this->accept(DOT) &&
+            (func = this->parseFuncRun()))
         {
-            rewind(pos);
-            return nullptr;
+            return std::make_unique<MethodRun>(*ident, std::move(func));
         }
 
-        if (!accept(DOT))
-        {
-            rewind(pos);
-            return nullptr;
-        }
-
-        auto func = parseFuncRun();
-        if (!func)
-        {
-            rewind(pos);
-            return nullptr;
-        }
-
-        return file_parser::MethodRunUPtr(
-            new file_parser::MethodRun(*ident, std::move(func))
-        );
+        this->rewind(pos);
+        return nullptr;
     }
 
-    std::vector<ArgUPtr> Parser::readArgsRule()
+    ArgsUPtr Parser::readArgsRule()
     {
-        std::vector<file_parser::ArgUPtr> args;
+        ArgsUPtr args = std::make_unique<std::vector<ArgUPtr>>();
         while (true)
         {
             auto arg = argRule();
             if (!arg)
                 break;
-            args.push_back(std::move(arg));
+            args->push_back(std::move(arg));
             if (!accept(COMMA))
                 break;
         }
@@ -119,8 +141,7 @@ namespace file_parser
             std::string v(current.start, current.end);
             nextToken();
             return file_parser::ArgUPtr(
-                new file_parser::Arg(std::move(v), file_parser::Arg::Type::IDENT)
-            );
+                new file_parser::Arg(std::move(v), file_parser::Arg::Type::IDENT));
         }
 
         if (checkType(NUMBER))
@@ -128,8 +149,7 @@ namespace file_parser
             float v = std::stof(std::string(current.start, current.end));
             nextToken();
             return file_parser::ArgUPtr(
-                new file_parser::Arg(v)
-            );
+                new file_parser::Arg(v));
         }
 
         if (checkType(STRING))
@@ -137,8 +157,7 @@ namespace file_parser
             std::string v(current.start, current.end);
             nextToken();
             return file_parser::ArgUPtr(
-                new file_parser::Arg(std::move(v), file_parser::Arg::Type::STRING)
-            );
+                new file_parser::Arg(std::move(v), file_parser::Arg::Type::STRING));
         }
 
         rewind(pos);
