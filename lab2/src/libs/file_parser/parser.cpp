@@ -10,22 +10,39 @@ namespace file_parser
     Parser::Parser(std::string filePath)
         : filePath(std::move(filePath))
     {
-        file = fopen(this->filePath.c_str(), "r");
-        tokenizer = tokenizer_from_file_data(file);
-        nextToken();
+        this->file = fopen(this->filePath.c_str(), "r");
+        this->tokenizer = tokenizer_from_file_data(file);
+        this->nextToken();
     }
 
     Parser::~Parser()
     {
-        if (tokenizer)
-            delete_tokenizer(tokenizer);
-        if (file)
-            fclose(file);
+        if (this->tokenizer)
+            delete_tokenizer(this->tokenizer);
+        if (this->file)
+            fclose(this->file);
+    }
+
+    FileUPtr Parser::ParseFileTree()
+    {
+        if (this->isErr())
+            throw ParserException("Invalid file to parse");
+
+        return this->parseFileRule();
     }
 
     void Parser::nextToken()
     {
-        current = token_soft_read(tokenizer);
+        this->curTok = token_soft_read(this->tokenizer);
+        if (is_tokenizer_error(this->tokenizer))
+        {
+            TTokenizerError error = get_tokenizer_error(this->tokenizer);
+            char *errMsg = tokenizer_error_to_str(error);
+
+            auto exc = ParserException(std::string(errMsg));
+            free(errMsg);
+            throw exc;
+        }
     }
 
     int Parser::save()
@@ -36,12 +53,12 @@ namespace file_parser
     void Parser::rewind(int pos)
     {
         set_tokenizer_pos(tokenizer, pos);
-        nextToken();
+        this->nextToken();
     }
 
     bool Parser::checkType(TokenTypes type)
     {
-        return current.type == type;
+        return curTok.type == type;
     }
 
     bool Parser::accept(TokenTypes type)
@@ -50,5 +67,13 @@ namespace file_parser
             return false;
         nextToken();
         return true;
+    }
+    std::string Parser::tokToStr(TToken token)
+    {
+        if (token.start == NULL)
+        {
+            return std::string();
+        }
+        return std::string(token.start, token_strlen(token));
     }
 } // namespace file_parser

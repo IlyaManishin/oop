@@ -7,11 +7,37 @@
 
 namespace file_parser
 {
-    std::vector<StatementUPtr> Parser::parseStatements()
+    FileUPtr Parser::parseFileRule()
     {
-        std::vector<StatementUPtr> stmts;
+        int pos = this->save();
+        auto statements = this->parseStatements();
+        if (this->isErr())
+        {
+            throw ParserException("Can't parse file");
+        }
+        if (!this->isEOF())
+        {
+            const std::string msg = std::string("Can't parse rule(line ") +
+                                    std::to_string(this->curTok.lineno) +
+                                    std::string(")\n");
+            const std::string tokenStr = std::string(this->curTok.start, token_strlen(this->curTok));
+            const std::string errMsg = std::string("invalid token - ") + tokenStr;
+            throw ParserException(errMsg);
+        }
+        if (statements)
+        {
+            return std::make_unique<FileTree>(std::move(statements));
+        }
+
+        this->rewind(pos);
+        return nullptr;
+    }
+
+    StatementsUPtr Parser::parseStatements()
+    {
+        StatementsUPtr stmts = std::make_unique<std::vector<StatementUPtr>>();
         while (auto stmt = this->parseStatement())
-            stmts.push_back(std::move(stmt));
+            stmts->push_back(std::move(stmt));
         return stmts;
     }
 
@@ -21,24 +47,22 @@ namespace file_parser
 
         if (auto ifstmt = this->parseIfStat())
             return std::make_unique<Statement>(Statement{IfStatUPtr(std::move(ifstmt)),
-                                                         (size_t)this->current.lineno});
+                                                         (size_t)this->curTok.lineno});
 
         this->rewind(pos);
         if (auto assign = this->parseAssign())
             return std::make_unique<Statement>(Statement{AssignUPtr(std::move(assign)),
-                                                         (size_t)this->current.lineno});
+                                                         (size_t)this->curTok.lineno});
 
         this->rewind(pos);
         if (auto func = this->parseFuncRun())
             return std::make_unique<Statement>(Statement{FuncRunUPtr(std::move(func)),
-                                                         (size_t)this->current.lineno});
+                                                         (size_t)this->curTok.lineno});
 
         this->rewind(pos);
         if (auto method = this->parseMethodRun())
             return std::make_unique<Statement>(Statement{MethodRunUPtr(std::move(method)),
-                                                         (size_t)this->current.lineno});
-
-        this->rewind(pos);
+                                                         (size_t)this->curTok.lineno});
         return nullptr;
     }
 
@@ -54,12 +78,6 @@ namespace file_parser
         }
 
         auto body = this->parseStatements();
-        if (body.empty())
-        {
-            this->rewind(pos);
-            return nullptr;
-        }
-
         return std::make_unique<IfStat>(IfStat{std::move(condition), std::move(body)});
     }
 
@@ -138,7 +156,7 @@ namespace file_parser
 
         if (checkType(IDENT))
         {
-            std::string v(current.start, current.end);
+            std::string v(curTok.start, curTok.end);
             nextToken();
             return file_parser::ArgUPtr(
                 new file_parser::Arg(std::move(v), file_parser::Arg::Type::IDENT));
@@ -146,7 +164,7 @@ namespace file_parser
 
         if (checkType(NUMBER))
         {
-            float v = std::stof(std::string(current.start, current.end));
+            float v = std::stof(std::string(curTok.start, curTok.end));
             nextToken();
             return file_parser::ArgUPtr(
                 new file_parser::Arg(v));
@@ -154,7 +172,7 @@ namespace file_parser
 
         if (checkType(STRING))
         {
-            std::string v(current.start, current.end);
+            std::string v(curTok.start, curTok.end);
             nextToken();
             return file_parser::ArgUPtr(
                 new file_parser::Arg(std::move(v), file_parser::Arg::Type::STRING));
@@ -174,7 +192,7 @@ namespace file_parser
             return {};
         }
 
-        std::string value(current.start, current.end);
+        std::string value(curTok.start, curTok.end);
         nextToken();
         return value;
     }

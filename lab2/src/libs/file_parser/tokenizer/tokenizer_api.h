@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tokenizer_objects/syntax_errors.h"
+#include "syntax_errors.h"
 #include "tokenizer_objects/token.h"
 
 #include <stdbool.h>
@@ -19,6 +19,7 @@ extern "C"
 
     bool is_tokenizer_error(TTokenizer *tokenizer);
     TTokenizerError get_tokenizer_error(TTokenizer *tokenizer);
+    char *tokenizer_error_to_str(TTokenizerError error);
     void pass_tokenizer_error(TTokenizer *tokenizer);
 
     TToken token_soft_read(TTokenizer *tokenizer);
@@ -28,7 +29,7 @@ extern "C"
     void set_tokenizer_pos(TTokenizer *tokenizer, int pos);
     int rewind_tokenizer_pos(TTokenizer *tokenizer);
 
-    size_t token_length(TToken token);
+    size_t token_strlen(TToken token);
     bool check_token_str(TToken token, const char *str);
 
 #ifdef __cplusplus

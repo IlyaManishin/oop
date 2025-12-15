@@ -13,7 +13,7 @@ namespace file_parser
     struct MethodRun;
     struct IfStat;
     struct Statement;
-    struct File;
+    struct FileTree;
 
     using ArgUPtr = std::unique_ptr<Arg>;
     using ArgsUPtr = std::unique_ptr<std::vector<ArgUPtr>>;
@@ -22,7 +22,9 @@ namespace file_parser
     using MethodRunUPtr = std::unique_ptr<MethodRun>;
     using IfStatUPtr = std::unique_ptr<IfStat>;
     using StatementUPtr = std::unique_ptr<Statement>;
-    using FileUPtr = std::unique_ptr<File>;
+    using StatementsUPtr = std::unique_ptr<std::vector<StatementUPtr>>;
+
+    using FileUPtr = std::unique_ptr<FileTree>;
 
     using StatementVars = std::variant<AssignUPtr, FuncRunUPtr, MethodRunUPtr, IfStatUPtr>;
 
@@ -73,9 +75,9 @@ namespace file_parser
     struct IfStat
     {
         FuncRunUPtr condition;
-        std::vector<StatementUPtr> statements;
+        StatementsUPtr statements;
 
-        IfStat(FuncRunUPtr condition, std::vector<StatementUPtr> statements)
+        IfStat(FuncRunUPtr condition, StatementsUPtr statements)
             : condition(std::move(condition)), statements(std::move(statements)) {}
     };
 
@@ -97,11 +99,11 @@ namespace file_parser
             : value(std::move(v)), line(line) {}
     };
 
-    struct File
+    struct FileTree
     {
         std::vector<StatementUPtr> statements;
 
-        File(std::vector<StatementUPtr> statements)
+        FileTree(std::vector<StatementUPtr> statements)
             : statements(std::move(statements)) {}
     };
 
