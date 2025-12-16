@@ -1,0 +1,6 @@
+if check_status(42):
+    log("start")
+    x = compute(3.14)
+    if x_greater(x, 10):
+        obj.update(x, "high")
+    y = calc_value("test", 7)
