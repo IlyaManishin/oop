@@ -71,7 +71,7 @@ TEST(WavMixTest, UltraBassTest)
         src->GetHeader().bitsPerSample);
 
     auto interval = src->GetInterval(0.0f, 100.0f);
-    interval->SetEffect(wav_lib::WavEffects::DISTORTION);
+    interval->SetEffect(wav_lib::WavEffects::HACH_LADA);
 
     dst->WriteInterval(interval, 0.0f, false);
     dst->Save();
@@ -82,23 +82,24 @@ TEST(WavMixTest, multyEffects)
     auto src = wav_lib::WavFile::Open(WAV_LIB_MEDIA_DIR + "/Smoke.wav");
 
     auto dst = wav_lib::WavFile::Create(
-        WAV_LIB_MEDIA_DIR + "/multyEffects.wav",
+        WAV_LIB_TESTS_DIR + "/multyEffects.wav",
         src->GetHeader().numChannels,
         src->GetHeader().sampleRate,
         src->GetHeader().bitsPerSample);
 
     wav_lib::WavEffects effects[] = {
+        wav_lib::WavEffects::NORMAL,
         wav_lib::WavEffects::BASS,
         wav_lib::WavEffects::HACH_LADA,
         wav_lib::WavEffects::RAISE_HIGH,
         wav_lib::WavEffects::DISTORTION};
 
-    const float start = 55.0f;
+    const float startOut = 55.0f;
     const float len = 10.0f;
 
     for (size_t i = 0; i < std::size(effects); ++i)
     {
-        auto interval = src->GetInterval(start + i * len, start + (i + 1) * len);
+        auto interval = src->GetInterval(startOut + i * len, startOut + (i + 1) * len);
         interval->SetEffect(effects[i]);
         dst->WriteInterval(interval, i * len, false);
         dst->Save();
@@ -141,4 +142,56 @@ TEST(InsertEmptySpace, BasicTest)
 
     file.close();
     std::remove(testFile);
+}
+
+TEST(WavMixTest, IntervalInsert)
+{
+    const std::string smokePath = WAV_LIB_MEDIA_DIR + "/Smoke.wav";
+    const std::string alivePath = WAV_LIB_MEDIA_DIR + "/Alive.wav";
+    const std::string destPath = WAV_LIB_TESTS_DIR + "/SmokeWithInsert.wav";
+
+    if (std::filesystem::exists(destPath))
+        std::filesystem::remove(destPath);
+
+    auto smoke = wav_lib::WavFile::Open(smokePath);
+    auto alive = wav_lib::WavFile::Open(alivePath);
+
+    ASSERT_TRUE(smoke);
+    ASSERT_TRUE(alive);
+
+    auto dst = wav_lib::WavFile::Create(
+        destPath,
+        smoke->GetHeader().numChannels,
+        smoke->GetHeader().sampleRate,
+        smoke->GetHeader().bitsPerSample);
+
+    ASSERT_TRUE(dst);
+
+    {
+        auto bg = smoke->GetInterval(0.0f, 1000);
+        dst->WriteInterval(bg, 0.0f, false);
+    }
+
+    wav_lib::WavEffects effects[] = {
+        wav_lib::WavEffects::BASS,
+        wav_lib::WavEffects::DISTORTION,
+        wav_lib::WavEffects::RAISE_HIGH};
+
+    const float intervalLen = 10.0f;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        float srcStart = i * intervalLen;
+        float srcEnd = srcStart + intervalLen;
+        float destPos = (i + 1) * intervalLen;
+
+        auto interval = alive->GetInterval(srcStart, srcEnd);
+        ASSERT_TRUE(interval);
+
+        interval->SetEffect(effects[i]);
+
+        dst->WriteInterval(interval, destPos, true);
+    }
+
+    dst->Save();
 }
