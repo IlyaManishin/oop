@@ -50,9 +50,8 @@ namespace wav_lib
 
     void bass_effect(ByteVector &buffer, uint32_t channels, uint32_t bytesPerSample)
     {
-        double alpha = 0.1;
-        // double gain = 1.5;
-        double gain = 0.5;
+        double alpha = 0.2; 
+        double gain = 1.5;
         bass_effect_impl(buffer, channels, bytesPerSample, alpha, gain);
     }
 
@@ -106,7 +105,12 @@ namespace wav_lib
         size_t samplesCount = buffer.size() / (bytesPerSample * channels);
         size_t offset = 0;
 
-        int64_t clip = (1LL << (bytesPerSample * 8 - 1)) - 1;
+        int64_t maxVal = (1LL << (bytesPerSample * 8 - 1)) - 1;
+
+        double drive = 3.0;
+        double clipRatio = 0.7;
+
+        int64_t clip = int64_t(maxVal * clipRatio);
 
         for (size_t i = 0; i < samplesCount; ++i)
         {
@@ -120,9 +124,12 @@ namespace wav_lib
                 if (sample & signBit)
                     sample -= 1LL << (bytesPerSample * 8);
 
-                sample = std::clamp(sample * 2, -clip, clip);
+                double normalized = double(sample) / double(maxVal);
+                normalized *= drive;
+                normalized = std::tanh(normalized);
+                int64_t boosted = int64_t(normalized * clip);
 
-                int64_t tmp = sample;
+                int64_t tmp = boosted;
                 for (uint32_t b = 0; b < bytesPerSample; ++b)
                 {
                     buffer[offset + b] = tmp & 0xFF;
