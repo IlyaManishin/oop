@@ -13,7 +13,7 @@
 
 namespace file_parser
 {
-    class ParserException : std::runtime_error
+    class ParserException : public std::runtime_error
     {
     public:
         explicit ParserException(const std::string &msg) : runtime_error(msg) {}

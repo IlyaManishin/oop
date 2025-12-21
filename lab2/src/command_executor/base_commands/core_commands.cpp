@@ -2,6 +2,7 @@
 #include "wav/wav.hpp"
 
 #include <iostream>
+#include <exception>
 
 using namespace wav_lib;
 
@@ -10,12 +11,6 @@ namespace executor
     bool cmd_info_impl(WavFileSPtr wavFile)
     {
         wavFile->PrintInfo();
-        return true;
-    }
-
-    bool cmd_mute_impl(WavFileSPtr wavFile, float start, float end)
-    {
-        std::cout << "Muted interval successfully (stub)\n";
         return true;
     }
 
@@ -32,7 +27,6 @@ namespace executor
             std::cerr << err.what();
             return false;
         }
-
         return true;
     }
 

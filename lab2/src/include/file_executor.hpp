@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace executor
+namespace file_executor
 {
     bool run_from_config_file(const std::string configPath);
-} // namespace executor
+} // namespace file_executor
