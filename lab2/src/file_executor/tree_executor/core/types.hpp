@@ -4,18 +4,19 @@
 #include <memory>
 #include <string>
 
-namespace file_executor
+namespace tree_executor
 {
-    class Variable
+    class ExValue
     {
     public:
         virtual void Print(std::ostream &out) const = 0;
-        virtual ~Variable() = default;
+        virtual void RunMethod(const std::string &name) = 0; // args???
+        virtual ~ExValue() = default;
     };
 
-    using VariableUPtr = 
+    using ExValueUPtr = std::unique_ptr<ExValue>;
 
-    class FloatType : public Variable
+    class FloatType : public ExValue
     {
     private:
         float value;
@@ -26,11 +27,11 @@ namespace file_executor
 
         void Print(std::ostream &out) const override
         {
-            out << value;
+            out << std::to_string(value);
         }
     };
 
-    class StringType : public Variable
+    class StringType : public ExValue
     {
     private:
         std::string value;
@@ -45,7 +46,7 @@ namespace file_executor
         }
     };
 
-    class WavFileType : public Variable
+    class WavFileType : public ExValue
     {
     private:
         wav_lib::WavFileSPtr value;
@@ -56,11 +57,11 @@ namespace file_executor
 
         void Print(std::ostream &out) const override
         {
-            out << "[WavFile: " << value.get() << "]";
+            this->value->PrintInfo(out);
         }
     };
 
-    class WavIntervalType : public Variable
+    class WavIntervalType : public ExValue
     {
     private:
         wav_lib::WavFileSPtr value;
@@ -71,7 +72,7 @@ namespace file_executor
 
         void Print(std::ostream &out) const override
         {
-            out << "[IWavInterval: " << value.get() << "]";
+            this->value->PrintInfo(out);
         }
         ~WavIntervalType() override
         {
@@ -79,4 +80,4 @@ namespace file_executor
         }
     };
 
-} // namespace file_executor
+} // namespace tree_executor

@@ -44,7 +44,6 @@ namespace file_parser
     StatementsUPtr Parser::parseStatements()
     {
         StatementsUPtr stmts = std::make_unique<std::vector<StatementUPtr>>();
-        this->isNewLine = false;
         StatementUPtr stmt = this->parseStatement();
         if (!stmt)
             return stmts;

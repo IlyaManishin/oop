@@ -25,17 +25,27 @@ namespace wav_lib
         uint32_t samplesCount;
         double durationSec;
 
+        float startSec;
+        float endSec;
+
         WavEffects effect = WavEffects::NORMAL;
         bool isNewVolume = false;
         float volumeValue;
 
-        WavInterval(WavFile *wavFile, uint32_t startPos, uint32_t samplesCount, double durationSec)
+        WavInterval(WavFile *wavFile, uint32_t startPos, uint32_t samplesCount, double durationSec,
+                    float startSec, float endSec)
             : wavFile(wavFile), startPos(startPos),
-              samplesCount(samplesCount), durationSec(durationSec) {};
+              samplesCount(samplesCount), durationSec(durationSec),
+              startSec(startSec), endSec(endSec) {};
 
         void SetEffect(WavEffects effect) override { this->effect = effect; }
         void SetVolume(float value) override { this->volumeValue = value; }
         bool IsChangedSound() { return isNewVolume || (this->effect != WavEffects::NORMAL); };
+        virtual void Print(std::ostream &out = std::cout) const override
+        {
+            out << "Interval: start=" << std::to_string(this->startSec)
+                << ", end=" << std::to_string(this->endSec);
+        }
 
         ~WavInterval() {};
     };
@@ -177,15 +187,15 @@ namespace wav_lib
         this->file.flush();
     }
 
-    void WavFile::PrintInfo() const
+    void WavFile::PrintInfo(std::ostream &out) const
     {
-        std::cout << "File: " << path << "\n";
-        std::cout << "Channels: " << this->header.numChannels << "\n";
-        std::cout << "Sample rate: " << this->header.sampleRate << " Hz\n";
-        std::cout << "Bits per sample: " << this->header.bitsPerSample << "\n";
-        std::cout << "Byte rate: " << this->header.byteRate << "\n";
-        std::cout << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
-        std::cout << "Durations: " << (this->dataEnd - this->dataStart) / this->header.byteRate << " sec\n";
+        out << "File: " << path << "\n";
+        out << "Channels: " << this->header.numChannels << "\n";
+        out << "Sample rate: " << this->header.sampleRate << " Hz\n";
+        out << "Bits per sample: " << this->header.bitsPerSample << "\n";
+        out << "Byte rate: " << this->header.byteRate << "\n";
+        out << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
+        out << "Durations: " << (this->dataEnd - this->dataStart) / this->header.byteRate << " sec\n";
     }
 
     void WavFile::Save()
@@ -212,9 +222,11 @@ namespace wav_lib
         if (end > dataEnd)
             end = dataEnd;
 
-        double deltaSec = (double)(end - start) / (this->header.byteRate);
+        double deltaSecNorm = (double)(end - start) / (this->header.byteRate);
+
         uint32_t samplesCount = (end - start) / this->header.blockAlign;
-        IWavIntervalSPtr interval = std::make_shared<WavInterval>(this, start, samplesCount, deltaSec);
+        IWavIntervalSPtr interval = std::make_shared<WavInterval>(this, start, samplesCount,
+                                                                  deltaSecNorm, startSec, endSec);
         return interval;
     }
 

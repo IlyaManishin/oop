@@ -1,4 +1,4 @@
-#include "tree_executor/executor.hpp"
+#include "tree_executor/tree_executor.hpp"
 
 #include "file_parser/parser.hpp"
 
@@ -7,6 +7,7 @@
 #include <string>
 
 using namespace file_parser;
+using namespace tree_executor;
 
 namespace file_executor
 {

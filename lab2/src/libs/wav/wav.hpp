@@ -2,6 +2,7 @@
 
 #include "internal/wav_exceptions.hpp"
 
+#include <iostream>
 #include <cstdint>
 #include <fstream>
 #include <memory>
@@ -50,6 +51,7 @@ namespace wav_lib
         virtual void SetEffect(WavEffects effect) = 0;
         virtual void SetVolume(float value) = 0;
         virtual bool IsChangedSound() = 0;
+        virtual void Print(std::ostream& out = std::cout) const = 0;
     };
 
     class WavFile
@@ -61,7 +63,7 @@ namespace wav_lib
                                   uint32_t sampleRate,
                                   uint16_t bitsPerSample);
 
-        void PrintInfo() const;
+        void PrintInfo(std::ostream& out = std::cout) const;
         TWavHeader GetHeader() const { return this->header; };
 
         void Save();

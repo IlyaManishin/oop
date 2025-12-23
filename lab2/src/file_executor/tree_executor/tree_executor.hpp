@@ -2,7 +2,7 @@
 
 #include "file_parser/parser.hpp"
 
-namespace file_executor
+namespace tree_executor
 {
     class Executor
     {
@@ -17,4 +17,4 @@ namespace file_executor
         void executeMethodRun(const file_parser::MethodRun &method_run);
         void executeIfStat(const file_parser::IfStat &if_stat);
     };
-}
+} // namespace tree_executor

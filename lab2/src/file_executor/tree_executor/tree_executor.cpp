@@ -1,11 +1,11 @@
-#include "executor.hpp"
+#include "tree_executor.hpp"
 #include "file_parser/parser.hpp"
 
 #include <variant>
 
 using namespace file_parser;
 
-namespace file_executor
+namespace tree_executor
 {
     void Executor::ExecuteTree(const FileUPtr& tree)
     {
@@ -54,4 +54,4 @@ namespace file_executor
             executeStatement(*stmt);
     }
 
-} // namespace file_executor
+} // namespace tree_executor
