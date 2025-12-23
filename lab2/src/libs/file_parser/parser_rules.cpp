@@ -53,10 +53,11 @@ namespace file_parser
         while (1)
         {
             auto pos = this->save();
-            if (this->isNewLine || acceptTok(NEWLINE))
+            if (this->curTok.type == NEWLINE ||
+                this->curTok.type == DEDENT ||
+                this->acceptTok(NEWLINE))
             {
-                this->isNewLine = false;
-                if ((stmt = this->parseStatement()))
+                if ((stmt = parseStatement()))
                 {
                     stmts->push_back(std::move(stmt));
                     continue;
@@ -103,7 +104,6 @@ namespace file_parser
             (stmts = parseStatements()) &&
             acceptTok(NEWLINE) && acceptTok(DEDENT))
         {
-            this->isNewLine = true;
             return stmts;
         }
         this->rewind(pos);

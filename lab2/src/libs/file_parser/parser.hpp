@@ -33,7 +33,6 @@ namespace file_parser
         std::string filePath;
         TTokenizer *tokenizer = nullptr;
         TToken curTok;
-        bool isNewLine = false;
 
         FileUPtr parseFileRule();
         StatementsUPtr parseStatements();
