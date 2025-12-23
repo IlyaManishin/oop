@@ -1,20 +1,32 @@
 #include "wav/wav.hpp"
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace tree_executor
 {
+    class ExValue;
+    using ExValueUPtr = std::unique_ptr<ExValue>;
+    using ExValues = std::vector<ExValueUPtr>;
+
+    using MethodType = std::function<ExValueUPtr(const std::vector<ExValueUPtr> &)>;
+
     class ExValue
     {
+    protected:
+        std::unordered_map<std::string, MethodType> methods;
+
     public:
         virtual void Print(std::ostream &out) const = 0;
-        virtual void RunMethod(const std::string &name) = 0; // args???
         virtual ~ExValue() = default;
-    };
 
-    using ExValueUPtr = std::unique_ptr<ExValue>;
+        void RunMethod(const std::string &name, const std::vector<ExValueUPtr> &args);
+
+    };
 
     class FloatType : public ExValue
     {
