@@ -595,8 +595,12 @@ restart:
 EOF_state_set:
     if (is_tokenizer_EOF(tokenizer) && tokenizer->state != EOF_STATE)
     {
+        TokenizerStates lastState = tokenizer->state;
+
         tokenizer->state = EOF_STATE;
         tokenizer->newIndent = 0;
+        if (lastState != NEW_LINE_STATE)
+            return make_token(tokenizer, NEWLINE);
     }
 
     if (tokenizer->newIndent < tokenizer->curIndent)

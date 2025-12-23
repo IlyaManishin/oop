@@ -29,15 +29,16 @@ namespace file_parser
 
     private:
         FILE *file = nullptr;
-        bool isParserInit = false;
-
+        
         std::string filePath;
         TTokenizer *tokenizer = nullptr;
         TToken curTok;
+        bool isNewLine = false;
 
         FileUPtr parseFileRule();
         StatementsUPtr parseStatements();
         StatementUPtr parseStatement();
+        StatementsUPtr parseBlock();
         AssignUPtr parseAssign();
         FuncRunUPtr parseFuncRun();
         FuncCallUPtr parseFuncCall();

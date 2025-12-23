@@ -44,8 +44,27 @@ namespace file_parser
     StatementsUPtr Parser::parseStatements()
     {
         StatementsUPtr stmts = std::make_unique<std::vector<StatementUPtr>>();
-        while (auto stmt = this->parseStatement())
-            stmts->push_back(std::move(stmt));
+        this->isNewLine = false;
+        StatementUPtr stmt = this->parseStatement();
+        if (!stmt)
+            return stmts;
+        stmts->push_back(std::move(stmt));
+
+        while (1)
+        {
+            auto pos = this->save();
+            if (this->isNewLine || acceptTok(NEWLINE))
+            {
+                this->isNewLine = false;
+                if ((stmt = this->parseStatement()))
+                {
+                    stmts->push_back(std::move(stmt));
+                    continue;
+                }
+            }
+            this->rewind(pos);
+            break;
+        }
         return stmts;
     }
 
@@ -74,6 +93,23 @@ namespace file_parser
         return nullptr;
     }
 
+    StatementsUPtr Parser::parseBlock()
+    {
+        int pos = this->save();
+
+        FuncCallUPtr condition;
+        StatementsUPtr stmts;
+        if (acceptTok(INDENT) &&
+            (stmts = parseStatements()) &&
+            acceptTok(NEWLINE) && acceptTok(DEDENT))
+        {
+            this->isNewLine = true;
+            return stmts;
+        }
+        this->rewind(pos);
+        return nullptr;
+    }
+
     IfStatUPtr Parser::parseIfStat()
     {
         int pos = this->save();
@@ -82,16 +118,14 @@ namespace file_parser
         StatementsUPtr stmts;
         if (acceptTok(IF_KW) &&
             (condition = parseFuncCall()) &&
-            acceptTok(COLON) && acceptTok(NEWLINE) && acceptTok(INDENT) &&
-            (stmts = parseStatements()) &&
-            acceptTok(DEDENT))
+            acceptTok(COLON) && acceptTok(NEWLINE) &&
+            (stmts = parseBlock()))
         {
             return std::make_unique<IfStat>(IfStat{std::move(condition), std::move(stmts)});
         }
 
         this->rewind(pos);
         return nullptr;
-        
     }
 
     AssignUPtr Parser::parseAssign()
@@ -103,8 +137,7 @@ namespace file_parser
 
         if (ident &&
             acceptTok(ASSIGN) &&
-            (funcCall = parseFuncCall()) &&
-            acceptTok(NEWLINE))
+            (funcCall = parseFuncCall()))
         {
             return file_parser::AssignUPtr(
                 new file_parser::Assign(*ident, std::move(funcCall)));
@@ -122,8 +155,7 @@ namespace file_parser
 
         if (ident &&
             this->acceptTok(DOT) &&
-            (fCall = this->parseFuncCall()) &&
-            acceptTok(NEWLINE))
+            (fCall = this->parseFuncCall()))
         {
             return std::make_unique<MethodRun>(*ident, std::move(fCall));
         }
@@ -137,8 +169,7 @@ namespace file_parser
         int pos = this->save();
 
         FuncCallUPtr fCall;
-        if ((fCall = parseFuncCall()) &&
-            acceptTok(NEWLINE))
+        if ((fCall = parseFuncCall()))
         {
             FuncRunUPtr res = std::make_unique<FuncRun>(std::move(fCall));
             return res;

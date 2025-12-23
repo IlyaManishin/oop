@@ -15,7 +15,6 @@ namespace file_parser
             return;
 
         this->tokenizer = tokenizer_from_file_data(file);
-        this->isParserInit = true;
     }
 
     Parser::~Parser()
