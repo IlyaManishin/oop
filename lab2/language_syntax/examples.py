@@ -7,7 +7,9 @@ if (exists("name.wav")):
 else:
     file = create("name1.wav")
 
-interval = file.get_interval(1, 2)
+const1 = 1
+const2 = 2
+interval = file.get_interval(const1, const2)
 
 other = open("name1.wav")
 other.write_interval(interval)
