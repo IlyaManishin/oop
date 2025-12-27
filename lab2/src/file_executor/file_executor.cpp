@@ -27,7 +27,7 @@ namespace file_executor
         }
         try
         {
-            Executor::ExecuteTree(std::move(tree));
+            Executor::ExecuteTree(tree);
         }
         catch (const std::runtime_error &err)
         {

@@ -2,14 +2,23 @@
 
 #include "internal/wav_exceptions.hpp"
 
-#include <iostream>
 #include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 
 namespace wav_lib
 {
+    enum class WavEffects
+    {
+        NORMAL,
+        BASS,
+        HACH_LADA,
+        RAISE_HIGH,
+        DISTORTION,
+    };
+
     typedef struct TWavHeader
     {
         uint32_t chunkSize;
@@ -34,15 +43,6 @@ namespace wav_lib
     using IWavIntervalSPtr = std::shared_ptr<IWavInterval>;
     using WavIntervalSPtr = std::shared_ptr<WavInterval>;
 
-    enum class WavEffects
-    {
-        NORMAL,
-        BASS,
-        HACH_LADA,
-        RAISE_HIGH,
-        DISTORTION,
-    };
-
     class IWavInterval
     {
     public:
@@ -51,7 +51,7 @@ namespace wav_lib
         virtual void SetEffect(WavEffects effect) = 0;
         virtual void SetVolume(float value) = 0;
         virtual bool IsChangedSound() = 0;
-        virtual void Print(std::ostream& out = std::cout) const = 0;
+        virtual void Print(std::ostream &out = std::cout) const = 0;
     };
 
     class WavFile
@@ -63,7 +63,7 @@ namespace wav_lib
                                   uint32_t sampleRate,
                                   uint16_t bitsPerSample);
 
-        void PrintInfo(std::ostream& out = std::cout) const;
+        void PrintInfo(std::ostream &out = std::cout) const;
         TWavHeader GetHeader() const { return this->header; };
 
         void Save();
