@@ -31,17 +31,11 @@ namespace wav_lib
         uint32_t subchunk2Size; // Full wav data size
     } TWavHeader;
 
-    class WavFile;
+    class IWavFile;
     class IWavInterval;
-    class WavInterval;
-    class ISampleReader;
 
-    struct TWavSoundParams;
-    struct SampleReaderConfig;
-
-    using WavFileSPtr = std::shared_ptr<WavFile>;
+    using WavFileSPtr = std::shared_ptr<IWavFile>;
     using IWavIntervalSPtr = std::shared_ptr<IWavInterval>;
-    using WavIntervalSPtr = std::shared_ptr<WavInterval>;
 
     class IWavInterval
     {
@@ -54,60 +48,20 @@ namespace wav_lib
         virtual void Print(std::ostream &out = std::cout) const = 0;
     };
 
-    class WavFile
+    class IWavFile
     {
     public:
-        static WavFileSPtr Open(const std::string &path);
-        static WavFileSPtr Create(const std::string &path,
-                                  uint16_t channels,
-                                  uint32_t sampleRate,
-                                  uint16_t bitsPerSample);
+        virtual void PrintInfo(std::ostream &out = std::cout) const = 0;
+        virtual TWavHeader GetHeader() const = 0;
 
-        void PrintInfo(std::ostream &out = std::cout) const;
-        TWavHeader GetHeader() const { return this->header; };
+        virtual void Save() = 0;
 
-        void Save();
+        virtual IWavIntervalSPtr GetInterval(float startSec, float endSec) = 0;
+        virtual void WriteInterval(IWavIntervalSPtr interval,
+                                   float destSecPos,
+                                   bool isInsert = false) = 0;
 
-        IWavIntervalSPtr GetInterval(float startSec, float endSec);
-        void WriteInterval(IWavIntervalSPtr intervalI, float destSecPos, bool isInsert = false);
-
-        ~WavFile();
-
-    private:
-        WavFile(const std::string &wavPath, bool createNew);
-
-        std::string path;
-        std::fstream file;
-
-        std::streampos dataStart;
-        std::streampos dataEnd;
-
-        bool isChanged;
-
-        TWavHeader header;
-
-        void extractFileData();
-        void saveHeader();
-        void initNewHeader(uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample);
-        void updateSubchunkSize();
-
-        bool allocIntervalSpace(WavIntervalSPtr interval, uint32_t intervalLength, std::streampos destPos);
-
-        void writeIntervalFast(WavIntervalSPtr interval, bool isInsert, std::streampos destPos);
-        void writeIntervalFromCurFast(WavIntervalSPtr interval, std::streampos destPos);
-        void writeIntervalFromOtherFast(WavIntervalSPtr interval, std::streampos destPos);
-
-        void writeIntervalSlow(WavIntervalSPtr interval, bool isInsert, std::streampos destPos);
-        uint32_t writeIntervalFromCurSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
-        uint32_t writeIntervalFromOtherSlow(WavIntervalSPtr interval, std::streampos destPos, uint64_t maxSamples);
-        uint32_t writeIntervalWithReader(std::streampos destPos, ISampleReader &reader, uint32_t maxSamples);
-
-        bool cmpVolumeParams(WavFile *other);
-        void getSampleReaderConfig(WavIntervalSPtr interval,
-                                   SampleReaderConfig &config,
-                                   uint64_t maxSamples) const;
-        void getReaderSoundParams(TWavSoundParams &params) const;
-        bool operator==(WavFile &file) { return this->path == file.path; };
+        virtual ~IWavFile() = default;
     };
 
     class WavReader
@@ -123,7 +77,6 @@ namespace wav_lib
 
     private:
         std::string wavDir;
-
         bool isWavFile(const std::string &path) const;
     };
 } // namespace wav_lib

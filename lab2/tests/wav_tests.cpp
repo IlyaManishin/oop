@@ -5,6 +5,8 @@
 #include "wav/internal/wav_utils.hpp"
 
 #include "wav/wav.hpp"
+#include "wav/wav_file.hpp"
+
 
 #include <filesystem>
 #include <gtest/gtest.h>

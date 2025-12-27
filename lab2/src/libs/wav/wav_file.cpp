@@ -1,8 +1,8 @@
+#include "wav_file.hpp"
 #include "internal/config.hpp"
 #include "internal/sample_reader.hpp"
 #include "internal/types.hpp"
 #include "internal/wav_utils.hpp"
-#include "wav.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -13,7 +13,6 @@
 
 constexpr int MAX_CHAIN_COUNT = 12;
 constexpr double INTERVAL_SAMPLES_ACCURANCY = 0.000001;
-// const std::string interval_read_error = "";
 
 namespace wav_lib
 {
@@ -32,7 +31,8 @@ namespace wav_lib
         bool isNewVolume = false;
         float volumeValue;
 
-        WavInterval(WavFile *wavFile, uint32_t startPos, uint32_t samplesCount, double durationSec,
+        WavInterval(WavFile *wavFile,
+                    uint32_t startPos, uint32_t samplesCount, double durationSec,
                     float startSec, float endSec)
             : wavFile(wavFile), startPos(startPos),
               samplesCount(samplesCount), durationSec(durationSec),
@@ -71,17 +71,17 @@ namespace wav_lib
 
     WavFileSPtr WavFile::Open(const std::string &path)
     {
-        WavFileSPtr file(new WavFile(path, false));
-        file->extractFileData();
-        return file;
+        auto wavFile = std::shared_ptr<WavFile>(new WavFile(path, false));
+        wavFile->extractFileData();
+        return wavFile;
     }
 
     WavFileSPtr WavFile::Create(const std::string &path, uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample)
     {
-        WavFileSPtr file(new WavFile(path, true));
-        file->initNewHeader(channels, sampleRate, bitsPerSample);
-        file->Save();
-        return file;
+        auto wavFile = std::shared_ptr<WavFile>(new WavFile(path, true));
+        wavFile->initNewHeader(channels, sampleRate, bitsPerSample);
+        wavFile->Save();
+        return wavFile;
     }
 
     void WavFile::extractFileData()
