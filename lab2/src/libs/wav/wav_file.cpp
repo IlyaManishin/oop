@@ -243,7 +243,7 @@ namespace wav_lib
             throw OperationExc(msg);
         }
 
-        if (destBytePos > this->header.subchunk2Size) // is after file end - extend
+        if (destBytePos > this->header.subchunk2Size) // if file end is after - extend
         {
             isInsert = false;
 

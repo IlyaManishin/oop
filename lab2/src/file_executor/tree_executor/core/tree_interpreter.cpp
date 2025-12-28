@@ -1,4 +1,6 @@
 #include "tree_interpreter.hpp"
+#include "helpers/exceptions.hpp"
+#include "helpers/utils.hpp"
 
 #include <variant>
 
@@ -44,9 +46,22 @@ namespace tree_executor
 
     void TreeInterpreter::executeIfStat(const IfStat &ifstat)
     {
-        executeFuncCall(*ifstat.condition);
+        // const FuncCallUPtr
+    }
 
-        for (const auto &stmt : *ifstat.statements)
-            executeStatement(*stmt);
+    std::unique_ptr<ExObjs> TreeInterpreter::parseArgs(const ArgsUPtr &args)
+    {
+        return std::unique_ptr<ExObjs>();
+    }
+
+    ExObjUPtr TreeInterpreter::parseArg(const file_parser::ArgUPtr &arg)
+    {
+        if (arg->type == file_parser::Arg::Type::IDENT)
+        {
+        }
+        else
+        {
+            return arg_to_ex_obj(arg);
+        }
     }
 }

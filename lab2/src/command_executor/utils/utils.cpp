@@ -1,5 +1,6 @@
 #include "wav/wav.hpp"
 
+#include "utils.hpp"
 #include <iostream>
 #include <string>
 
@@ -20,5 +21,4 @@ namespace executor
             return nullptr;
         }
     }
-
 } // namespace executor

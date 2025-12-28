@@ -1,3 +1,5 @@
+#include "file_parser/types.hpp"
+
 #include "../types/types.hpp"
 #include "exceptions.hpp"
 
@@ -12,4 +14,16 @@ namespace tree_executor
         }
         return strObj->GetValue();
     }
+
+    const ExObjUPtr tree_executor::arg_to_ex_obj(const file_parser::ArgUPtr &arg)
+    {
+        if (arg->type == file_parser::Arg::Type::NUMBER)
+            return std::make_unique<FloatType>(std::get<float>(arg->value));
+
+        if (arg->type == file_parser::Arg::Type::STRING)
+            return std::make_unique<StringType>(std::get<std::string>(arg->value));
+
+        return nullptr;
+    }
+
 } // namespace tree_executor
