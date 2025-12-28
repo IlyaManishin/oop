@@ -5,7 +5,7 @@
 
 namespace wav_lib
 {
-    WavFileSPtr WavReader::ReadWav(const std::string &path) const
+    WavFileSPtr WavReader::ReadWav(const std::string &path) const noexcept
     {
         auto file = WavFile::Open(path);
         return file;
@@ -14,7 +14,7 @@ namespace wav_lib
     WavFileSPtr WavReader::CreateWav(const std::string &destPath,
                                      int numChannels,
                                      uint32_t sampleRate,
-                                     uint32_t bitsPerSample) const
+                                     uint32_t bitsPerSample) const noexcept
     {
         try
         {
@@ -28,7 +28,7 @@ namespace wav_lib
         }
     }
 
-    bool WavReader::isWavFile(const std::string &path) const
+    bool WavReader::isWavFile(const std::string &path) const noexcept
     {
         try
         {
@@ -41,7 +41,7 @@ namespace wav_lib
         }
     }
 
-    bool WavReader::IsExistsWav(const std::string &path) const
+    bool WavReader::IsExistsWav(const std::string &path) const noexcept
     {
         std::fstream wavStream(path);
         if (!wavStream.is_open())

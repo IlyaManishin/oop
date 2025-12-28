@@ -67,16 +67,16 @@ namespace wav_lib
     class WavReader
     {
     public:
-        WavReader(const std::string &wavDir = "") : wavDir(wavDir) {};
-        WavFileSPtr ReadWav(const std::string &path) const;
+        WavReader(const std::string &wavDir = "") noexcept : wavDir(wavDir) {};
+        WavFileSPtr ReadWav(const std::string &path) const noexcept;
         WavFileSPtr CreateWav(const std::string &destPath,
                               int numChannels = 2,
                               uint32_t sampleRate = 44100,
-                              uint32_t bitsPerSample = 16) const;
-        bool IsExistsWav(const std::string &path) const;
+                              uint32_t bitsPerSample = 16) const noexcept;
+        bool IsExistsWav(const std::string &path) const noexcept;
 
     private:
         std::string wavDir;
-        bool isWavFile(const std::string &path) const;
+        bool isWavFile(const std::string &path) const noexcept;
     };
 } // namespace wav_lib

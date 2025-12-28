@@ -3,7 +3,7 @@
 namespace tree_executor
 {
 
-    void tree_executor::ExValue::RunMethod(const std::string &name, const std::vector<ExValueUPtr> &args)
+    void tree_executor::ExObj::RunMethod(const std::string &name, const std::vector<ExObjUPtr> &args)
     {
         auto it = methods.find(name);
         if (it != methods.end())

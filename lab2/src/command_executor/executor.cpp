@@ -38,7 +38,6 @@ namespace executor
         res[(int)COMMANDS::INFO] = cmd_info;
         res[(int)COMMANDS::MIX] = cmd_mix;
         res[(int)COMMANDS::EFFECT] = cmd_sound_effect;
-        // res[(int)COMMANDS::CHANGE_SPEED] = cmd_change_speed;
 
         return res;
     }
