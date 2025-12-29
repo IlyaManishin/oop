@@ -19,6 +19,8 @@ namespace tree_executor
 
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
+    using ExObjRef = const ExObjUPtr &;
+    
     using ExObjs = std::vector<ExObjUPtr>;
 
     using MethodType = std::function<ExObjUPtr(const std::vector<ExObjUPtr> &)>;

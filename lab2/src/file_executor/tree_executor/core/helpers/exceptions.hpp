@@ -13,6 +13,10 @@ namespace tree_executor
             : std::runtime_error(
                   std::string("Unexpected argument type: '") + arg->GetType() +
                   "', expected: '" + expectedType + "'") {};
+
+        UnexpectedArg(const ExObjUPtr &arg)
+            : std::runtime_error(
+                  std::string("Unexpected argument type: '") + arg->GetType() + "'") {};
     };
 
     class UnexpectedIdent : public std::runtime_error

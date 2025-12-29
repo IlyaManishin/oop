@@ -51,17 +51,38 @@ namespace tree_executor
 
     std::unique_ptr<ExObjs> TreeInterpreter::parseArgs(const ArgsUPtr &args)
     {
-        return std::unique_ptr<ExObjs>();
+        auto argsObj = std::make_unique<ExObjs>(args->size());
+        for (size_t i = 0; i < args->size(); i++)
+        {
+            (*argsObj)[i] = this->parseArg((*args)[i]);
+        }
+        return argsObj;
     }
 
     ExObjUPtr TreeInterpreter::parseArg(const file_parser::ArgUPtr &arg)
     {
         if (arg->type == file_parser::Arg::Type::IDENT)
         {
+            auto it = vars.find(std::get<std::string>(arg->value));
+            if (it != vars.end())
+            {
+                return it->second ? std::make_unique<ExObj>(*it->second) : nullptr;
+            }
+            else
+            {
+                throw std::runtime_error("Undefined variable: " + std::get<std::string>(arg->value));
+            }
         }
         else
         {
-            return arg_to_ex_obj(arg);
+            ExObjUPtr res = value_arg_to_ex_obj(arg);
+            if (!res)
+                throw std::runtime_error("Unexpected type");
+            return res;
         }
+    }
+
+    void TreeInterpreter::addVar(const std::string &name, ExObjUPtr value)
+    {
     }
 }
