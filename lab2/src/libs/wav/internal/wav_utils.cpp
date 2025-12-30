@@ -1,7 +1,7 @@
 #include "wav_utils.hpp"
 #include "config.hpp"
 #include "types.hpp"
-#include "wav_exceptions.hpp"
+#include "exceptions.hpp"
 
 #include <cinttypes>
 #include <fstream>
@@ -13,7 +13,7 @@ namespace wav_lib
     {
         uint16_t value;
         if (!f.read((char *)&value, sizeof(value)))
-            throw InvalidWavFileExc("Unexpected EOF while reading wav field");
+            throw WavException("", "Unexpected EOF while reading wav field");
         return value;
     }
 
@@ -21,7 +21,7 @@ namespace wav_lib
     {
         uint32_t value;
         if (!f.read((char *)&value, sizeof(value)))
-            throw InvalidWavFileExc("Unexpected EOF while reading wav field");
+            throw WavException("", "Unexpected EOF while reading wav field");
         return value;
     }
 

@@ -50,9 +50,10 @@ namespace wav_lib
         ~WavInterval() {};
     };
 
-    OperationExc write_interval_error()
+    inline const std::string get_invalid_interval_msg(float start, float end)
     {
-        return OperationExc();
+        std::string interval = std::to_string(start) + "," + std::to_string(end);
+        return std::string("Invalid wav interval: (") + interval + std::string(")");
     }
 
     WavFile::WavFile(const std::string &wavPath, bool createNew)
@@ -66,7 +67,7 @@ namespace wav_lib
 
         this->file.open(wavPath, mode);
         if (!this->file.is_open())
-            throw InvalidWavFileExc("Cannot open file", this->path);
+            throw WavException("Cannot open file", this->path);
     }
 
     WavFileSPtr WavFile::Open(const std::string &path)
@@ -91,18 +92,18 @@ namespace wav_lib
         char subchunk1Id[4];
 
         if (!this->file.read(chunkId, 4))
-            throw InvalidWavFileExc("Failed to read chunkId", this->path);
+            throw WavException("Failed to read chunkId", this->path);
         this->header.chunkSize = read_uint32(this->file);
         if (!this->file.read(format, 4))
-            throw InvalidWavFileExc("Failed to read format", this->path);
+            throw WavException("Failed to read format", this->path);
 
         if (std::strncmp(chunkId, "RIFF", 4) != 0 || std::strncmp(format, "WAVE", 4) != 0)
-            throw InvalidWavFileExc("Not a RIFF/WAVE file", this->path);
+            throw WavException("Not a RIFF/WAVE file", this->path);
 
         if (!this->file.read(subchunk1Id, 4))
-            throw InvalidWavFileExc("Failed to read subchunk1Id", this->path);
+            throw WavException("Failed to read subchunk1Id", this->path);
         if (std::strncmp(subchunk1Id, "fmt ", 4) != 0)
-            throw InvalidWavFileExc("Invalid subchunk1Id identifier", this->path);
+            throw WavException("Invalid subchunk1Id identifier", this->path);
 
         read_uint32(this->file); // subchunk1Size
 
@@ -119,7 +120,7 @@ namespace wav_lib
         for (int i = 0; i < MAX_CHAIN_COUNT; i++)
         {
             if (!this->file.read(subchunk2Id, 4))
-                throw InvalidWavFileExc("Failed to read subchunk2Id", this->path);
+                throw WavException("Failed to read subchunk2Id", this->path);
             subchunk2Size = read_uint32(this->file);
 
             if (std::strncmp(subchunk2Id, "LIST", 4) == 0) //
@@ -137,7 +138,7 @@ namespace wav_lib
                 break;
             }
             else
-                throw InvalidWavFileExc("Invalid subchunk identifiers", this->path);
+                throw WavException("Invalid subchunk identifiers", this->path);
         }
     }
 
@@ -185,6 +186,10 @@ namespace wav_lib
         write_uint32(this->file, this->header.subchunk2Size);
 
         this->file.flush();
+        if (file.fail())
+        {
+            throw WavException("Can't save file", this->path);
+        }
     }
 
     void WavFile::PrintInfo(std::ostream &out) const
@@ -387,7 +392,7 @@ namespace wav_lib
         }
         uint32_t delta = (uint32_t)std::labs((long long)maxSamples - writtenSamples);
         if ((double)delta / maxSamples > INTERVAL_SAMPLES_ACCURANCY)
-            throw write_interval_error();
+            throw OperationExc("Interval is so long");
 
         uint32_t intervalLength = this->header.blockAlign * writtenSamples;
         std::streampos endPos = get_offset_pos(destPos, intervalLength);
@@ -433,7 +438,7 @@ namespace wav_lib
         const ByteVector *buffer = reader.GetBuffer();
         if (buffer == nullptr)
         {
-            throw write_interval_error();
+            throw OperationExc("Can't write interval to file");
         }
 
         size_t allSamples = 0, samplesCount = 0;

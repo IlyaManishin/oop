@@ -1,6 +1,6 @@
 #pragma once
 
-#include "internal/wav_exceptions.hpp"
+#include "internal/exceptions.hpp"
 
 #include <cstdint>
 #include <fstream>
@@ -68,11 +68,11 @@ namespace wav_lib
     {
     public:
         WavReader(const std::string &wavDir = "") noexcept : wavDir(wavDir) {};
-        WavFileSPtr ReadWav(const std::string &path) const noexcept;
+        WavFileSPtr ReadWav(const std::string &path) const;
         WavFileSPtr CreateWav(const std::string &destPath,
                               int numChannels = 2,
                               uint32_t sampleRate = 44100,
-                              uint32_t bitsPerSample = 16) const noexcept;
+                              uint32_t bitsPerSample = 16) const;
         bool IsExistsWav(const std::string &path) const noexcept;
 
     private:
