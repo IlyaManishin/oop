@@ -1,11 +1,12 @@
-#include "wav.hpp"
+#include "internal/exceptions.hpp"
+#include "wav_file.hpp"
 
 #include <iostream>
 #include <string>
 
 namespace wav_lib
 {
-    WavFileSPtr WavReader::ReadWav(const std::string &path) const
+    WavFileSPtr WavReader::ReadWav(const std::string &path) const 
     {
         auto file = WavFile::Open(path);
         return file;
@@ -21,27 +22,26 @@ namespace wav_lib
             auto file = WavFile::Create(destPath, numChannels, sampleRate, bitsPerSample);
             return file;
         }
-        catch (const WavException &e)
+        catch (const WavException &exc)
         {
-            std::cerr << "Error creating WAV file \"" << destPath << "\": " << e.what() << "\n";
-            return nullptr;
+            throw WavException(std::string("Can't create wav file") + exc.what(), destPath);
         }
     }
 
-    bool WavReader::isWavFile(const std::string &path) const
+    bool WavReader::isWavFile(const std::string &path) const noexcept
     {
         try
         {
             WavFileSPtr file = WavFile::Open(path);
             return true;
         }
-        catch (const WavException &e)
+        catch (const WavException &exc)
         {
             return false;
         }
     }
 
-    bool WavReader::IsExistsWav(const std::string &path) const
+    bool WavReader::IsExistsWav(const std::string &path) const noexcept
     {
         std::fstream wavStream(path);
         if (!wavStream.is_open())

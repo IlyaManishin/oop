@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tokenizer/tokenizer_api.h"
+#include "tokenizer/tokenizer_api.h" //?????
 #include "types.hpp"
 
 #include <cstdio>
@@ -13,24 +13,23 @@
 
 namespace file_parser
 {
-    class ParserException : std::runtime_error
+    class ParserException : public std::runtime_error
     {
     public:
         explicit ParserException(const std::string &msg) : runtime_error(msg) {}
     };
 
-    class Parser
+    class AstParser
     {
     public:
-        Parser(std::string filePath);
-        ~Parser();
+        AstParser(std::string filePath);
+        ~AstParser();
 
         FileUPtr ParseFileTree();
 
     private:
         FILE *file = nullptr;
-        bool isParserInit = false;
-
+        
         std::string filePath;
         TTokenizer *tokenizer = nullptr;
         TToken curTok;
@@ -38,6 +37,7 @@ namespace file_parser
         FileUPtr parseFileRule();
         StatementsUPtr parseStatements();
         StatementUPtr parseStatement();
+        StatementsUPtr parseBlock();
         AssignUPtr parseAssign();
         FuncRunUPtr parseFuncRun();
         FuncCallUPtr parseFuncCall();

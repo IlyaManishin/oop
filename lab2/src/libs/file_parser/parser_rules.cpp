@@ -7,7 +7,7 @@
 
 namespace file_parser
 {
-    FileUPtr Parser::parseFileRule()
+    FileUPtr AstParser::parseFileRule()
     {
         int pos = this->save();
         auto statements = this->parseStatements();
@@ -41,15 +41,34 @@ namespace file_parser
         return nullptr;
     }
 
-    StatementsUPtr Parser::parseStatements()
+    StatementsUPtr AstParser::parseStatements()
     {
         StatementsUPtr stmts = std::make_unique<std::vector<StatementUPtr>>();
-        while (auto stmt = this->parseStatement())
-            stmts->push_back(std::move(stmt));
+        StatementUPtr stmt = this->parseStatement();
+        if (!stmt)
+            return stmts;
+        stmts->push_back(std::move(stmt));
+
+        while (1)
+        {
+            auto pos = this->save();
+            if (this->curTok.type == NEWLINE ||
+                this->curTok.type == DEDENT ||
+                this->acceptTok(NEWLINE))
+            {
+                if ((stmt = parseStatement()))
+                {
+                    stmts->push_back(std::move(stmt));
+                    continue;
+                }
+            }
+            this->rewind(pos);
+            break;
+        }
         return stmts;
     }
 
-    StatementUPtr Parser::parseStatement()
+    StatementUPtr AstParser::parseStatement()
     {
         int pos = this->save();
 
@@ -74,7 +93,23 @@ namespace file_parser
         return nullptr;
     }
 
-    IfStatUPtr Parser::parseIfStat()
+    StatementsUPtr AstParser::parseBlock()
+    {
+        int pos = this->save();
+
+        FuncCallUPtr condition;
+        StatementsUPtr stmts;
+        if (acceptTok(INDENT) &&
+            (stmts = parseStatements()) &&
+            acceptTok(NEWLINE) && acceptTok(DEDENT))
+        {
+            return stmts;
+        }
+        this->rewind(pos);
+        return nullptr;
+    }
+
+    IfStatUPtr AstParser::parseIfStat()
     {
         int pos = this->save();
 
@@ -82,19 +117,17 @@ namespace file_parser
         StatementsUPtr stmts;
         if (acceptTok(IF_KW) &&
             (condition = parseFuncCall()) &&
-            acceptTok(COLON) && acceptTok(NEWLINE) && acceptTok(INDENT) &&
-            (stmts = parseStatements()) &&
-            acceptTok(DEDENT))
+            acceptTok(COLON) && acceptTok(NEWLINE) &&
+            (stmts = parseBlock()))
         {
             return std::make_unique<IfStat>(IfStat{std::move(condition), std::move(stmts)});
         }
 
         this->rewind(pos);
         return nullptr;
-        
     }
 
-    AssignUPtr Parser::parseAssign()
+    AssignUPtr AstParser::parseAssign()
     {
         int pos = save();
 
@@ -103,8 +136,7 @@ namespace file_parser
 
         if (ident &&
             acceptTok(ASSIGN) &&
-            (funcCall = parseFuncCall()) &&
-            acceptTok(NEWLINE))
+            (funcCall = parseFuncCall()))
         {
             return file_parser::AssignUPtr(
                 new file_parser::Assign(*ident, std::move(funcCall)));
@@ -113,7 +145,7 @@ namespace file_parser
         return nullptr;
     }
 
-    MethodRunUPtr Parser::parseMethodRun()
+    MethodRunUPtr AstParser::parseMethodRun()
     {
         int pos = this->save();
 
@@ -122,8 +154,7 @@ namespace file_parser
 
         if (ident &&
             this->acceptTok(DOT) &&
-            (fCall = this->parseFuncCall()) &&
-            acceptTok(NEWLINE))
+            (fCall = this->parseFuncCall()))
         {
             return std::make_unique<MethodRun>(*ident, std::move(fCall));
         }
@@ -132,13 +163,12 @@ namespace file_parser
         return nullptr;
     }
 
-    FuncRunUPtr Parser::parseFuncRun()
+    FuncRunUPtr AstParser::parseFuncRun()
     {
         int pos = this->save();
 
         FuncCallUPtr fCall;
-        if ((fCall = parseFuncCall()) &&
-            acceptTok(NEWLINE))
+        if ((fCall = parseFuncCall()))
         {
             FuncRunUPtr res = std::make_unique<FuncRun>(std::move(fCall));
             return res;
@@ -147,7 +177,7 @@ namespace file_parser
         return nullptr;
     }
 
-    FuncCallUPtr Parser::parseFuncCall()
+    FuncCallUPtr AstParser::parseFuncCall()
     {
         int pos = this->save();
 
@@ -165,7 +195,7 @@ namespace file_parser
         return nullptr;
     }
 
-    ArgsUPtr Parser::readArgsRule()
+    ArgsUPtr AstParser::readArgsRule()
     {
         ArgsUPtr args = std::make_unique<std::vector<ArgUPtr>>();
         while (true)
@@ -180,7 +210,7 @@ namespace file_parser
         return args;
     }
 
-    ArgUPtr Parser::argRule()
+    ArgUPtr AstParser::argRule()
     {
         int pos = save();
 
@@ -210,7 +240,7 @@ namespace file_parser
         return nullptr;
     }
 
-    std::optional<std::string> Parser::identRule()
+    std::optional<std::string> AstParser::identRule()
     {
         int pos = save();
 

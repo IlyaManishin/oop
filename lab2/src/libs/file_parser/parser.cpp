@@ -7,7 +7,7 @@
 
 namespace file_parser
 {
-    Parser::Parser(std::string filePath)
+    AstParser::AstParser(std::string filePath)
         : filePath(std::move(filePath))
     {
         this->file = fopen(this->filePath.c_str(), "r");
@@ -15,10 +15,9 @@ namespace file_parser
             return;
 
         this->tokenizer = tokenizer_from_file_data(file);
-        this->isParserInit = true;
     }
 
-    Parser::~Parser()
+    AstParser::~AstParser()
     {
         if (this->tokenizer)
             delete_tokenizer(this->tokenizer);
@@ -26,7 +25,7 @@ namespace file_parser
             fclose(this->file);
     }
 
-    FileUPtr Parser::ParseFileTree()
+    FileUPtr AstParser::ParseFileTree()
     {
         if (this->file == NULL)
             throw ParserException("Can't open file");
@@ -36,7 +35,7 @@ namespace file_parser
         return this->parseFileRule();
     }
 
-    void Parser::nextToken()
+    void AstParser::nextToken()
     {
         this->curTok = token_soft_read(this->tokenizer);
         if (is_tokenizer_error(this->tokenizer))
@@ -50,22 +49,22 @@ namespace file_parser
         }
     }
 
-    int Parser::save()
+    int AstParser::save()
     {
         return get_tokenizer_pos(tokenizer);
     }
 
-    void Parser::rewind(int pos)
+    void AstParser::rewind(int pos)
     {
         set_tokenizer_pos(tokenizer, pos);
     }
 
-    bool Parser::checkTokType(TokenTypes type)
+    bool AstParser::checkTokType(TokenTypes type)
     {
         return curTok.type == type;
     }
 
-    bool Parser::acceptTok(TokenTypes type)
+    bool AstParser::acceptTok(TokenTypes type)
     {
         int pos = this->save();
         this->nextToken();
@@ -77,7 +76,7 @@ namespace file_parser
         return true;
     }
 
-    void Parser::readPassTokens()
+    void AstParser::readPassTokens()
     {
         while (acceptTok(NEWLINE))
         {
@@ -85,7 +84,7 @@ namespace file_parser
         }
     }
 
-    std::string Parser::tokToStr(TToken token)
+    std::string AstParser::tokToStr(TToken token)
     {
         if (token.start == NULL)
         {

@@ -1,8 +1,8 @@
+#include "wav_file.hpp"
 #include "internal/config.hpp"
 #include "internal/sample_reader.hpp"
 #include "internal/types.hpp"
 #include "internal/wav_utils.hpp"
-#include "wav.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -13,7 +13,6 @@
 
 constexpr int MAX_CHAIN_COUNT = 12;
 constexpr double INTERVAL_SAMPLES_ACCURANCY = 0.000001;
-// const std::string interval_read_error = "";
 
 namespace wav_lib
 {
@@ -25,24 +24,36 @@ namespace wav_lib
         uint32_t samplesCount;
         double durationSec;
 
+        float startSec;
+        float endSec;
+
         WavEffects effect = WavEffects::NORMAL;
         bool isNewVolume = false;
         float volumeValue;
 
-        WavInterval(WavFile *wavFile, uint32_t startPos, uint32_t samplesCount, double durationSec)
+        WavInterval(WavFile *wavFile,
+                    uint32_t startPos, uint32_t samplesCount, double durationSec,
+                    float startSec, float endSec)
             : wavFile(wavFile), startPos(startPos),
-              samplesCount(samplesCount), durationSec(durationSec) {};
+              samplesCount(samplesCount), durationSec(durationSec),
+              startSec(startSec), endSec(endSec) {};
 
         void SetEffect(WavEffects effect) override { this->effect = effect; }
         void SetVolume(float value) override { this->volumeValue = value; }
         bool IsChangedSound() { return isNewVolume || (this->effect != WavEffects::NORMAL); };
+        virtual void Print(std::ostream &out = std::cout) const override
+        {
+            out << "Interval: start=" << std::to_string(this->startSec)
+                << ", end=" << std::to_string(this->endSec);
+        }
 
         ~WavInterval() {};
     };
 
-    OperationExc write_interval_error()
+    inline const std::string get_invalid_interval_msg(float start, float end)
     {
-        return OperationExc();
+        std::string interval = std::to_string(start) + "," + std::to_string(end);
+        return std::string("Invalid wav interval: (") + interval + std::string(")");
     }
 
     WavFile::WavFile(const std::string &wavPath, bool createNew)
@@ -56,22 +67,22 @@ namespace wav_lib
 
         this->file.open(wavPath, mode);
         if (!this->file.is_open())
-            throw InvalidWavFileExc("Cannot open file", this->path);
+            throw WavException("Cannot open file", this->path);
     }
 
     WavFileSPtr WavFile::Open(const std::string &path)
     {
-        WavFileSPtr file(new WavFile(path, false));
-        file->extractFileData();
-        return file;
+        auto wavFile = std::shared_ptr<WavFile>(new WavFile(path, false));
+        wavFile->extractFileData();
+        return wavFile;
     }
 
     WavFileSPtr WavFile::Create(const std::string &path, uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample)
     {
-        WavFileSPtr file(new WavFile(path, true));
-        file->initNewHeader(channels, sampleRate, bitsPerSample);
-        file->Save();
-        return file;
+        auto wavFile = std::shared_ptr<WavFile>(new WavFile(path, true));
+        wavFile->initNewHeader(channels, sampleRate, bitsPerSample);
+        wavFile->Save();
+        return wavFile;
     }
 
     void WavFile::extractFileData()
@@ -81,18 +92,18 @@ namespace wav_lib
         char subchunk1Id[4];
 
         if (!this->file.read(chunkId, 4))
-            throw InvalidWavFileExc("Failed to read chunkId", this->path);
+            throw WavException("Failed to read chunkId", this->path);
         this->header.chunkSize = read_uint32(this->file);
         if (!this->file.read(format, 4))
-            throw InvalidWavFileExc("Failed to read format", this->path);
+            throw WavException("Failed to read format", this->path);
 
         if (std::strncmp(chunkId, "RIFF", 4) != 0 || std::strncmp(format, "WAVE", 4) != 0)
-            throw InvalidWavFileExc("Not a RIFF/WAVE file", this->path);
+            throw WavException("Not a RIFF/WAVE file", this->path);
 
         if (!this->file.read(subchunk1Id, 4))
-            throw InvalidWavFileExc("Failed to read subchunk1Id", this->path);
+            throw WavException("Failed to read subchunk1Id", this->path);
         if (std::strncmp(subchunk1Id, "fmt ", 4) != 0)
-            throw InvalidWavFileExc("Invalid subchunk1Id identifier", this->path);
+            throw WavException("Invalid subchunk1Id identifier", this->path);
 
         read_uint32(this->file); // subchunk1Size
 
@@ -109,7 +120,7 @@ namespace wav_lib
         for (int i = 0; i < MAX_CHAIN_COUNT; i++)
         {
             if (!this->file.read(subchunk2Id, 4))
-                throw InvalidWavFileExc("Failed to read subchunk2Id", this->path);
+                throw WavException("Failed to read subchunk2Id", this->path);
             subchunk2Size = read_uint32(this->file);
 
             if (std::strncmp(subchunk2Id, "LIST", 4) == 0) //
@@ -127,7 +138,7 @@ namespace wav_lib
                 break;
             }
             else
-                throw InvalidWavFileExc("Invalid subchunk identifiers", this->path);
+                throw WavException("Invalid subchunk identifiers", this->path);
         }
     }
 
@@ -175,17 +186,21 @@ namespace wav_lib
         write_uint32(this->file, this->header.subchunk2Size);
 
         this->file.flush();
+        if (file.fail())
+        {
+            throw WavException("Can't save file", this->path);
+        }
     }
 
-    void WavFile::PrintInfo() const
+    void WavFile::PrintInfo(std::ostream &out) const
     {
-        std::cout << "File: " << path << "\n";
-        std::cout << "Channels: " << this->header.numChannels << "\n";
-        std::cout << "Sample rate: " << this->header.sampleRate << " Hz\n";
-        std::cout << "Bits per sample: " << this->header.bitsPerSample << "\n";
-        std::cout << "Byte rate: " << this->header.byteRate << "\n";
-        std::cout << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
-        std::cout << "Durations: " << (this->dataEnd - this->dataStart) / this->header.byteRate << " sec\n";
+        out << "File: " << path << "\n";
+        out << "Channels: " << this->header.numChannels << "\n";
+        out << "Sample rate: " << this->header.sampleRate << " Hz\n";
+        out << "Bits per sample: " << this->header.bitsPerSample << "\n";
+        out << "Byte rate: " << this->header.byteRate << "\n";
+        out << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
+        out << "Durations: " << (this->dataEnd - this->dataStart) / this->header.byteRate << " sec\n";
     }
 
     void WavFile::Save()
@@ -212,9 +227,11 @@ namespace wav_lib
         if (end > dataEnd)
             end = dataEnd;
 
-        double deltaSec = (double)(end - start) / (this->header.byteRate);
+        double deltaSecNorm = (double)(end - start) / (this->header.byteRate);
+
         uint32_t samplesCount = (end - start) / this->header.blockAlign;
-        IWavIntervalSPtr interval = std::make_shared<WavInterval>(this, start, samplesCount, deltaSec);
+        IWavIntervalSPtr interval = std::make_shared<WavInterval>(this, start, samplesCount,
+                                                                  deltaSecNorm, startSec, endSec);
         return interval;
     }
 
@@ -231,7 +248,7 @@ namespace wav_lib
             throw OperationExc(msg);
         }
 
-        if (destBytePos > this->header.subchunk2Size) // is after file end - extend
+        if (destBytePos > this->header.subchunk2Size) // if file end is after - extend
         {
             isInsert = false;
 
@@ -375,7 +392,7 @@ namespace wav_lib
         }
         uint32_t delta = (uint32_t)std::labs((long long)maxSamples - writtenSamples);
         if ((double)delta / maxSamples > INTERVAL_SAMPLES_ACCURANCY)
-            throw write_interval_error();
+            throw OperationExc("Interval is so long");
 
         uint32_t intervalLength = this->header.blockAlign * writtenSamples;
         std::streampos endPos = get_offset_pos(destPos, intervalLength);
@@ -421,7 +438,7 @@ namespace wav_lib
         const ByteVector *buffer = reader.GetBuffer();
         if (buffer == nullptr)
         {
-            throw write_interval_error();
+            throw OperationExc("Can't write interval to file");
         }
 
         size_t allSamples = 0, samplesCount = 0;

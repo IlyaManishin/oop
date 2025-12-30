@@ -11,7 +11,7 @@ static std::string P(const std::string &name)
 
 TEST(ParserTest, SimpleAssign)
 {
-    Parser parser(P("simple_assign.txt"));
+    AstParser parser(P("simple_assign.txt"));
     auto tree = parser.ParseFileTree();
 
     ASSERT_TRUE(tree);
@@ -30,7 +30,7 @@ TEST(ParserTest, SimpleAssign)
 
 TEST(ParserTest, FuncAndMethod)
 {
-    Parser parser(P("func_and_method.txt"));
+    AstParser parser(P("func_and_method.txt"));
     auto tree = parser.ParseFileTree();
 
     ASSERT_TRUE(tree);
@@ -49,7 +49,7 @@ TEST(ParserTest, FuncAndMethod)
 
 TEST(ParserTest, IfBlock)
 {
-    Parser parser(P("if_block.txt"));
+    AstParser parser(P("if_block.txt"));
     auto tree = parser.ParseFileTree();
 
     ASSERT_TRUE(tree);
@@ -74,7 +74,7 @@ TEST(ParserTest, IfBlock)
 
 TEST(ParserTest, RecursiveIfBlock)
 {
-    Parser parser(P("complex_recursive.txt"));
+    AstParser parser(P("complex_recursive.txt"));
     auto tree = parser.ParseFileTree();
 
     ASSERT_TRUE(tree);

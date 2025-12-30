@@ -3,7 +3,7 @@
 #include "../wav.hpp"
 #include "config.hpp"
 #include "types.hpp"
-#include "wav_exceptions.hpp"
+#include "exceptions.hpp"
 #include "wav_utils.hpp"
 
 #include <cinttypes>

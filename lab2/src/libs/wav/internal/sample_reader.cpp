@@ -3,7 +3,7 @@
 #include "config.hpp"
 #include "sound_effects/effects.hpp"
 #include "types.hpp"
-#include "wav_exceptions.hpp"
+#include "exceptions.hpp"
 
 #include "cassert"
 #include "cstring"

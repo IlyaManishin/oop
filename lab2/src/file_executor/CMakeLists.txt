@@ -1,2 +1,4 @@
-add_library(file_executor STATIC file_commands.cpp)
-target_link_libraries(file_executor PRIVATE file_parser)
+add_subdirectory(tree_executor)
+add_library(file_executor STATIC file_executor.cpp)
+
+target_link_libraries(file_executor PRIVATE file_parser tree_executor)
