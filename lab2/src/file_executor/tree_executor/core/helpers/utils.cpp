@@ -10,7 +10,7 @@ namespace tree_executor
         const StringType *strObj = dynamic_cast<const StringType *>(obj.get());
         if (!strObj)
         {
-            throw UnexpectedArg(obj, STRING_TYPE_NAME);
+            throw UnexpectedArgExc(obj, STRING_TYPE_NAME);
         }
         return strObj->GetValue();
     }

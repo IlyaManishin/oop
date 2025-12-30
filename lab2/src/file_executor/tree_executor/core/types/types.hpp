@@ -81,7 +81,12 @@ namespace tree_executor
 
         void Print(std::ostream &out) const override
         {
-            value->PrintInfo(out);
+            this->value->PrintInfo(out);
+        }
+
+        ~WavFileType() override
+        {
+            this->value->Save();
         }
     };
 
@@ -96,12 +101,12 @@ namespace tree_executor
 
         void Print(std::ostream &out) const override
         {
-            value->PrintInfo(out);
+            this->value->PrintInfo(out);
         }
 
         ~WavIntervalType() override
         {
-            value->Save();
+            this->value->Save();
         }
     };
 

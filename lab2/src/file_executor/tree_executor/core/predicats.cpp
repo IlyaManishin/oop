@@ -18,7 +18,7 @@ namespace tree_executor
         auto it = predicats.find(predicatName);
         if (it == predicats.end())
         {
-            throw UnexpectedIdent(predicatName);
+            throw UnexpectedIdentExc(predicatName);
         }
 
         return it->second(args);
@@ -33,7 +33,7 @@ namespace tree_executor
         const StringType *strObj = dynamic_cast<const StringType *>(arg.get());
         if (!strObj)
         {
-            throw UnexpectedArg(arg, STRING_TYPE_NAME);
+            throw UnexpectedArgExc(arg, STRING_TYPE_NAME);
         }
 
         const std::string &path = strObj->GetValue();
