@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tokenizer/tokenizer_api.h"
+#include "tokenizer/tokenizer_api.h" //?????
 #include "types.hpp"
 
 #include <cstdio>
@@ -19,11 +19,11 @@ namespace file_parser
         explicit ParserException(const std::string &msg) : runtime_error(msg) {}
     };
 
-    class Parser
+    class AstParser
     {
     public:
-        Parser(std::string filePath);
-        ~Parser();
+        AstParser(std::string filePath);
+        ~AstParser();
 
         FileUPtr ParseFileTree();
 

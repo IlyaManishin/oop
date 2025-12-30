@@ -4,5 +4,9 @@
 
 namespace file_executor
 {
-    bool run_from_config_file(const std::string configPath);
+    class FileExecutor
+    {
+    public:
+        static bool run_from_config_file(const std::string configPath) noexcept;
+    };
 } // namespace file_executor

@@ -43,7 +43,7 @@ namespace executor
             std::cerr << "Usage: file <config_file> ";
             return false;
         }
-        bool res = file_executor::run_from_config_file(configPath);
+        bool res = file_executor::FileExecutor::run_from_config_file(configPath);
         return res;
     }
 
@@ -125,7 +125,7 @@ namespace executor
         }
         catch (const std::exception &e)
         {
-            std::cerr  << "Wav info error: " << e.what() << '\n';
+            std::cerr << "Wav info error: " << e.what() << '\n';
         }
         return false;
     }

@@ -15,7 +15,7 @@ namespace tree_executor
         return strObj->GetValue();
     }
 
-    const ExObjUPtr value_arg_to_ex_obj(const file_parser::ArgUPtr &arg)
+    const ExObjUPtr exObj_from_value_arg(const file_parser::ArgUPtr &arg)
     {
         if (arg->type == file_parser::Arg::Type::NUMBER)
             return std::make_unique<FloatType>(std::get<float>(arg->value));

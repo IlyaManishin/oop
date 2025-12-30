@@ -7,6 +7,6 @@ namespace tree_executor
 {
     const std::string& parse_string_from_obj(const ExObj& obj);
 
-    const ExObjUPtr value_arg_to_ex_obj(const file_parser::ArgUPtr& arg);
+    const ExObjUPtr exObj_from_value_arg(const file_parser::ArgUPtr& arg);
 
 } // namespace tree_executor

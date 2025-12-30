@@ -3,11 +3,24 @@
 #include "helpers/utils.hpp"
 
 #include <variant>
+#include <vector>
 
 using namespace file_parser;
 
 namespace tree_executor
 {
+    class ArgsFrame
+    {
+    public:
+        std::vector<ExObjRef> allArgs;
+        ExObjs valueArgs;
+    };
+
+    void TreeInterpreter::addVar(const std::string &name, ExObjUPtr value)
+    {
+        
+    }
+
     void TreeInterpreter::Execute(const FileUPtr &tree)
     {
         for (const auto &stmt : *(tree->statements))
@@ -49,24 +62,24 @@ namespace tree_executor
         // const FuncCallUPtr
     }
 
-    std::unique_ptr<ExObjs> TreeInterpreter::parseArgs(const ArgsUPtr &args)
+    ArgsFrameUPtr TreeInterpreter::parseArgs(const ArgsUPtr &args)
     {
-        auto argsObj = std::make_unique<ExObjs>(args->size());
+        ArgsFrameUPtr argsFrame = std::make_unique<ArgsFrame>();
         for (size_t i = 0; i < args->size(); i++)
         {
-            (*argsObj)[i] = this->parseArg((*args)[i]);
+            this->parseArg(argsFrame, (*args)[i]);
         }
-        return argsObj;
+        return argsFrame;
     }
 
-    ExObjUPtr TreeInterpreter::parseArg(const file_parser::ArgUPtr &arg)
+    void TreeInterpreter::parseArg(ArgsFrameUPtr &argsFrameUPtr, const file_parser::ArgUPtr &arg)
     {
         if (arg->type == file_parser::Arg::Type::IDENT)
         {
             auto it = vars.find(std::get<std::string>(arg->value));
             if (it != vars.end())
             {
-                return it->second ? std::make_unique<ExObj>(*it->second) : nullptr;
+                argsFrameUPtr->allArgs.push_back(it->second.get());
             }
             else
             {
@@ -75,14 +88,11 @@ namespace tree_executor
         }
         else
         {
-            ExObjUPtr res = value_arg_to_ex_obj(arg);
+            ExObjUPtr res = exObj_from_value_arg(arg);
             if (!res)
                 throw std::runtime_error("Unexpected type");
-            return res;
+            argsFrameUPtr->allArgs.push_back(res.get());
+            argsFrameUPtr->valueArgs.push_back(std::move(res));
         }
-    }
-
-    void TreeInterpreter::addVar(const std::string &name, ExObjUPtr value)
-    {
     }
 }

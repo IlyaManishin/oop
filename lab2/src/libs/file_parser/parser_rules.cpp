@@ -7,7 +7,7 @@
 
 namespace file_parser
 {
-    FileUPtr Parser::parseFileRule()
+    FileUPtr AstParser::parseFileRule()
     {
         int pos = this->save();
         auto statements = this->parseStatements();
@@ -41,7 +41,7 @@ namespace file_parser
         return nullptr;
     }
 
-    StatementsUPtr Parser::parseStatements()
+    StatementsUPtr AstParser::parseStatements()
     {
         StatementsUPtr stmts = std::make_unique<std::vector<StatementUPtr>>();
         StatementUPtr stmt = this->parseStatement();
@@ -68,7 +68,7 @@ namespace file_parser
         return stmts;
     }
 
-    StatementUPtr Parser::parseStatement()
+    StatementUPtr AstParser::parseStatement()
     {
         int pos = this->save();
 
@@ -93,7 +93,7 @@ namespace file_parser
         return nullptr;
     }
 
-    StatementsUPtr Parser::parseBlock()
+    StatementsUPtr AstParser::parseBlock()
     {
         int pos = this->save();
 
@@ -109,7 +109,7 @@ namespace file_parser
         return nullptr;
     }
 
-    IfStatUPtr Parser::parseIfStat()
+    IfStatUPtr AstParser::parseIfStat()
     {
         int pos = this->save();
 
@@ -127,7 +127,7 @@ namespace file_parser
         return nullptr;
     }
 
-    AssignUPtr Parser::parseAssign()
+    AssignUPtr AstParser::parseAssign()
     {
         int pos = save();
 
@@ -145,7 +145,7 @@ namespace file_parser
         return nullptr;
     }
 
-    MethodRunUPtr Parser::parseMethodRun()
+    MethodRunUPtr AstParser::parseMethodRun()
     {
         int pos = this->save();
 
@@ -163,7 +163,7 @@ namespace file_parser
         return nullptr;
     }
 
-    FuncRunUPtr Parser::parseFuncRun()
+    FuncRunUPtr AstParser::parseFuncRun()
     {
         int pos = this->save();
 
@@ -177,7 +177,7 @@ namespace file_parser
         return nullptr;
     }
 
-    FuncCallUPtr Parser::parseFuncCall()
+    FuncCallUPtr AstParser::parseFuncCall()
     {
         int pos = this->save();
 
@@ -195,7 +195,7 @@ namespace file_parser
         return nullptr;
     }
 
-    ArgsUPtr Parser::readArgsRule()
+    ArgsUPtr AstParser::readArgsRule()
     {
         ArgsUPtr args = std::make_unique<std::vector<ArgUPtr>>();
         while (true)
@@ -210,7 +210,7 @@ namespace file_parser
         return args;
     }
 
-    ArgUPtr Parser::argRule()
+    ArgUPtr AstParser::argRule()
     {
         int pos = save();
 
@@ -240,7 +240,7 @@ namespace file_parser
         return nullptr;
     }
 
-    std::optional<std::string> Parser::identRule()
+    std::optional<std::string> AstParser::identRule()
     {
         int pos = save();
 

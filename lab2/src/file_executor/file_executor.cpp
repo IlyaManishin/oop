@@ -1,5 +1,6 @@
 #include "tree_executor/tree_executor.hpp"
 
+#include "file_executor.hpp"
 #include "file_parser/parser.hpp"
 
 #include <exception>
@@ -11,11 +12,11 @@ using namespace tree_executor;
 
 namespace file_executor
 {
-    bool run_from_config_file(const std::string configPath)
+    bool FileExecutor::run_from_config_file(const std::string configPath) noexcept
     {
-        Parser parser(configPath);
+        AstParser parser(configPath);
 
-        file_parser::FileUPtr tree = nullptr;
+        FileUPtr tree = nullptr;
         try
         {
             tree = parser.ParseFileTree();

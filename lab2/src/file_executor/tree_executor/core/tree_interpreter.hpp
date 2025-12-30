@@ -8,6 +8,9 @@
 
 namespace tree_executor
 {
+    class ArgsFrame;
+    using ArgsFrameUPtr = std::unique_ptr<ArgsFrame>;
+    
     class TreeInterpreter
     {
     public:
@@ -23,9 +26,9 @@ namespace tree_executor
         void executeMethodRun(const file_parser::MethodRun &method_run);
         void executeIfStat(const file_parser::IfStat &if_stat);
 
-        std::unique_ptr<ExObjs> parseArgs(const file_parser::ArgsUPtr &args);
-        ExObjUPtr parseArg(const file_parser::ArgUPtr &arg);
-        
+        ArgsFrameUPtr parseArgs(const file_parser::ArgsUPtr &args);
+        void parseArg(ArgsFrameUPtr &argsFrameUPtr, const file_parser::ArgUPtr &arg);
+
         void addVar(const std::string &name, ExObjUPtr value);
     };
 }
