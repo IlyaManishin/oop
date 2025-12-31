@@ -133,8 +133,7 @@ namespace wav_lib
                 this->header.subchunk2Size = subchunk2Size;
 
                 this->dataStart = this->file.tellg();
-                this->file.seekg(this->header.subchunk2Size, std::ios::cur);
-                this->dataEnd = this->file.tellg();
+                this->dataEnd = get_offset_pos(this->dataStart, this->header.subchunk2Size);
                 break;
             }
             else
@@ -185,6 +184,9 @@ namespace wav_lib
         this->file.write("data", 4);
         write_uint32(this->file, this->header.subchunk2Size);
 
+        this->dataStart = this->file.tellp();
+        this->dataEnd = get_offset_pos(this->dataStart, this->header.subchunk2Size);
+
         this->file.flush();
         if (file.fail())
         {
@@ -200,7 +202,13 @@ namespace wav_lib
         out << "Bits per sample: " << this->header.bitsPerSample << "\n";
         out << "Byte rate: " << this->header.byteRate << "\n";
         out << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
-        out << "Durations: " << (this->dataEnd - this->dataStart) / this->header.byteRate << " sec\n";
+        out << "Durations: " << std::to_string(this->GetDurationSec()) << " sec\n";
+    }
+
+    double WavFile::GetDurationSec() const
+    {
+        double byteSize = static_cast<double>(this->dataEnd - this->dataStart);
+        return byteSize / this->header.byteRate;
     }
 
     void WavFile::Save()

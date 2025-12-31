@@ -24,6 +24,7 @@ namespace wav_lib
 
         void PrintInfo(std::ostream &out = std::cout) const override;
         TWavHeader GetHeader() const override { return this->header; };
+        virtual double GetDurationSec() const;
 
         void Save() override;
 
