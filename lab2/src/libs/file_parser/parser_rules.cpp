@@ -20,7 +20,7 @@ namespace file_parser
         if (!this->isEOF())
         {
             this->nextToken();
-            const std::string msg = std::string("Can't parse rule(line ") +
+            const std::string msg = std::string("Can't parse rule (line ") +
                                     std::to_string(this->curTok.lineno) +
                                     std::string(")\n");
             if (token_strlen(this->curTok) != 0)
@@ -105,6 +105,7 @@ namespace file_parser
         {
             return stmts;
         }
+
         this->rewind(pos);
         return nullptr;
     }
@@ -114,16 +115,32 @@ namespace file_parser
         int pos = this->save();
 
         FuncCallUPtr condition;
-        StatementsUPtr stmts;
+        StatementsUPtr ifStmts;
+        StatementsUPtr elseStmts;
         if (acceptTok(IF_KW) &&
             (condition = parseFuncCall()) &&
             acceptTok(COLON) && acceptTok(NEWLINE) &&
+            (ifStmts = parseBlock()))
+        {
+            elseStmts = parseElseStat();
+            return std::make_unique<IfStat>(IfStat{std::move(condition),
+                                                   std::move(ifStmts), std::move(elseStmts)});
+        }
+        this->rewind(pos);
+        return nullptr;
+    }
+
+    StatementsUPtr AstParser::parseElseStat()
+    {
+        int pos = save();
+
+        StatementsUPtr stmts;
+        if (acceptTok(ELSE_KW) && acceptTok(COLON) && acceptTok(NEWLINE) &&
             (stmts = parseBlock()))
         {
-            return std::make_unique<IfStat>(IfStat{std::move(condition), std::move(stmts)});
+            return stmts;
         }
-
-        this->rewind(pos);
+        rewind(pos);
         return nullptr;
     }
 

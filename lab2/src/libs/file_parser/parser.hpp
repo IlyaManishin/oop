@@ -43,6 +43,7 @@ namespace file_parser
         FuncCallUPtr parseFuncCall();
         MethodRunUPtr parseMethodRun();
         IfStatUPtr parseIfStat();
+        StatementsUPtr parseElseStat();
 
         ArgUPtr argRule();
         ArgsUPtr readArgsRule();
