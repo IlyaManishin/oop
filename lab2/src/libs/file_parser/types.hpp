@@ -85,10 +85,13 @@ namespace file_parser
     struct IfStat
     {
         FuncCallUPtr condition;
-        StatementsUPtr statements;
+        StatementsUPtr ifStmts;
+        StatementsUPtr elseStmts;
 
-        IfStat(FuncCallUPtr condition, StatementsUPtr statements)
-            : condition(std::move(condition)), statements(std::move(statements)) {}
+        IfStat(FuncCallUPtr condition, StatementsUPtr ifStatements, StatementsUPtr elseStatements)
+            : condition(std::move(condition)),
+              ifStmts(std::move(ifStatements)),
+              elseStmts(std::move(elseStatements)) {};
     };
 
     struct Statement
@@ -105,7 +108,8 @@ namespace file_parser
         Statement(MethodRunUPtr v, size_t line)
             : value(std::move(v)), line(line) {}
 
-        Statement(IfStatUPtr v, size_t line)
+        Statement(IfStatUPtr v, 
+            size_t line)
             : value(std::move(v)), line(line) {}
     };
 

@@ -10,7 +10,7 @@ namespace file_parser
     FileUPtr AstParser::parseFileRule()
     {
         int pos = this->save();
-        auto statements = this->parseStatements();
+        auto statements = this->parseStmts();
         if (this->isErr())
         {
             throw ParserException("Can't parse file");
@@ -20,7 +20,7 @@ namespace file_parser
         if (!this->isEOF())
         {
             this->nextToken();
-            const std::string msg = std::string("Can't parse rule(line ") +
+            const std::string msg = std::string("Can't parse rule (line ") +
                                     std::to_string(this->curTok.lineno) +
                                     std::string(")\n");
             if (token_strlen(this->curTok) != 0)
@@ -41,10 +41,10 @@ namespace file_parser
         return nullptr;
     }
 
-    StatementsUPtr AstParser::parseStatements()
+    StatementsUPtr AstParser::parseStmts()
     {
         StatementsUPtr stmts = std::make_unique<std::vector<StatementUPtr>>();
-        StatementUPtr stmt = this->parseStatement();
+        StatementUPtr stmt = this->parseStmt();
         if (!stmt)
             return stmts;
         stmts->push_back(std::move(stmt));
@@ -52,15 +52,11 @@ namespace file_parser
         while (1)
         {
             auto pos = this->save();
-            if (this->curTok.type == NEWLINE ||
-                this->curTok.type == DEDENT ||
-                this->acceptTok(NEWLINE))
+
+            if ((stmt = parseStmt()))
             {
-                if ((stmt = parseStatement()))
-                {
-                    stmts->push_back(std::move(stmt));
-                    continue;
-                }
+                stmts->push_back(std::move(stmt));
+                continue;
             }
             this->rewind(pos);
             break;
@@ -68,28 +64,54 @@ namespace file_parser
         return stmts;
     }
 
-    StatementUPtr AstParser::parseStatement()
+    StatementUPtr AstParser::parseStmt()
     {
-        int pos = this->save();
+        int pos = save();
 
-        if (auto ifstmt = this->parseIfStat())
-            return std::make_unique<Statement>(Statement{IfStatUPtr(std::move(ifstmt)),
-                                                         (size_t)this->curTok.lineno});
+        if (auto stmt = parseCompoundStmt())
+            return stmt;
 
-        this->rewind(pos);
-        if (auto assign = this->parseAssign())
-            return std::make_unique<Statement>(Statement{AssignUPtr(std::move(assign)),
-                                                         (size_t)this->curTok.lineno});
+        rewind(pos);
+        if (auto stmt = parseSimpleStmt())
+            return stmt;
 
-        this->rewind(pos);
-        if (auto func = this->parseFuncRun())
-            return std::make_unique<Statement>(Statement{FuncRunUPtr(std::move(func)),
-                                                         (size_t)this->curTok.lineno});
+        return nullptr;
+    }
 
-        this->rewind(pos);
-        if (auto method = this->parseMethodRun())
-            return std::make_unique<Statement>(Statement{MethodRunUPtr(std::move(method)),
-                                                         (size_t)this->curTok.lineno});
+    StatementUPtr AstParser::parseCompoundStmt()
+    {
+        int pos = save();
+
+        if (auto ifstmt = parseIfStat())
+            return std::make_unique<Statement>(
+                Statement{IfStatUPtr(std::move(ifstmt)),
+                          (size_t)curTok.lineno});
+
+        rewind(pos);
+        return nullptr;
+    }
+
+    StatementUPtr AstParser::parseSimpleStmt()
+    {
+        int pos = save();
+
+        if (auto assign = parseAssign())
+            return std::make_unique<Statement>(
+                Statement{AssignUPtr(std::move(assign)),
+                          (size_t)curTok.lineno});
+
+        rewind(pos);
+        if (auto func = parseFuncRun())
+            return std::make_unique<Statement>(
+                Statement{FuncRunUPtr(std::move(func)),
+                          (size_t)curTok.lineno});
+
+        rewind(pos);
+        if (auto method = parseMethodRun())
+            return std::make_unique<Statement>(
+                Statement{MethodRunUPtr(std::move(method)),
+                          (size_t)curTok.lineno});
+
         return nullptr;
     }
 
@@ -100,11 +122,12 @@ namespace file_parser
         FuncCallUPtr condition;
         StatementsUPtr stmts;
         if (acceptTok(INDENT) &&
-            (stmts = parseStatements()) &&
-            acceptTok(NEWLINE) && acceptTok(DEDENT))
+            (stmts = parseStmts()) &&
+            acceptTok(DEDENT))
         {
             return stmts;
         }
+
         this->rewind(pos);
         return nullptr;
     }
@@ -114,16 +137,32 @@ namespace file_parser
         int pos = this->save();
 
         FuncCallUPtr condition;
-        StatementsUPtr stmts;
+        StatementsUPtr ifStmts;
+        StatementsUPtr elseStmts;
         if (acceptTok(IF_KW) &&
             (condition = parseFuncCall()) &&
             acceptTok(COLON) && acceptTok(NEWLINE) &&
+            (ifStmts = parseBlock()))
+        {
+            elseStmts = parseElseStat();
+            return std::make_unique<IfStat>(IfStat{std::move(condition),
+                                                   std::move(ifStmts), std::move(elseStmts)});
+        }
+        this->rewind(pos);
+        return nullptr;
+    }
+
+    StatementsUPtr AstParser::parseElseStat()
+    {
+        int pos = save();
+
+        StatementsUPtr stmts;
+        if (acceptTok(ELSE_KW) && acceptTok(COLON) && acceptTok(NEWLINE) &&
             (stmts = parseBlock()))
         {
-            return std::make_unique<IfStat>(IfStat{std::move(condition), std::move(stmts)});
+            return stmts;
         }
-
-        this->rewind(pos);
+        rewind(pos);
         return nullptr;
     }
 
@@ -136,7 +175,8 @@ namespace file_parser
 
         if (ident &&
             acceptTok(ASSIGN) &&
-            (funcCall = parseFuncCall()))
+            (funcCall = parseFuncCall()) &&
+            acceptTok(NEWLINE))
         {
             return file_parser::AssignUPtr(
                 new file_parser::Assign(*ident, std::move(funcCall)));
@@ -153,8 +193,9 @@ namespace file_parser
         FuncCallUPtr fCall;
 
         if (ident &&
-            this->acceptTok(DOT) &&
-            (fCall = this->parseFuncCall()))
+            acceptTok(DOT) &&
+            (fCall = parseFuncCall()) &&
+            acceptTok(NEWLINE))
         {
             return std::make_unique<MethodRun>(*ident, std::move(fCall));
         }
@@ -168,7 +209,7 @@ namespace file_parser
         int pos = this->save();
 
         FuncCallUPtr fCall;
-        if ((fCall = parseFuncCall()))
+        if ((fCall = parseFuncCall()) && acceptTok(NEWLINE))
         {
             FuncRunUPtr res = std::make_unique<FuncRun>(std::move(fCall));
             return res;

@@ -6,7 +6,7 @@
 
 namespace wav_lib
 {
-    WavFileSPtr WavReader::ReadWav(const std::string &path) const 
+    WavFileSPtr WavReader::OpenWav(const std::string &path) const 
     {
         auto file = WavFile::Open(path);
         return file;

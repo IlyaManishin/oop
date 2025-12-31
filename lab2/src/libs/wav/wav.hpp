@@ -51,8 +51,9 @@ namespace wav_lib
     class IWavFile
     {
     public:
-        virtual void PrintInfo(std::ostream &out = std::cout) const = 0;
+        virtual void PrintInfo(std::ostream &out = std::cout) const noexcept = 0;
         virtual TWavHeader GetHeader() const = 0;
+        virtual double GetDurationSec() const = 0;
 
         virtual void Save() = 0;
 
@@ -68,7 +69,7 @@ namespace wav_lib
     {
     public:
         WavReader(const std::string &wavDir = "") noexcept : wavDir(wavDir) {};
-        WavFileSPtr ReadWav(const std::string &path) const;
+        WavFileSPtr OpenWav(const std::string &path) const;
         WavFileSPtr CreateWav(const std::string &destPath,
                               int numChannels = 2,
                               uint32_t sampleRate = 44100,

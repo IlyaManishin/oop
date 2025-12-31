@@ -12,7 +12,7 @@ using namespace tree_executor;
 
 namespace file_executor
 {
-    bool FileExecutor::run_from_config_file(const std::string configPath) noexcept
+    void FileExecutor::run_from_config_file(const std::string& configPath)
     {
         AstParser parser(configPath);
 
@@ -21,20 +21,19 @@ namespace file_executor
         {
             tree = parser.ParseFileTree();
         }
-        catch (const ParserException &exc)
+        catch (const std::exception &exc)
         {
-            std::cerr << exc.what() << std::endl;
-            return false;
+            std::string msg = std::string("Config parsing error: \n") + exc.what();
+            throw std::runtime_error(msg);
         }
         try
         {
             Executor::ExecuteTree(tree);
         }
-        catch (const std::runtime_error &err)
+        catch (const std::exception &exc)
         {
-            std::cerr << err.what() << std::endl;
-            return false;
+            std::string msg = std::string("Interpreter error occurred: \n") + exc.what();
+            throw std::runtime_error(msg);
         }
-        return true;
     }
 } // namespace executor

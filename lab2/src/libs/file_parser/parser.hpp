@@ -29,32 +29,38 @@ namespace file_parser
 
     private:
         FILE *file = nullptr;
-        
+
         std::string filePath;
         TTokenizer *tokenizer = nullptr;
         TToken curTok;
 
         FileUPtr parseFileRule();
-        StatementsUPtr parseStatements();
-        StatementUPtr parseStatement();
+
+        StatementsUPtr parseStmts();
+        StatementUPtr parseStmt();
+        StatementUPtr parseSimpleStmt();
+        StatementUPtr parseCompoundStmt();
         StatementsUPtr parseBlock();
         AssignUPtr parseAssign();
         FuncRunUPtr parseFuncRun();
         FuncCallUPtr parseFuncCall();
         MethodRunUPtr parseMethodRun();
         IfStatUPtr parseIfStat();
+        StatementsUPtr parseElseStat();
 
         ArgUPtr argRule();
         ArgsUPtr readArgsRule();
 
         std::optional<std::string> identRule();
 
-        int save();
-        void rewind(int pos);
-        bool checkTokType(TokenTypes type);
+        int save() { return get_tokenizer_pos(tokenizer); };
+        void rewind(int pos) { set_tokenizer_pos(tokenizer, pos); };
+        bool checkTokType(TokenTypes type) { return this->curTok.type == type; };
+
         void nextToken();
         bool acceptTok(TokenTypes type);
         void readPassTokens();
+        
         bool isEOF() { return curTok.type == EOF_TOKEN; };
         bool isErr() { return curTok.type == ERROR_TOKEN; };
 

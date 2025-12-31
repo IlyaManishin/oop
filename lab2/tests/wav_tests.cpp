@@ -1,3 +1,5 @@
+#include "test_paths.hpp"
+
 #include "../src/command_executor/cmd_commands.hpp"
 #include "cmd_parser/cmd_parser.hpp"
 #include "wav/internal/config.hpp"
@@ -7,12 +9,8 @@
 #include "wav/wav.hpp"
 #include "wav/wav_file.hpp"
 
-
 #include <filesystem>
 #include <gtest/gtest.h>
-
-const std::string WAV_LIB_TESTS_DIR = "./tests_data/wav_lib";
-const std::string WAV_LIB_MEDIA_DIR = WAV_LIB_TESTS_DIR + "/media";
 
 using namespace wav_lib;
 
@@ -26,7 +24,7 @@ TEST(WavMixTest, BasicMixToCreatedFile)
         std::filesystem::remove(destPath);
 
     WavReader reader;
-    WavFileSPtr file = reader.ReadWav(inPath);
+    WavFileSPtr file = reader.OpenWav(inPath);
     TWavHeader header = file->GetHeader();
     WavFileSPtr dest = reader.CreateWav(destPath, header.numChannels, header.sampleRate, header.bitsPerSample);
 

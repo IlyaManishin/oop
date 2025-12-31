@@ -10,6 +10,7 @@ namespace executor
     bool cmd_run_from_config_file(const cmd_parser::Args &args) noexcept;
     bool cmd_help(const cmd_parser::Args &args) noexcept;
     bool cmd_info(const cmd_parser::Args &args) noexcept;
+    bool cmd_create_wav(const cmd_parser::Args &args) noexcept;
     bool cmd_mix(const cmd_parser::Args &args) noexcept;
     bool cmd_sound_effect(const cmd_parser::Args &args) noexcept;
 } // namespace executor

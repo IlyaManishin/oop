@@ -12,6 +12,7 @@ namespace executor
         FROM_FILE,
         HELP,
         INFO,
+        CREATE,
         MIX,
         EFFECT,
     };
@@ -24,6 +25,7 @@ namespace executor
         parser->registerCommand("config", (int)COMMANDS::FROM_FILE);
         parser->registerCommand("help", (int)COMMANDS::HELP);
         parser->registerCommand("info", (int)COMMANDS::INFO);
+        parser->registerCommand("create", (int)COMMANDS::CREATE);
         parser->registerCommand("mix", (int)COMMANDS::MIX);
         parser->registerCommand("effect", (int)COMMANDS::EFFECT);
 
@@ -36,6 +38,7 @@ namespace executor
         res[(int)COMMANDS::FROM_FILE] = cmd_run_from_config_file;
         res[(int)COMMANDS::HELP] = cmd_help;
         res[(int)COMMANDS::INFO] = cmd_info;
+        res[(int)COMMANDS::CREATE] = cmd_create_wav;
         res[(int)COMMANDS::MIX] = cmd_mix;
         res[(int)COMMANDS::EFFECT] = cmd_sound_effect;
 
