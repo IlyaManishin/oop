@@ -43,8 +43,16 @@ namespace executor
             std::cerr << "Usage: file <config_file> ";
             return false;
         }
-        bool res = file_executor::FileExecutor::run_from_config_file(configPath);
-        return res;
+        try
+        {
+            file_executor::FileExecutor::run_from_config_file(configPath);
+            return true;
+        }
+        catch(const std::exception& exc)
+        {
+            std::cerr << exc.what() << '\n';
+            return false;
+        }
     }
 
     bool cmd_help(const Args &) noexcept
