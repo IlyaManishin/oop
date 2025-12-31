@@ -48,7 +48,7 @@ namespace executor
             file_executor::FileExecutor::run_from_config_file(configPath);
             return true;
         }
-        catch(const std::exception& exc)
+        catch (const std::exception &exc)
         {
             std::cerr << exc.what() << '\n';
             return false;
@@ -133,13 +133,13 @@ namespace executor
 
     bool cmd_sound_effect(const cmd_parser::Args &args) noexcept
     {
-        const std::string usage = "Usage: effect <wavfile> <effect> [start] [end]\n";
+        const std::string usage = "Usage: effect <effect_name> <wavfile> [start] [end]\n";
 
-        std::string wavPath, effect;
+        std::string effect, wavPath;
         float start = 0, end = -1;
 
-        if (!get_arg(args, 0, wavPath) ||
-            !get_arg(args, 1, effect))
+        if (!get_arg(args, 0, effect) ||
+            !get_arg(args, 1, wavPath))
         {
             std::cerr << usage;
             return false;

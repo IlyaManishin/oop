@@ -1,3 +1,4 @@
+#include "test_paths.hpp"
 #include "file_parser/parser.hpp"
 
 #include <gtest/gtest.h>
@@ -6,7 +7,7 @@ using namespace file_parser;
 
 static std::string Path(const std::string &name)
 {
-    return "./tests_data/file_parser/" + name;
+    return FILE_PARSER_DIR + name;
 }
 
 TEST(ParserTest, SimpleAssign)

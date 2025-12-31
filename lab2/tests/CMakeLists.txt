@@ -1,6 +1,7 @@
 add_executable(tests
      main.cpp
-     cmd_tests.cpp
+     cmd_parser_tests.cpp
+     cmd_commands_tests.cpp
      wav_tests.cpp
      file_parser_tests.cpp)
 

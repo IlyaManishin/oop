@@ -69,7 +69,7 @@ namespace wav_lib
     {
     public:
         WavReader(const std::string &wavDir = "") noexcept : wavDir(wavDir) {};
-        WavFileSPtr ReadWav(const std::string &path) const;
+        WavFileSPtr OpenWav(const std::string &path) const;
         WavFileSPtr CreateWav(const std::string &destPath,
                               int numChannels = 2,
                               uint32_t sampleRate = 44100,
