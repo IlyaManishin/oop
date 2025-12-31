@@ -16,15 +16,8 @@ namespace executor
     void cmd_wav_mix_impl(WavFileSPtr outFile, float outStart,
                           WavFileSPtr inFile, float inStart, float inEnd)
     {
-        try
-        {
-            auto interval = inFile->GetInterval(inStart, inEnd);
-            outFile->WriteInterval(interval, outStart);
-        }
-        catch (const WavException &exc)
-        {
-            throw std::runtime_error(std::string("Wav exception -") + exc.what());
-        }
+        auto interval = inFile->GetInterval(inStart, inEnd);
+        outFile->WriteInterval(interval, outStart);
     }
 
     void cmd_set_effect_impl(WavFileSPtr wavFile,
@@ -50,18 +43,11 @@ namespace executor
             throw std::runtime_error(msg);
         }
 
-        try
-        {
-            auto interval = wavFile->GetInterval(start, end);
-            interval->SetEffect(eff);
+        auto interval = wavFile->GetInterval(start, end);
+        interval->SetEffect(eff);
 
-            wavFile->WriteInterval(interval, start, false);
-            wavFile->Save();
-        }
-        catch (const WavException &exc)
-        {
-            throw std::runtime_error(std::string("Wav exception -") + exc.what());
-        }
+        wavFile->WriteInterval(interval, start, false);
+        wavFile->Save();
     }
 
 } // namespace executor

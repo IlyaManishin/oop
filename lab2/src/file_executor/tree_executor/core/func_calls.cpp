@@ -46,7 +46,9 @@ namespace tree_executor
         WavReader reader;
         try
         {
-            reader.CreateWav(path);
+            WavFileSPtr file = reader.CreateWav(path);
+            ExObjUPtr res = std::make_unique<WavFileType>(file);
+            return res;
         }
         catch (const WavException &exc)
         {
@@ -60,7 +62,9 @@ namespace tree_executor
         WavReader reader;
         try
         {
-            reader.CreateWav(path);
+            WavFileSPtr file = reader.OpenWav(path);
+            ExObjUPtr res = std::make_unique<WavFileType>(file);
+            return res;
         }
         catch (const WavException &exc)
         {
