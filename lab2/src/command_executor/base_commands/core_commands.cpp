@@ -1,33 +1,67 @@
 #include "core_commands.hpp"
 #include "wav/wav.hpp"
 
-#include <iostream>
 #include <exception>
+#include <iostream>
 
 using namespace wav_lib;
 
 namespace executor
 {
-    bool cmd_info_impl(WavFileSPtr wavFile)
+    void cmd_wav_info_impl(WavFileSPtr wavFile) noexcept
     {
         wavFile->PrintInfo();
-        return true;
     }
 
-    bool cmd_mix_impl(WavFileSPtr outFile, float outStart,
-                      WavFileSPtr inFile, float inStart, float inEnd)
+    void cmd_wav_mix_impl(WavFileSPtr outFile, float outStart,
+                          WavFileSPtr inFile, float inStart, float inEnd)
     {
         try
         {
             auto interval = inFile->GetInterval(inStart, inEnd);
             outFile->WriteInterval(interval, outStart);
         }
-        catch (OperationExc &err)
+        catch (const WavException &exc)
         {
-            std::cerr << err.what();
-            return false;
+            throw std::runtime_error(std::string("Wav exception -") + exc.what());
         }
-        return true;
+    }
+
+    void cmd_set_effect_impl(WavFileSPtr wavFile,
+                             const std::string &effect,
+                             float start,
+                             float end)
+    {
+        WavEffects eff;
+
+        if (effect == "normal")
+            eff = wav_lib::WavEffects::NORMAL;
+        else if (effect == "bass")
+            eff = wav_lib::WavEffects::BASS;
+        else if (effect == "hach_lada")
+            eff = wav_lib::WavEffects::HACH_LADA;
+        else if (effect == "raise_high")
+            eff = wav_lib::WavEffects::RAISE_HIGH;
+        else if (effect == "distortion")
+            eff = wav_lib::WavEffects::DISTORTION;
+        else
+        {
+            std::string msg = std::string("Unknown effect: ") + effect + "\n";
+            throw std::runtime_error(msg);
+        }
+
+        try
+        {
+            auto interval = wavFile->GetInterval(start, end);
+            interval->SetEffect(eff);
+
+            wavFile->WriteInterval(interval, start, false);
+            wavFile->Save();
+        }
+        catch (const WavException &exc)
+        {
+            throw std::runtime_error(std::string("Wav exception -") + exc.what());
+        }
     }
 
 } // namespace executor

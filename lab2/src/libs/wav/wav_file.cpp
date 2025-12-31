@@ -194,7 +194,7 @@ namespace wav_lib
         }
     }
 
-    void WavFile::PrintInfo(std::ostream &out) const
+    void WavFile::PrintInfo(std::ostream &out) const noexcept
     {
         out << "File: " << path << "\n";
         out << "Channels: " << this->header.numChannels << "\n";

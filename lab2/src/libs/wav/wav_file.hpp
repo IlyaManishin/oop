@@ -22,7 +22,7 @@ namespace wav_lib
                                   uint32_t sampleRate,
                                   uint16_t bitsPerSample);
 
-        void PrintInfo(std::ostream &out = std::cout) const override;
+        void PrintInfo(std::ostream &out = std::cout) const noexcept override;
         TWavHeader GetHeader() const override { return this->header; };
         virtual double GetDurationSec() const;
 

@@ -51,7 +51,7 @@ namespace wav_lib
     class IWavFile
     {
     public:
-        virtual void PrintInfo(std::ostream &out = std::cout) const = 0;
+        virtual void PrintInfo(std::ostream &out = std::cout) const noexcept = 0;
         virtual TWavHeader GetHeader() const = 0;
         virtual double GetDurationSec() const = 0;
 

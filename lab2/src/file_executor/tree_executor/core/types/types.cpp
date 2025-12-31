@@ -1,4 +1,5 @@
 #include "types.hpp"
+#include "../helpers/exceptions.hpp"
 
 namespace tree_executor
 {
@@ -11,8 +12,8 @@ namespace tree_executor
         }
         else
         {
-            throw std::runtime_error("Method '" + name + "' in object of type " +
-                                     std::string(this->GetType()) + "not found");
+            throw RunTimeExc("Method '" + name + "' in object of type " +
+                             std::string(this->GetType()) + "not found");
         }
     }
 

@@ -50,14 +50,38 @@ namespace executor
     bool cmd_help(const Args &) noexcept
     {
         std::cout << "Commands:\n";
-        std::cout << "  file          add commands file\n";
+        std::cout << "  config        run from config file\n";
         std::cout << "  help          show list of commands\n";
+        std::cout << "  create        create new wav file\n";
         std::cout << "  mix           mix intervals from two files\n";
-        std::cout << "  mute          mute interval in a wav file\n";
-        std::cout << "  speed         change speed of interval\n";
+        std::cout << "  effect        apply sound effect to wav file\n";
         std::cout << "  info          show wav header info\n";
 
         return true;
+    }
+
+    bool cmd_create_wav(const cmd_parser::Args &args) noexcept
+    {
+        const std::string usage = "Usage: create <wavfile>\n";
+
+        std::string path;
+        if (!get_arg(args, 0, path))
+        {
+            std::cerr << usage;
+            return false;
+        }
+
+        WavReader reader;
+        try
+        {
+            reader.CreateWav(path);
+            return true;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Create wav error: " << e.what() << "\n";
+            return false;
+        }
     }
 
     bool cmd_mix(const Args &args) noexcept
@@ -89,7 +113,8 @@ namespace executor
 
         try
         {
-            return cmd_mix_impl(outFile, outStart, inFile, inStart, inEnd);
+            cmd_wav_mix_impl(outFile, outStart, inFile, inStart, inEnd);
+            return true;
         }
         catch (const std::exception &e)
         {
@@ -100,7 +125,51 @@ namespace executor
 
     bool cmd_sound_effect(const cmd_parser::Args &args) noexcept
     {
-        return false;
+        const std::string usage = "Usage: effect <wavfile> <effect> [start] [end]\n";
+
+        std::string wavPath, effect;
+        float start = 0, end = -1;
+
+        if (!get_arg(args, 0, wavPath) ||
+            !get_arg(args, 1, effect))
+        {
+            std::cerr << usage;
+            return false;
+        }
+        if (args.size() > 2)
+        {
+            if (args.size() != 4 ||
+                (!get_arg(args, 2, start) || !get_arg(args, 3, end)))
+            {
+                std::cerr << usage;
+                return false;
+            }
+        }
+
+        WavReader reader;
+        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
+        if (!wavFile)
+            return false;
+
+        if (end < 0.0f)
+            end = wavFile->GetDurationSec();
+
+        if (start < 0 || start > end || end > wavFile->GetDurationSec())
+        {
+            std::cerr << "Invalid effect interval\n";
+            return false;
+        }
+
+        try
+        {
+            cmd_set_effect_impl(wavFile, effect, start, end);
+            return true;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Effect error: " << e.what() << "\n";
+            return false;
+        }
     }
 
     bool cmd_info(const Args &args) noexcept
@@ -120,14 +189,14 @@ namespace executor
 
         try
         {
-            bool res = cmd_info_impl(wavFile);
-            return res;
+            cmd_wav_info_impl(wavFile);
+            return true;
         }
         catch (const std::exception &e)
         {
             std::cerr << "Wav info error: " << e.what() << '\n';
+            return false;
         }
-        return false;
     }
 
 } // namespace executor
