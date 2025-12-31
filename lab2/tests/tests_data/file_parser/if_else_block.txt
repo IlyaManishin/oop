@@ -1,0 +1,5 @@
+if is_ready(1):
+    log_ok()
+    a = compute()
+else:
+    log_fail()

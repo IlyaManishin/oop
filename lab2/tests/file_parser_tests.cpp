@@ -139,3 +139,40 @@ TEST(ParserTest, RecursiveIfBlock)
     EXPECT_TRUE(std::holds_alternative<std::string>((*assignY->right->args)[0]->value));
     EXPECT_TRUE(std::holds_alternative<float>((*assignY->right->args)[1]->value));
 }
+
+TEST(ParserTest, IfElseBlock)
+{
+    AstParser parser(Path("if_else_block.txt"));
+    auto tree = parser.ParseFileTree();
+
+    ASSERT_TRUE(tree);
+    ASSERT_TRUE(tree->statements);
+    ASSERT_EQ(tree->statements->size(), 1u);
+
+    auto &stmt = (*tree->statements)[0];
+    ASSERT_TRUE(std::holds_alternative<IfStatUPtr>(stmt->value));
+    auto &ifst = std::get<IfStatUPtr>(stmt->value);
+
+    EXPECT_EQ(ifst->condition->name, "is_ready");
+    ASSERT_EQ(ifst->condition->args->size(), 1u);
+    EXPECT_TRUE(std::holds_alternative<float>((*ifst->condition->args)[0]->value));
+
+    ASSERT_TRUE(ifst->ifStmts);
+    ASSERT_EQ(ifst->ifStmts->size(), 2u);
+
+    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>((*ifst->ifStmts)[0]->value));
+    auto &okLog = std::get<FuncRunUPtr>((*ifst->ifStmts)[0]->value);
+    EXPECT_EQ(okLog->fCall->name, "log_ok");
+
+    EXPECT_TRUE(std::holds_alternative<AssignUPtr>((*ifst->ifStmts)[1]->value));
+    auto &assignA = std::get<AssignUPtr>((*ifst->ifStmts)[1]->value);
+    EXPECT_EQ(assignA->ident, "a");
+    EXPECT_EQ(assignA->right->name, "compute");
+
+    ASSERT_TRUE(ifst->elseStmts);
+    ASSERT_EQ(ifst->elseStmts->size(), 1u);
+
+    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>((*ifst->elseStmts)[0]->value));
+    auto &failLog = std::get<FuncRunUPtr>((*ifst->elseStmts)[0]->value);
+    EXPECT_EQ(failLog->fCall->name, "log_fail");
+}

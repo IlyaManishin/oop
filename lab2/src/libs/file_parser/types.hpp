@@ -108,7 +108,8 @@ namespace file_parser
         Statement(MethodRunUPtr v, size_t line)
             : value(std::move(v)), line(line) {}
 
-        Statement(IfStatUPtr v, size_t line)
+        Statement(IfStatUPtr v, 
+            size_t line)
             : value(std::move(v)), line(line) {}
     };
 

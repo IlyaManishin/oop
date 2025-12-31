@@ -49,21 +49,6 @@ namespace file_parser
         }
     }
 
-    int AstParser::save()
-    {
-        return get_tokenizer_pos(tokenizer);
-    }
-
-    void AstParser::rewind(int pos)
-    {
-        set_tokenizer_pos(tokenizer, pos);
-    }
-
-    bool AstParser::checkTokType(TokenTypes type)
-    {
-        return curTok.type == type;
-    }
-
     bool AstParser::acceptTok(TokenTypes type)
     {
         int pos = this->save();
