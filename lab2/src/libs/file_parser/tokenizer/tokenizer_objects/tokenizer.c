@@ -148,6 +148,9 @@ static TToken make_EOF_token()
     token.type = EOF_TOKEN;
     token.start = NULL;
     token.end = NULL;
+    
+    token.lineno = -1;
+    token.col = 0;
 
     return token;
 }

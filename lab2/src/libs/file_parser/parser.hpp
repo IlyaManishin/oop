@@ -53,15 +53,18 @@ namespace file_parser
 
         std::optional<std::string> identRule();
 
+        void unexpectedNextToken();
+
         int save() { return get_tokenizer_pos(tokenizer); };
         void rewind(int pos) { set_tokenizer_pos(tokenizer, pos); };
         bool checkTokType(TokenTypes type) { return this->curTok.type == type; };
 
         void nextToken();
+        TToken peekNextToken();
         bool acceptTok(TokenTypes type);
         void readPassTokens();
-        
-        bool isEOF() { return curTok.type == EOF_TOKEN; };
+
+        bool isEOF() { return acceptTok(EOF_TOKEN); };
         bool isErr() { return curTok.type == ERROR_TOKEN; };
 
         std::string tokToStr(TToken token);

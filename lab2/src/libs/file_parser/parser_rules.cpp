@@ -17,20 +17,9 @@ namespace file_parser
         }
 
         this->readPassTokens();
-        if (!this->isEOF())
+        if (!acceptTok(EOF_TOKEN))
         {
-            this->nextToken();
-            const std::string msg = std::string("Can't parse rule (line ") +
-                                    std::to_string(this->curTok.lineno) +
-                                    std::string(")\n");
-            if (token_strlen(this->curTok) != 0)
-            {
-                const std::string tokenStr = std::string(this->curTok.start, token_strlen(this->curTok));
-                const std::string tokenMsg = std::string("invalid token - ") + tokenStr;
-                throw ParserException(msg + tokenMsg);
-            }
-            else
-                throw ParserException(msg);
+            this->unexpectedNextToken();
         }
         if (statements)
         {
@@ -46,7 +35,7 @@ namespace file_parser
         StatementsUPtr stmts = std::make_unique<std::vector<StatementUPtr>>();
         StatementUPtr stmt = this->parseStmt();
         if (!stmt)
-            return stmts;
+            return nullptr;
         stmts->push_back(std::move(stmt));
 
         while (1)
@@ -58,6 +47,7 @@ namespace file_parser
                 stmts->push_back(std::move(stmt));
                 continue;
             }
+
             this->rewind(pos);
             break;
         }
@@ -80,12 +70,13 @@ namespace file_parser
 
     StatementUPtr AstParser::parseCompoundStmt()
     {
+        TToken startTok = this->peekNextToken();
         int pos = save();
 
         if (auto ifstmt = parseIfStat())
             return std::make_unique<Statement>(
                 Statement{IfStatUPtr(std::move(ifstmt)),
-                          (size_t)curTok.lineno});
+                          (size_t)startTok.lineno});
 
         rewind(pos);
         return nullptr;
@@ -93,24 +84,25 @@ namespace file_parser
 
     StatementUPtr AstParser::parseSimpleStmt()
     {
+        TToken startTok = this->peekNextToken();
         int pos = save();
 
         if (auto assign = parseAssign())
             return std::make_unique<Statement>(
                 Statement{AssignUPtr(std::move(assign)),
-                          (size_t)curTok.lineno});
+                          (size_t)startTok.lineno});
 
         rewind(pos);
         if (auto func = parseFuncRun())
             return std::make_unique<Statement>(
                 Statement{FuncRunUPtr(std::move(func)),
-                          (size_t)curTok.lineno});
+                          (size_t)startTok.lineno});
 
         rewind(pos);
         if (auto method = parseMethodRun())
             return std::make_unique<Statement>(
                 Statement{MethodRunUPtr(std::move(method)),
-                          (size_t)curTok.lineno});
+                          (size_t)startTok.lineno});
 
         return nullptr;
     }
@@ -294,5 +286,21 @@ namespace file_parser
 
         std::string value(curTok.start, curTok.end);
         return value;
+    }
+
+    void AstParser::unexpectedNextToken()
+    {
+        this->nextToken();
+        std::string msg = std::string("Can't parse rule");
+        if (this->curTok.lineno >= 0)
+        {
+            msg += " (line " + std::to_string(this->curTok.lineno) + std::string(")");
+        }
+        if (token_strlen(this->curTok) != 0)
+        {
+            const std::string tokenStr = std::string(this->curTok.start, token_strlen(this->curTok));
+            msg += std::string("\ninvalid token: ") + tokenStr;
+        }
+        throw ParserException(msg);
     }
 } // namespace file_parser

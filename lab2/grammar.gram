@@ -3,7 +3,7 @@
 # only grammar that in use now
 
 #GENERAL
-file = statements;
+file = statements?;
 
 #STATEMENTS
 stmt_block = INDENT, statements, DEDENT;

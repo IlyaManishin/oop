@@ -449,18 +449,23 @@ namespace wav_lib
             throw OperationExc("Can't write interval to file");
         }
 
-        size_t allSamples = 0, samplesCount = 0;
+        size_t samplesCount = 0;
+        size_t samplesLeft = maxSamples;
         std::streampos curPos = destPos;
         while ((samplesCount = reader.ReadToSampleBuffer()))
         {
-            size_t byteSize = samplesCount * this->header.blockAlign;
+            size_t writeCount = std::min(samplesLeft, samplesCount);
+            size_t byteSize = writeCount * this->header.blockAlign;
             bool res = write_vector_to_file(this->file, curPos, buffer, byteSize);
             if (!res)
                 return 0;
-            allSamples += samplesCount;
             curPos += byteSize;
+            samplesLeft -= writeCount;
+            if (writeCount == 0)
+                break;
         }
-        return allSamples;
+        size_t writtenSamples = maxSamples - samplesLeft;
+        return writtenSamples;
     }
 
     bool WavFile::allocIntervalSpace(WavIntervalSPtr interval, uint32_t intervalLength, std::streampos destPos)

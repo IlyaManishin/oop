@@ -77,8 +77,8 @@ extern "C"
         TokenTypes type;
 
         const char *start;
-        const char *end; // for ident only?
-        int lineno;
+        const char *end; 
+        int lineno; // -1 if no value
         int col;
     } TToken;
 

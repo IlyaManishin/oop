@@ -49,6 +49,16 @@ namespace file_parser
         }
     }
 
+    TToken AstParser::peekNextToken()
+    {
+        auto pos = this->save();
+        this->nextToken();
+        TToken token = this->curTok;
+
+        this->rewind(pos);
+        return token;
+    }
+
     bool AstParser::acceptTok(TokenTypes type)
     {
         int pos = this->save();
