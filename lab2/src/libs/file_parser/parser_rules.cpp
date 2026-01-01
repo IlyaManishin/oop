@@ -20,13 +20,14 @@ namespace file_parser
             if (!this->isErrMark)
             {
                 this->nextToken();
-                throw UnexpectedTokenExc(this->curTok);
+                markError("file", this->curTok);
             }
+            throw UnexpectedTokenExc(this->errMark.errorToken, this->errMark.ruleName);
         }
+
         if (statements)
-        {
             return std::make_unique<FileTree>(std::move(statements));
-        }
+
         return nullptr;
     }
 
@@ -70,7 +71,7 @@ namespace file_parser
 
     StatementUPtr AstParser::parseCompoundStmt()
     {
-        TToken startTok = this->peekNextToken();
+        TToken startTok = peekNextToken();
         int pos = savePos();
 
         if (auto ifstmt = parseIfStat())
@@ -79,12 +80,13 @@ namespace file_parser
                           (size_t)startTok.lineno});
 
         rewind(pos);
+        markError("compound statement", startTok);
         return nullptr;
     }
 
     StatementUPtr AstParser::parseSimpleStmt()
     {
-        TToken startTok = this->peekNextToken();
+        TToken startTok = peekNextToken();
         int pos = savePos();
 
         if (auto assign = parseAssign())
@@ -104,14 +106,16 @@ namespace file_parser
                 Statement{MethodRunUPtr(std::move(method)),
                           (size_t)startTok.lineno});
 
+        rewind(pos);
+        markError("simple_stmt", startTok);
         return nullptr;
     }
 
     StatementsUPtr AstParser::parseBlock()
     {
-        int pos = this->savePos();
+        int pos = savePos();
+        TToken startTok = peekNextToken();
 
-        FuncCallUPtr condition;
         StatementsUPtr stmts;
         if (acceptTok(INDENT) &&
             (stmts = parseStmts()) &&
@@ -120,13 +124,15 @@ namespace file_parser
             return stmts;
         }
 
-        this->rewind(pos);
+        rewind(pos);
+        markError("block", startTok);
         return nullptr;
     }
 
     IfStatUPtr AstParser::parseIfStat()
     {
-        int pos = this->savePos();
+        int pos = savePos();
+        TToken startTok = peekNextToken();
 
         FuncCallUPtr condition;
         StatementsUPtr ifStmts;
@@ -137,30 +143,38 @@ namespace file_parser
             (ifStmts = parseBlock()))
         {
             elseStmts = parseElseStat();
-            return std::make_unique<IfStat>(IfStat{std::move(condition),
-                                                   std::move(ifStmts), std::move(elseStmts)});
+            return std::make_unique<IfStat>(std::move(condition),
+                                            std::move(ifStmts),
+                                            std::move(elseStmts));
         }
-        this->rewind(pos);
+
+        rewind(pos);
+        markError("if_statement", startTok);
         return nullptr;
     }
 
     StatementsUPtr AstParser::parseElseStat()
     {
         int pos = savePos();
+        TToken startTok = peekNextToken();
 
         StatementsUPtr stmts;
-        if (acceptTok(ELSE_KW) && acceptTok(COLON) && acceptTok(NEWLINE) &&
+        if (acceptTok(ELSE_KW) &&
+            acceptTok(COLON) && acceptTok(NEWLINE) &&
             (stmts = parseBlock()))
         {
             return stmts;
         }
+
         rewind(pos);
+        markError("else_statement", startTok);
         return nullptr;
     }
 
     AssignUPtr AstParser::parseAssign()
     {
         int pos = savePos();
+        TToken startTok = peekNextToken();
 
         auto ident = identRule();
         FuncCallUPtr funcCall;
@@ -173,15 +187,18 @@ namespace file_parser
             return file_parser::AssignUPtr(
                 new file_parser::Assign(*ident, std::move(funcCall)));
         }
-        this->rewind(pos);
+
+        rewind(pos);
+        markError("assign", startTok);
         return nullptr;
     }
 
     MethodRunUPtr AstParser::parseMethodRun()
     {
-        int pos = this->savePos();
+        int pos = savePos();
+        TToken startTok = peekNextToken();
 
-        auto ident = this->identRule();
+        auto ident = identRule();
         FuncCallUPtr fCall;
 
         if (ident &&
@@ -192,54 +209,72 @@ namespace file_parser
             return std::make_unique<MethodRun>(*ident, std::move(fCall));
         }
 
-        this->rewind(pos);
+        rewind(pos);
+        markError("method_run", startTok);
         return nullptr;
     }
 
     FuncRunUPtr AstParser::parseFuncRun()
     {
-        int pos = this->savePos();
+        int pos = savePos();
+        TToken startTok = peekNextToken();
 
         FuncCallUPtr fCall;
         if ((fCall = parseFuncCall()) && acceptTok(NEWLINE))
         {
-            FuncRunUPtr res = std::make_unique<FuncRun>(std::move(fCall));
-            return res;
+            return std::make_unique<FuncRun>(std::move(fCall));
         }
-        this->rewind(pos);
+
+        rewind(pos);
+        markError("func_run", startTok);
         return nullptr;
     }
 
     FuncCallUPtr AstParser::parseFuncCall()
     {
-        int pos = this->savePos();
+        int pos = savePos();
+        TToken startTok = peekNextToken();
 
-        auto ident = this->identRule();
+        auto ident = identRule();
         ArgsUPtr args;
         if (ident &&
-            this->acceptTok(LPAREN) &&
-            (args = this->readArgsRule()) &&
-            this->acceptTok(RPAREN))
+            acceptTok(LPAREN) &&
+            (args = readArgsRule()) &&
+            acceptTok(RPAREN))
         {
             return std::make_unique<FuncCall>(*ident, std::move(args));
         }
 
-        this->rewind(pos);
+        rewind(pos);
+        markError("func_call", startTok);
         return nullptr;
     }
 
     ArgsUPtr AstParser::readArgsRule()
     {
+        int pos = savePos();
+        TToken startTok = peekNextToken();
+
         ArgsUPtr args = std::make_unique<std::vector<ArgUPtr>>();
+        bool hasComma = false;
         while (true)
         {
             auto arg = argRule();
             if (!arg)
                 break;
+            hasComma = false;
             args->push_back(std::move(arg));
             if (!acceptTok(COMMA))
                 break;
+
+            hasComma = true;
         }
+
+        if (!hasComma)
+            return args;
+
+        rewind(pos);
+        markError("args", startTok);
         return args;
     }
 
@@ -248,28 +283,27 @@ namespace file_parser
         int pos = savePos();
 
         nextToken();
+        TToken startTok = this->curTok;
         if (checkTokType(IDENT))
         {
             std::string v(curTok.start, curTok.end);
-            return file_parser::ArgUPtr(
-                new file_parser::Arg(std::move(v), file_parser::Arg::Type::IDENT));
+            return std::make_unique<Arg>(std::move(v), Arg::Type::IDENT);
         }
 
         if (checkTokType(NUMBER))
         {
             float v = std::stof(std::string(curTok.start, curTok.end));
-            return file_parser::ArgUPtr(
-                new file_parser::Arg(v));
+            return std::make_unique<Arg>(v);
         }
 
         if (checkTokType(STRING))
         {
             std::string v(curTok.start, curTok.end);
-            return file_parser::ArgUPtr(
-                new file_parser::Arg(std::move(v), file_parser::Arg::Type::STRING));
+            return std::make_unique<Arg>(std::move(v), Arg::Type::STRING);
         }
 
         rewind(pos);
+        markError("arg", startTok);
         return nullptr;
     }
 
@@ -278,14 +312,12 @@ namespace file_parser
         int pos = savePos();
 
         nextToken();
-        if (!checkTokType(IDENT))
+        if (checkTokType(IDENT))
         {
-            rewind(pos);
-            return {};
+            std::string value(curTok.start, curTok.end);
+            return value;
         }
-
-        std::string value(curTok.start, curTok.end);
-        return value;
+        rewind(pos);
+        return {};
     }
-
 } // namespace file_parser
