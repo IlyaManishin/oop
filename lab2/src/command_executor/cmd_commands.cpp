@@ -87,7 +87,8 @@ namespace executor
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Create wav error: " << e.what() << "\n";
+            std::cerr << "Create wav error: \n"
+                      << e.what() << "\n";
             return false;
         }
     }
@@ -126,14 +127,21 @@ namespace executor
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Mix error: " << e.what() << "\n";
+            std::cerr << "Mix error: \n"
+                      << e.what() << "\n";
             return false;
         }
     }
 
     bool cmd_sound_effect(const cmd_parser::Args &args) noexcept
     {
-        const std::string usage = "Usage: effect <effect_name> <wavfile> [start] [end]\n";
+        std::string usage = "Usage: effect <effect_name> <wavfile> [start] [end]\n";
+        usage += "Available effects:\n";
+        usage += "  normal        no effect\n";
+        usage += "  bass          boost low frequencies\n";
+        usage += "  hach_lada     aggressive bass effect\n";
+        usage += "  raise_high    boost high frequencies\n";
+        usage += "  distortion    signal distortion\n";
 
         std::string effect, wavPath;
         float start = 0, end = -1;
@@ -175,7 +183,8 @@ namespace executor
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Effect error: " << e.what() << "\n";
+            std::cerr << "Effect error: \n"
+                      << e.what() << "\n";
             return false;
         }
     }
@@ -202,7 +211,8 @@ namespace executor
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Wav info error: " << e.what() << '\n';
+            std::cerr << "Wav info error: \n"
+                      << e.what() << '\n';
             return false;
         }
     }

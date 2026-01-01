@@ -18,7 +18,12 @@ namespace tree_executor
 
     void TreeInterpreter::addVar(const std::string &name, ExObjUPtr value)
     {
-        
+        vars[name] = std::move(value);
+    }
+
+    ExObjUPtr TreeInterpreter::executeFuncCall(file_parser::FuncCall &func_call)
+    {
+        ArgsFrameUPtr argsFrame = this->parseArgs(func_call.args);
     }
 
     void TreeInterpreter::Execute(const FileUPtr &tree)
@@ -49,10 +54,6 @@ namespace tree_executor
         executeFuncCall(*run.fCall);
     }
 
-    void TreeInterpreter::executeFuncCall(const FuncCall &call)
-    {
-    }
-
     void TreeInterpreter::executeMethodRun(const MethodRun &method)
     {
     }
@@ -76,21 +77,22 @@ namespace tree_executor
     {
         if (arg->type == file_parser::Arg::Type::IDENT)
         {
-            auto it = vars.find(std::get<std::string>(arg->value));
+            const std::string &varName = std::get<std::string>(arg->value);
+            auto it = vars.find(varName);
             if (it != vars.end())
             {
                 argsFrameUPtr->allArgs.push_back(it->second.get());
             }
             else
             {
-                throw std::runtime_error("Undefined variable: " + std::get<std::string>(arg->value));
+                throw UndefinedVarExc(varName);
             }
         }
         else
         {
             ExObjUPtr res = exObj_from_value_arg(arg);
             if (!res)
-                throw std::runtime_error("Unexpected type");
+                throw std::runtime_error("Invalid arg with type index: " + std::to_string((int)arg->type));
             argsFrameUPtr->allArgs.push_back(res.get());
             argsFrameUPtr->valueArgs.push_back(std::move(res));
         }

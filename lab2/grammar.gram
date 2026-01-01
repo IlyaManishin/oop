@@ -1,0 +1,42 @@
+# ini for intellisense
+# only as documentation, it's not for parser generator
+# only grammar that in use now
+
+#GENERAL
+file = statements?;
+
+#STATEMENTS
+stmt_block = INDENT, statements, DEDENT;
+statements = statement, {statement};
+statement = simple_statement | compound_statement;
+simple_statement = assign | func_run | method_run, NEWLINE;
+compound_statement = if_stmt;
+if_stmt = "if", func_call, ":", NEWLINE, stmt_block, 
+          ("else", ":", NEWLINE, stmt_block)?;
+assign  = ident, "=", func_call;
+method_run = ident, ".", func_call;
+func_run = func_call;
+func_call = ident, "(", expr, ")";
+
+args = {arg}
+arg = number | string | ident
+
+#BASE TYPES
+number  =  float | integer;
+float = integer, ".", integer;
+integer = digit, { digit };
+
+string = double_quoted | single_quoted | backtick_quoted ;
+double_quoted = '"', { character - '"' }, '"' ;
+single_quoted = "'", { character - "'" }, "'" ;
+backtick_quoted = "`", { character - "`" }, "`" ;
+
+ident   = letter, { letter | digit } ;
+letter  = "a".."z" | "A".."Z" | "_" ;
+digit   = "0".."9" ;
+
+NEWLINE = '\n'
+INDENT = "--->"
+DEDENT = "<---"
+
+char = ? #all user chars

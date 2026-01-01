@@ -16,35 +16,43 @@ static void print_error_line(const char *errLine, const char *end)
     printf("\n");
 }
 
-void print_error_msg(const char *textMsg)
+static const char *get_next_line_pos(const char *lineStart, const char *end)
 {
-    printf("%s:\n", textMsg);
+    const char *cur = lineStart;
+    while (cur < end)
+    {
+        if (*cur == '\n')
+            break;
+        cur++;
+    }
+    return cur;
 }
 
 void print_error_with_pos(const char *textMsg, TErrorFilePos pos)
 {
-    print_error_msg(textMsg);
+    printf("%s:\n", textMsg);
 
-    int line_pointer_offset = printf("%d line: ", pos.errLineIndex + 1);
-    print_error_line(pos.errLineStart, pos.bufferEnd);
+    int line_pointer_offset = printf("line %d: ", pos.errLineIndex + 1);
+    print_error_line(pos.errLineStart, pos.errLineEnd);
     int pointer_offset = line_pointer_offset + (pos.errStart - pos.errLineStart);
     printf("%*c^\n\n", pointer_offset, ' ');
 }
 
 void format_error_with_pos(const char *textMsg, TErrorFilePos pos, char *outBuf, size_t bufSize)
 {
-    int n = snprintf(outBuf, bufSize, "%s:\n%d line: ", textMsg, pos.errLineIndex + 1);
+    int n = snprintf(outBuf, bufSize, "%s:\nline %d: ", textMsg, pos.errLineIndex + 1);
 
-    size_t lineLen = pos.bufferEnd - pos.errLineStart;
+    size_t lineLen = (size_t)(pos.errLineEnd - pos.errLineStart);
     if (lineLen > bufSize - n - 1)
         lineLen = bufSize - n - 1;
     memcpy(outBuf + n, pos.errLineStart, lineLen);
-    n += lineLen;
+    n += (int)lineLen;
     outBuf[n++] = '\n';
 
-    int pointer_offset = (pos.errStart - pos.errLineStart) + snprintf(NULL, 0, "%d line: ", pos.errLineIndex + 1);
+    int pointer_offset = (int)(pos.errStart - pos.errLineStart) + snprintf(NULL, 0, "%d line: ", pos.errLineIndex + 1);
     if (pointer_offset > (int)(bufSize - n - 1))
-        pointer_offset = bufSize - n - 1;
+        pointer_offset = (int)(bufSize - n - 1);
+
     memset(outBuf + n, ' ', pointer_offset);
     n += pointer_offset;
     outBuf[n++] = '^';
@@ -57,7 +65,7 @@ TErrorFilePos get_error_file_pos(const char *errStart, const char *errLineStart,
     pos.errStart = errStart;
     pos.errLineStart = errLineStart;
     pos.errLineIndex = errLineIndex;
-    pos.bufferEnd = bufferEnd;
+    pos.errLineEnd = get_next_line_pos(errLineStart, bufferEnd);
 
     return pos;
 }

@@ -1,6 +1,8 @@
-#include "test_paths.hpp"
 #include "file_parser/parser.hpp"
+#include "test_paths.hpp"
 
+#include <iostream>
+#include <exception>
 #include <gtest/gtest.h>
 
 using namespace file_parser;
@@ -8,6 +10,11 @@ using namespace file_parser;
 static std::string Path(const std::string &name)
 {
     return FILE_PARSER_DIR + name;
+}
+
+static std::string InvalidScriptPath(const std::string &name)
+{
+    return FILE_PARSER_DIR + "invalid_scripts/" + name;
 }
 
 TEST(ParserTest, SimpleAssign)
@@ -177,3 +184,76 @@ TEST(ParserTest, IfElseBlock)
     auto &failLog = std::get<FuncRunUPtr>((*ifst->elseStmts)[0]->value);
     EXPECT_EQ(failLog->fCall->name, "log_fail");
 }
+
+TEST(ParserErrorTest, AssignMissing)
+{
+    AstParser parser(InvalidScriptPath("assign_missing.txt"));
+
+    try
+    {
+        parser.ParseFileTree();
+        FAIL() << "Expected UnexpectedTokenExc";
+    }
+    catch (const std::exception &exc)
+    {
+        std::string msg = exc.what();
+
+        EXPECT_NE(msg.find("func_call"), std::string::npos);
+        EXPECT_NE(msg.find("line 2"), std::string::npos);
+    }
+    catch (...)
+    {
+        FAIL() << "Expected UnexpectedTokenExc";
+    }
+}
+
+TEST(ParserErrorTest, IfMissingBlock)
+{
+    AstParser parser(InvalidScriptPath("if_missing_block.txt"));
+
+    try {
+        parser.ParseFileTree();
+        FAIL() << "Expected UnexpectedTokenExc";
+    } catch (const std::exception &exc) {
+        std::string msg = exc.what();
+        EXPECT_NE(msg.find("block"), std::string::npos);
+        EXPECT_NE(msg.find("line 2"), std::string::npos);
+    } catch (...) {
+        FAIL() << "Expected UnexpectedTokenExc";
+    }
+}
+
+
+TEST(ParserErrorTest, ElseWrongIndent)
+{
+    AstParser parser(InvalidScriptPath("else_wrong_indent.txt"));
+
+    try {
+        parser.ParseFileTree();
+        FAIL() << "Expected UnexpectedTokenExc";
+    } catch (const std::exception &exc) {
+        std::string msg = exc.what();
+        EXPECT_NE(msg.find("indend"), std::string::npos);
+        EXPECT_NE(msg.find("line 3"), std::string::npos);
+    } catch (...) {
+        FAIL() << "Expected UnexpectedTokenExc";
+    }
+}
+
+TEST(ParserErrorTest, FuncArgsMissing)
+{
+    AstParser parser(InvalidScriptPath("args_missing.txt"));
+
+    try {
+        parser.ParseFileTree();
+        FAIL() << "Expected UnexpectedTokenExc";
+    } catch (const std::exception &exc) {
+        std::string msg = exc.what();
+        EXPECT_NE(msg.find("argument"), std::string::npos);
+        EXPECT_EQ(msg.find("arguments"), std::string::npos);
+        EXPECT_NE(msg.find("line 1"), std::string::npos);
+    } catch (...) {
+        FAIL() << "Expected UnexpectedTokenExc";
+    }
+}
+

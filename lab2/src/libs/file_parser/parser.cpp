@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include "parser_exceptions.hpp"
 #include "types.hpp"
 
 #include <memory>
@@ -15,6 +16,7 @@ namespace file_parser
             return;
 
         this->tokenizer = tokenizer_from_file_data(file);
+        this->startTokPos = this->savePos();
     }
 
     AstParser::~AstParser()
@@ -28,9 +30,9 @@ namespace file_parser
     FileUPtr AstParser::ParseFileTree()
     {
         if (this->file == NULL)
-            throw ParserException("Can't open file");
+            throw InvalidFileExc(this->filePath, "Can't open file to parse");
         if (this->isErr())
-            throw ParserException("Invalid file to parse");
+            throw InvalidFileExc(this->filePath, "Invalid file to parse");
 
         return this->parseFileRule();
     }
@@ -41,17 +43,23 @@ namespace file_parser
         if (is_tokenizer_error(this->tokenizer))
         {
             TTokenizerError error = get_tokenizer_error(this->tokenizer);
-            char *errMsg = tokenizer_error_to_str(error);
-
-            auto exc = ParserException(std::string(errMsg));
-            free(errMsg);
-            throw exc;
+            throw TokenizerExc(error);
         }
+    }
+
+    TToken AstParser::peekNextToken()
+    {
+        auto pos = this->savePos();
+        this->nextToken();
+        TToken token = this->curTok;
+
+        this->rewind(pos);
+        return token;
     }
 
     bool AstParser::acceptTok(TokenTypes type)
     {
-        int pos = this->save();
+        int pos = this->savePos();
         this->nextToken();
         if (!this->checkTokType(type))
         {
@@ -67,6 +75,22 @@ namespace file_parser
         {
             continue;
         }
+    }
+
+    void AstParser::markError(const std::string &ruleName, TToken errToken)
+    {
+        if (errToken.lineno < 0)
+            return;
+        if (this->isErrMark)
+        {
+            if (this->errMark.lineno > errToken.lineno)
+                return;
+            if (this->errMark.lineno == errToken.lineno &&
+                this->errMark.col > errToken.col)
+                return;
+        }
+        this->isErrMark = true;
+        this->errMark = SyntaxError(errToken, ruleName, errToken.lineno, errToken.col);
     }
 
     std::string AstParser::tokToStr(TToken token)

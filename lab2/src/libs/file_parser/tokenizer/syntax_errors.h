@@ -16,7 +16,7 @@ extern "C"
         const char *errStart;
         const char *errLineStart;
         int errLineIndex;
-        const char *bufferEnd;
+        const char *errLineEnd;
     } TErrorFilePos;
 
     typedef enum TokErrorTypes
@@ -38,7 +38,9 @@ extern "C"
 
     void print_error_msg(const char *textMsg);
     void print_error_with_pos(const char *errMsg, TErrorFilePos errorPosInfo);
-    TErrorFilePos get_error_file_pos(const char *errStart, const char *errLineStart, int errLineIndex, const char *bufferEnd);
+    TErrorFilePos get_error_file_pos(const char *errStart,
+                                     const char *errLineStart, int errLineIndex,
+                                     const char *bufferEnd);
     void format_error_with_pos(const char *textMsg, TErrorFilePos pos, char *outBuf, size_t bufSize);
 
 #ifdef __cplusplus
