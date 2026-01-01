@@ -16,7 +16,7 @@ extern "C"
         const char *errStart;
         const char *errLineStart;
         int errLineIndex;
-        const char *bufferEnd;
+        const char *errLineEnd;
     } TErrorFilePos;
 
     typedef enum TokErrorTypes

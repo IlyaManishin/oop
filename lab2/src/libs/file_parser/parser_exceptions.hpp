@@ -32,10 +32,15 @@ namespace file_parser
         {
             std::string errMsg = "Can't parse " + ruleName;
             if (tok.lineno >= 0)
-                errMsg += " (line " + std::to_string(tok.lineno) + ")";
+                errMsg += " (line " + std::to_string(tok.lineno + 1) + ")";
             if (token_strlen(tok) != 0)
-                errMsg += "\ninvalid token: " +
-                       std::string(tok.start, token_strlen(tok));
+            {
+                errMsg += "\ninvalid token: ";
+                if (tok.type == NEWLINE)
+                    errMsg += "new_line";
+                else
+                    errMsg += std::string(tok.start, token_strlen(tok));
+            }
             return errMsg;
         }
     };

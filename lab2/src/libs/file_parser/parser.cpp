@@ -86,7 +86,7 @@ namespace file_parser
             if (this->errMark.lineno > errToken.lineno)
                 return;
             if (this->errMark.lineno == errToken.lineno &&
-                this->errMark.col >= errToken.col)
+                this->errMark.col > errToken.col)
                 return;
         }
         this->isErrMark = true;

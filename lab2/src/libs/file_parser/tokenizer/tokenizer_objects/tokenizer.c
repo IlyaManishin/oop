@@ -142,15 +142,15 @@ static bool is_tokenizer_EOF(TTokenizer *tokenizer)
     return ch == '\0' ? true : false;
 }
 
-static TToken make_EOF_token()
+static TToken make_EOF_token(TTokenizer *tokenizer)
 {
     TToken token;
     token.type = EOF_TOKEN;
     token.start = NULL;
     token.end = NULL;
-    
-    token.lineno = -1;
-    token.col = 0;
+
+    token.lineno = tokenizer->lineno;
+    token.col = tokenizer->end - tokenizer->curLine;
 
     return token;
 }
@@ -561,7 +561,7 @@ TToken read_new_token(TTokenizer *tokenizer)
     }
     if (tokenizer->state == EOF_STATE && tokenizer->curIndent == 0)
     {
-        return make_EOF_token();
+        return make_EOF_token(tokenizer);
     }
 
     int newIndendWhitespaces;
@@ -618,7 +618,7 @@ EOF_state_set:
     }
 
     if (tokenizer->state == EOF_STATE)
-        return make_EOF_token();
+        return make_EOF_token(tokenizer);
 
     tokenizer->start = tokenizer->cur;
     tgetc(tokenizer, &ch);

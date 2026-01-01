@@ -80,7 +80,7 @@ namespace file_parser
                           (size_t)startTok.lineno});
 
         rewind(pos);
-        markError("compound statement", startTok);
+        markError("compound_statement", startTok);
         return nullptr;
     }
 
@@ -107,7 +107,7 @@ namespace file_parser
                           (size_t)startTok.lineno});
 
         rewind(pos);
-        markError("simple_stmt", startTok);
+        markError("simple_statement", startTok);
         return nullptr;
     }
 
@@ -274,7 +274,7 @@ namespace file_parser
             return args;
 
         rewind(pos);
-        markError("args", startTok);
+        markError("arguments", startTok);
         return args;
     }
 
@@ -303,7 +303,7 @@ namespace file_parser
         }
 
         rewind(pos);
-        markError("arg", startTok);
+        markError("argument", startTok);
         return nullptr;
     }
 
