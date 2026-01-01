@@ -13,12 +13,6 @@
 
 namespace file_parser
 {
-    class ParserException : public std::runtime_error
-    {
-    public:
-        explicit ParserException(const std::string &msg) : runtime_error(msg) {}
-    };
-
     class AstParser
     {
     public:
@@ -28,10 +22,26 @@ namespace file_parser
         FileUPtr ParseFileTree();
 
     private:
+        class SyntaxError
+        {
+        public:
+            TToken errorToken;
+            std::string ruleName;
+            int lineno;
+            int col;
+            SyntaxError() {};
+            SyntaxError(const TToken &tok, const std::string &rule, int line, int column)
+                : errorToken(tok), ruleName(rule), lineno(line), col(column) {};
+        };
+        bool isErrMark = false;
+        SyntaxError errMark;
+
         FILE *file = nullptr;
 
         std::string filePath;
+
         TTokenizer *tokenizer = nullptr;
+        int startTokPos;
         TToken curTok;
 
         FileUPtr parseFileRule();
@@ -53,9 +63,9 @@ namespace file_parser
 
         std::optional<std::string> identRule();
 
-        void unexpectedNextToken();
+        void throwUnexpectedTokenExc(TToken errTok);
 
-        int save() { return get_tokenizer_pos(tokenizer); };
+        int savePos() { return get_tokenizer_pos(tokenizer); };
         void rewind(int pos) { set_tokenizer_pos(tokenizer, pos); };
         bool checkTokType(TokenTypes type) { return this->curTok.type == type; };
 
@@ -63,9 +73,10 @@ namespace file_parser
         TToken peekNextToken();
         bool acceptTok(TokenTypes type);
         void readPassTokens();
+        void markError(const std::string &ruleName, TToken errToken);
 
         bool isEOF() { return acceptTok(EOF_TOKEN); };
-        bool isErr() { return curTok.type == ERROR_TOKEN; };
+        bool isErr() { return is_tokenizer_error(this->tokenizer); };
 
         std::string tokToStr(TToken token);
     };

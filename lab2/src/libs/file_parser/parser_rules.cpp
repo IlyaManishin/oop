@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include "parser_exceptions.hpp"
 #include "types.hpp"
 
 #include <memory>
@@ -9,24 +10,23 @@ namespace file_parser
 {
     FileUPtr AstParser::parseFileRule()
     {
-        int pos = this->save();
+        rewind(this->startTokPos);
+
         auto statements = this->parseStmts();
-        if (this->isErr())
-        {
-            throw ParserException("Can't parse file");
-        }
 
         this->readPassTokens();
         if (!acceptTok(EOF_TOKEN))
         {
-            this->unexpectedNextToken();
+            if (!this->isErrMark)
+            {
+                this->nextToken();
+                throw UnexpectedTokenExc(this->curTok);
+            }
         }
         if (statements)
         {
             return std::make_unique<FileTree>(std::move(statements));
         }
-
-        this->rewind(pos);
         return nullptr;
     }
 
@@ -40,7 +40,7 @@ namespace file_parser
 
         while (1)
         {
-            auto pos = this->save();
+            auto pos = this->savePos();
 
             if ((stmt = parseStmt()))
             {
@@ -56,7 +56,7 @@ namespace file_parser
 
     StatementUPtr AstParser::parseStmt()
     {
-        int pos = save();
+        int pos = savePos();
 
         if (auto stmt = parseCompoundStmt())
             return stmt;
@@ -71,7 +71,7 @@ namespace file_parser
     StatementUPtr AstParser::parseCompoundStmt()
     {
         TToken startTok = this->peekNextToken();
-        int pos = save();
+        int pos = savePos();
 
         if (auto ifstmt = parseIfStat())
             return std::make_unique<Statement>(
@@ -85,7 +85,7 @@ namespace file_parser
     StatementUPtr AstParser::parseSimpleStmt()
     {
         TToken startTok = this->peekNextToken();
-        int pos = save();
+        int pos = savePos();
 
         if (auto assign = parseAssign())
             return std::make_unique<Statement>(
@@ -109,7 +109,7 @@ namespace file_parser
 
     StatementsUPtr AstParser::parseBlock()
     {
-        int pos = this->save();
+        int pos = this->savePos();
 
         FuncCallUPtr condition;
         StatementsUPtr stmts;
@@ -126,7 +126,7 @@ namespace file_parser
 
     IfStatUPtr AstParser::parseIfStat()
     {
-        int pos = this->save();
+        int pos = this->savePos();
 
         FuncCallUPtr condition;
         StatementsUPtr ifStmts;
@@ -146,7 +146,7 @@ namespace file_parser
 
     StatementsUPtr AstParser::parseElseStat()
     {
-        int pos = save();
+        int pos = savePos();
 
         StatementsUPtr stmts;
         if (acceptTok(ELSE_KW) && acceptTok(COLON) && acceptTok(NEWLINE) &&
@@ -160,7 +160,7 @@ namespace file_parser
 
     AssignUPtr AstParser::parseAssign()
     {
-        int pos = save();
+        int pos = savePos();
 
         auto ident = identRule();
         FuncCallUPtr funcCall;
@@ -179,7 +179,7 @@ namespace file_parser
 
     MethodRunUPtr AstParser::parseMethodRun()
     {
-        int pos = this->save();
+        int pos = this->savePos();
 
         auto ident = this->identRule();
         FuncCallUPtr fCall;
@@ -198,7 +198,7 @@ namespace file_parser
 
     FuncRunUPtr AstParser::parseFuncRun()
     {
-        int pos = this->save();
+        int pos = this->savePos();
 
         FuncCallUPtr fCall;
         if ((fCall = parseFuncCall()) && acceptTok(NEWLINE))
@@ -212,7 +212,7 @@ namespace file_parser
 
     FuncCallUPtr AstParser::parseFuncCall()
     {
-        int pos = this->save();
+        int pos = this->savePos();
 
         auto ident = this->identRule();
         ArgsUPtr args;
@@ -245,7 +245,7 @@ namespace file_parser
 
     ArgUPtr AstParser::argRule()
     {
-        int pos = save();
+        int pos = savePos();
 
         nextToken();
         if (checkTokType(IDENT))
@@ -275,7 +275,7 @@ namespace file_parser
 
     std::optional<std::string> AstParser::identRule()
     {
-        int pos = save();
+        int pos = savePos();
 
         nextToken();
         if (!checkTokType(IDENT))
@@ -288,19 +288,4 @@ namespace file_parser
         return value;
     }
 
-    void AstParser::unexpectedNextToken()
-    {
-        this->nextToken();
-        std::string msg = std::string("Can't parse rule");
-        if (this->curTok.lineno >= 0)
-        {
-            msg += " (line " + std::to_string(this->curTok.lineno) + std::string(")");
-        }
-        if (token_strlen(this->curTok) != 0)
-        {
-            const std::string tokenStr = std::string(this->curTok.start, token_strlen(this->curTok));
-            msg += std::string("\ninvalid token: ") + tokenStr;
-        }
-        throw ParserException(msg);
-    }
 } // namespace file_parser
