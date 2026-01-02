@@ -20,10 +20,7 @@ namespace executor
     static bool get_arg(const Args &args, size_t i, T &out) noexcept
     {
         if (i >= args.size())
-        {
-            std::cerr << "Missing argument #" << i << "\n";
             return false;
-        }
 
         if (auto val = std::get_if<T>(&args[i]))
         {
@@ -37,15 +34,24 @@ namespace executor
 
     bool cmd_run_from_config_file(const Args &args) noexcept
     {
-        std::string configPath;
+        std::string configPath, loggingPath;
+        std::ostream *out = &std::cout;
+        std::ofstream logger;
+
         if (!get_arg(args, 0, configPath))
         {
-            std::cerr << "Usage: file <config_file> ";
+            std::cerr << "Usage: file <config_file> <log file>?";
             return false;
         }
+        if (get_arg(args, 1, loggingPath))
+        {
+            logger.open(loggingPath);
+            out = &logger;
+        }
+
         try
         {
-            file_executor::FileExecutor::run_from_config_file(configPath);
+            file_executor::FileExecutor::run_from_config_file(configPath, *out);
             return true;
         }
         catch (const std::exception &exc)

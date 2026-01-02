@@ -4,6 +4,7 @@
 
 #include "file_parser/types.hpp"
 
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 
@@ -12,9 +13,11 @@ namespace tree_executor
     class TreeInterpreter
     {
     public:
+        TreeInterpreter(std::ostream &out);
         void ExecuteTree(const file_parser::FileUPtr &tree);
 
     private:
+        std::ostream &out;
         std::unordered_map<std::string, ExObjUPtr> vars;
 
         void executeStatements(const file_parser::Statements &stmts);

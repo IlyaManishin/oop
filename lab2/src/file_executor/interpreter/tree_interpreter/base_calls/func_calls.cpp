@@ -4,6 +4,7 @@
 
 #include "wav/wav.hpp"
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -11,11 +12,11 @@ using namespace wav_lib;
 
 namespace tree_executor
 {
-    using FuncCallType = ExObjUPtr (*)(std::vector<ExObjPtr>);
+    using FuncCallType = ExObjUPtr (*)(std::vector<ExObjPtr>, std::ostream &out);
 
-    static ExObjUPtr create_wav(std::vector<ExObjPtr> args);
-    static ExObjUPtr open_wav(std::vector<ExObjPtr> args);
-    static ExObjUPtr print_args(std::vector<ExObjPtr> args);
+    static ExObjUPtr create_wav(std::vector<ExObjPtr> args, std::ostream &out);
+    static ExObjUPtr open_wav(std::vector<ExObjPtr> args, std::ostream &out);
+    static ExObjUPtr print_args(std::vector<ExObjPtr> args, std::ostream &out);
 
     const std::unordered_map<std::string, FuncCallType> functions = {
         {"create_wav", create_wav},
@@ -30,16 +31,16 @@ namespace tree_executor
         return parse_string_from_obj_ptr(args[0]);
     }
 
-    ExObjUPtr func_call_impl(const std::string &funcName, std::vector<ExObjPtr> args)
+    ExObjUPtr func_call_impl(const std::string &funcName, std::vector<ExObjPtr> args, std::ostream &out)
     {
         auto it = functions.find(funcName);
         if (it == functions.end())
             throw UnexpectedIdentExc(funcName);
 
-        return it->second(args);
+        return it->second(args, out);
     }
 
-    static ExObjUPtr create_wav(std::vector<ExObjPtr> args)
+    static ExObjUPtr create_wav(std::vector<ExObjPtr> args, std::ostream &out)
     {
         const std::string &path = args_to_string(args);
         WavReader reader;
@@ -54,7 +55,7 @@ namespace tree_executor
         }
     }
 
-    static ExObjUPtr open_wav(std::vector<ExObjPtr> args)
+    static ExObjUPtr open_wav(std::vector<ExObjPtr> args, std::ostream &out)
     {
         const std::string &path = args_to_string(args);
         WavReader reader;
@@ -69,15 +70,15 @@ namespace tree_executor
         }
     }
 
-    static ExObjUPtr print_args(std::vector<ExObjPtr> args)
+    static ExObjUPtr print_args(std::vector<ExObjPtr> args, std::ostream &out)
     {
         for (size_t i = 0; i < args.size(); ++i)
         {
             if (i != 0)
-                std::cout << ' ';
-            args[i]->Print(std::cout);
+                out << ' ';
+            args[i]->Print(out);
         }
-        std::cout << std::endl;
+        out << std::endl;
         return nullptr;
     }
 

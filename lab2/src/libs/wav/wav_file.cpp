@@ -202,7 +202,7 @@ namespace wav_lib
         out << "Bits per sample: " << this->header.bitsPerSample << "\n";
         out << "Byte rate: " << this->header.byteRate << "\n";
         out << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
-        out << "Durations: " << std::to_string(this->GetDurationSec()) << " sec\n";
+        out << "Duration: " << std::to_string(this->GetDurationSec()) << " sec\n";
     }
 
     double WavFile::GetDurationSec() const

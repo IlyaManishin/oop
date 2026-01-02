@@ -10,6 +10,8 @@ using namespace file_parser;
 
 namespace tree_executor
 {
+    TreeInterpreter::TreeInterpreter(std::ostream &out) : out(out) {};
+
     void TreeInterpreter::addVar(const std::string &name, ExObjUPtr value)
     {
         vars[name] = std::move(value);
@@ -53,7 +55,7 @@ namespace tree_executor
     ExObjUPtr TreeInterpreter::executeFuncCall(file_parser::FuncCall &funcCall)
     {
         ArgsFrameUPtr argsFrame = this->parseArgs(funcCall.args);
-        ExObjUPtr res = func_call_impl(funcCall.name, argsFrame->allArgs);
+        ExObjUPtr res = func_call_impl(funcCall.name, argsFrame->allArgs, this->out);
         return res;
     }
 
@@ -66,6 +68,5 @@ namespace tree_executor
 
     void TreeInterpreter::executeMethod(const std::string &varName, file_parser::FuncCall &funcCall)
     {
-        
     }
 }
