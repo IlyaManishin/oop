@@ -1,7 +1,7 @@
+#include "tree_interpreter.hpp"
 #include "base_calls/base_calls.hpp"
 #include "core/exceptions.hpp"
 #include "core/utils.hpp"
-#include "tree_interpreter.hpp"
 
 #include <variant>
 #include <vector>
@@ -53,16 +53,19 @@ namespace tree_executor
     ExObjUPtr TreeInterpreter::executeFuncCall(file_parser::FuncCall &funcCall)
     {
         ArgsFrameUPtr argsFrame = this->parseArgs(funcCall.args);
-        func_call_impl(funcCall.name, argsFrame->allArgs);
+        ExObjUPtr res = func_call_impl(funcCall.name, argsFrame->allArgs);
+        return res;
     }
 
     bool TreeInterpreter::executePredicate(file_parser::FuncCall &funcCall)
     {
-        return false;
+        ArgsFrameUPtr argsFrame = this->parseArgs(funcCall.args);
+        bool res = predicate_call_impl(funcCall.name, argsFrame->allArgs);
+        return res;
     }
 
     void TreeInterpreter::executeMethod(const std::string &varName, file_parser::FuncCall &funcCall)
     {
-        return;
+        
     }
 }

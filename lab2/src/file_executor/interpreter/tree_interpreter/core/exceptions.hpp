@@ -16,10 +16,10 @@ namespace tree_executor
     class UnexpectedArgExc : public InvalidArgExc
     {
     public:
-        UnexpectedArgExc(const ExObjUPtr &arg, const char *expectedType)
+        UnexpectedArgExc(const char *gotType, const char *expectedType)
             : InvalidArgExc(
                   std::string("Unexpected argument type: '") +
-                  arg->GetType() + "', expected: '" + expectedType + "'") {}
+                  gotType + "', expected: '" + expectedType + "'") {}
 
         explicit UnexpectedArgExc(const ExObjUPtr &arg)
             : InvalidArgExc(

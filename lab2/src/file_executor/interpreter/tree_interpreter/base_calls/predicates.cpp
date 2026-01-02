@@ -8,15 +8,15 @@
 
 namespace tree_executor
 {
-    bool exists_wav_file(const ExObjs &objs);
+    static bool exists_wav_file(std::vector<ExObjPtr> args);
 
-    const std::unordered_map<std::string, bool (*)(const ExObjs &objs)> predicats = {
+    const std::unordered_map<std::string, bool (*)(std::vector<ExObjPtr>)> predicates = {
         {"exists", exists_wav_file}};
 
-    bool predicate_impl(const std::string &predicatName, const ExObjs &args)
+    bool predicate_call_impl(const std::string &predicatName, std::vector<ExObjPtr> args)
     {
-        auto it = predicats.find(predicatName);
-        if (it == predicats.end())
+        auto it = predicates.find(predicatName);
+        if (it == predicates.end())
         {
             throw UnexpectedIdentExc(predicatName);
         }
@@ -24,16 +24,15 @@ namespace tree_executor
         return it->second(args);
     }
 
-    bool exists_wav_file(const ExObjs &objs)
+    static bool exists_wav_file(std::vector<ExObjPtr> args)
     {
-        if (objs.empty())
+        if (args.empty())
             return false;
 
-        const ExObjUPtr &arg = objs[0];
-        const StringType *strObj = dynamic_cast<const StringType *>(arg.get());
+        const StringType *strObj = dynamic_cast<const StringType *>(args[0]);
         if (!strObj)
         {
-            throw UnexpectedArgExc(arg, STRING_TYPE_NAME);
+            throw UnexpectedArgExc(args[0]->GetType(), STRING_TYPE_NAME);
         }
 
         const std::string &path = strObj->GetValue();

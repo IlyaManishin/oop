@@ -5,12 +5,12 @@
 
 namespace tree_executor
 {
-    const std::string &parse_string_from_obj(const ExObjUPtr &obj)
+    const std::string &parse_string_from_obj_ptr(const ExObjPtr obj)
     {
-        const StringType *strObj = dynamic_cast<const StringType *>(obj.get());
+        const StringType *strObj = dynamic_cast<const StringType *>(obj);
         if (!strObj)
         {
-            throw UnexpectedArgExc(obj, STRING_TYPE_NAME);
+            throw UnexpectedArgExc(obj->GetType(), STRING_TYPE_NAME);
         }
         return strObj->GetValue();
     }

@@ -6,6 +6,6 @@
 
 namespace tree_executor
 {
-    bool predicate_impl(const std::string &predicatName, const ExObjs &objs);
-    ExObjUPtr func_call_impl(const std::string &funcName, const ExObjs &args);
+    bool predicate_call_impl(const std::string &predicatName, std::vector<ExObjPtr> args);
+    ExObjUPtr func_call_impl(const std::string &funcName, std::vector<ExObjPtr> args);
 } // namespace tree_executor
