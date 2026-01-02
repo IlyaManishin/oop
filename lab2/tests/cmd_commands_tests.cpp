@@ -1,7 +1,7 @@
 #include "../src/command_executor/cmd_commands.hpp"
 
-#include "test_paths.hpp"
 #include "cmd_parser/cmd_parser.hpp"
+#include "test_paths.hpp"
 #include "wav/wav.hpp"
 
 #include <filesystem>

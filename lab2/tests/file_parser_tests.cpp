@@ -1,9 +1,9 @@
 #include "file_parser/parser.hpp"
 #include "test_paths.hpp"
 
-#include <iostream>
 #include <exception>
 #include <gtest/gtest.h>
+#include <iostream>
 
 using namespace file_parser;
 
@@ -185,6 +185,46 @@ TEST(ParserTest, IfElseBlock)
     EXPECT_EQ(failLog->fCall->name, "log_fail");
 }
 
+TEST(ParserTest, FuncCallAllArgTypes)
+{
+    AstParser parser(Path("all_types_args.txt"));
+    auto tree = parser.ParseFileTree();
+
+    ASSERT_TRUE(tree);
+    ASSERT_TRUE(tree->statements);
+    ASSERT_EQ(tree->statements->size(), 1u);
+
+    auto &stmt = (*tree->statements)[0];
+    ASSERT_TRUE(std::holds_alternative<AssignUPtr>(stmt->value));
+
+    auto &assign = std::get<AssignUPtr>(stmt->value);
+    EXPECT_EQ(assign->ident, "var");
+    EXPECT_EQ(assign->right->name, "func");
+
+    ASSERT_TRUE(assign->right->args);
+    ASSERT_EQ(assign->right->args->size(), 6u);
+
+    auto &args = *assign->right->args;
+
+    EXPECT_TRUE(std::holds_alternative<float>(args[0]->value));
+    EXPECT_EQ(std::get<float>(args[0]->value), 0.0f);
+
+    EXPECT_TRUE(std::holds_alternative<float>(args[1]->value));
+    EXPECT_EQ(std::get<float>(args[1]->value), 0.5f);
+
+    EXPECT_TRUE(std::holds_alternative<std::string>(args[2]->value));
+    EXPECT_EQ(std::get<std::string>(args[2]->value), "str1");
+
+    EXPECT_TRUE(std::holds_alternative<std::string>(args[3]->value));
+    EXPECT_EQ(std::get<std::string>(args[3]->value), "str2");
+
+    EXPECT_TRUE(std::holds_alternative<bool>(args[4]->value));
+    EXPECT_EQ(std::get<bool>(args[4]->value), true);
+
+    EXPECT_TRUE(std::holds_alternative<bool>(args[5]->value));
+    EXPECT_EQ(std::get<bool>(args[5]->value), false);
+}
+
 TEST(ParserErrorTest, AssignMissing)
 {
     AstParser parser(InvalidScriptPath("assign_missing.txt"));
@@ -211,31 +251,40 @@ TEST(ParserErrorTest, IfMissingBlock)
 {
     AstParser parser(InvalidScriptPath("if_missing_block.txt"));
 
-    try {
+    try
+    {
         parser.ParseFileTree();
         FAIL() << "Expected UnexpectedTokenExc";
-    } catch (const std::exception &exc) {
+    }
+    catch (const std::exception &exc)
+    {
         std::string msg = exc.what();
         EXPECT_NE(msg.find("block"), std::string::npos);
         EXPECT_NE(msg.find("line 2"), std::string::npos);
-    } catch (...) {
+    }
+    catch (...)
+    {
         FAIL() << "Expected UnexpectedTokenExc";
     }
 }
-
 
 TEST(ParserErrorTest, ElseWrongIndent)
 {
     AstParser parser(InvalidScriptPath("else_wrong_indent.txt"));
 
-    try {
+    try
+    {
         parser.ParseFileTree();
         FAIL() << "Expected UnexpectedTokenExc";
-    } catch (const std::exception &exc) {
+    }
+    catch (const std::exception &exc)
+    {
         std::string msg = exc.what();
         EXPECT_NE(msg.find("indend"), std::string::npos);
         EXPECT_NE(msg.find("line 3"), std::string::npos);
-    } catch (...) {
+    }
+    catch (...)
+    {
         FAIL() << "Expected UnexpectedTokenExc";
     }
 }
@@ -244,16 +293,20 @@ TEST(ParserErrorTest, FuncArgsMissing)
 {
     AstParser parser(InvalidScriptPath("args_missing.txt"));
 
-    try {
+    try
+    {
         parser.ParseFileTree();
         FAIL() << "Expected UnexpectedTokenExc";
-    } catch (const std::exception &exc) {
+    }
+    catch (const std::exception &exc)
+    {
         std::string msg = exc.what();
         EXPECT_NE(msg.find("argument"), std::string::npos);
         EXPECT_EQ(msg.find("arguments"), std::string::npos);
         EXPECT_NE(msg.find("line 1"), std::string::npos);
-    } catch (...) {
+    }
+    catch (...)
+    {
         FAIL() << "Expected UnexpectedTokenExc";
     }
 }
-

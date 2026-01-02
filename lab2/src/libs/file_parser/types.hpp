@@ -15,7 +15,7 @@ namespace file_parser
     struct IfStat;
     struct Statement;
     struct FileTree;
-    
+
     using ArgUPtr = std::unique_ptr<Arg>;
     using ArgsUPtr = std::unique_ptr<std::vector<ArgUPtr>>;
     using FuncCallUPtr = std::unique_ptr<FuncCall>;
@@ -33,19 +33,21 @@ namespace file_parser
 
     struct Arg
     {
-        std::variant<std::string, float> value;
+        std::variant<std::string, float, bool> value;
         enum class Type
         {
             IDENT,
             NUMBER,
-            STRING
+            STRING,
+            BOOL
         } type;
 
         Arg(std::string v, Type t)
             : value(std::move(v)), type(t) {}
-
         Arg(float v)
             : value(v), type(Type::NUMBER) {}
+        Arg(bool v)
+            : value(v), type(Type::BOOL) {};
     };
 
     struct FuncCall
@@ -109,8 +111,8 @@ namespace file_parser
         Statement(MethodRunUPtr v, size_t line)
             : value(std::move(v)), line(line) {}
 
-        Statement(IfStatUPtr v, 
-            size_t line)
+        Statement(IfStatUPtr v,
+                  size_t line)
             : value(std::move(v)), line(line) {}
     };
 
