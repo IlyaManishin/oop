@@ -15,7 +15,7 @@ namespace file_parser
     struct IfStat;
     struct Statement;
     struct FileTree;
-
+    
     using ArgUPtr = std::unique_ptr<Arg>;
     using ArgsUPtr = std::unique_ptr<std::vector<ArgUPtr>>;
     using FuncCallUPtr = std::unique_ptr<FuncCall>;
@@ -24,7 +24,8 @@ namespace file_parser
     using MethodRunUPtr = std::unique_ptr<MethodRun>;
     using IfStatUPtr = std::unique_ptr<IfStat>;
     using StatementUPtr = std::unique_ptr<Statement>;
-    using StatementsUPtr = std::unique_ptr<std::vector<StatementUPtr>>;
+    using Statements = std::vector<StatementUPtr>;
+    using StatementsUPtr = std::unique_ptr<Statements>;
 
     using FileUPtr = std::unique_ptr<FileTree>;
 

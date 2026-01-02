@@ -19,7 +19,7 @@ namespace tree_executor
 
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
-    using ExObjRef = const ExObj *;
+    using ExObjPtr = const ExObj *;
 
     using ExObjs = std::vector<ExObjUPtr>;
 
@@ -109,5 +109,13 @@ namespace tree_executor
             this->value->Save();
         }
     };
+
+    class ArgsFrame
+    {
+    public:
+        std::vector<ExObjPtr> allArgs;
+        ExObjs valueArgs;
+    };
+    using ArgsFrameUPtr = std::unique_ptr<ArgsFrame>;
 
 } // namespace tree_executor

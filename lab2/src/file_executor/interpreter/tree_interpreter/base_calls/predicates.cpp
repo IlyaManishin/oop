@@ -1,5 +1,5 @@
-#include "helpers/exceptions.hpp"
-#include "types/types.hpp"
+#include "../core/exceptions.hpp"
+#include "../core/types.hpp"
 
 #include "wav/wav.hpp"
 
@@ -13,7 +13,7 @@ namespace tree_executor
     const std::unordered_map<std::string, bool (*)(const ExObjs &objs)> predicats = {
         {"exists", exists_wav_file}};
 
-    bool check_predicate(const std::string &predicatName, const ExObjs &args)
+    bool predicate_impl(const std::string &predicatName, const ExObjs &args)
     {
         auto it = predicats.find(predicatName);
         if (it == predicats.end())

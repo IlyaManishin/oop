@@ -4,7 +4,7 @@
 
 namespace tree_executor
 {
-    class Executor
+    class Interpreter
     {
     public:
         static void ExecuteTree(const file_parser::FileUPtr &tree);

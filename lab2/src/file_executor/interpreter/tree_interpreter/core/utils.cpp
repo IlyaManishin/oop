@@ -1,6 +1,6 @@
 #include "file_parser/types.hpp"
 
-#include "../types/types.hpp"
+#include "types.hpp"
 #include "exceptions.hpp"
 
 namespace tree_executor

@@ -1,4 +1,4 @@
-#include "tree_executor/tree_executor.hpp"
+#include "interpreter/interpreter.hpp"
 
 #include "file_executor.hpp"
 #include "file_parser/parser.hpp"
@@ -28,7 +28,7 @@ namespace file_executor
         }
         try
         {
-            Executor::ExecuteTree(tree);
+            Interpreter::ExecuteTree(tree);
         }
         catch (const std::exception &exc)
         {
@@ -36,4 +36,4 @@ namespace file_executor
             throw std::runtime_error(msg);
         }
     }
-} // namespace executor
+} // namespace file_executor

@@ -1,6 +1,6 @@
-#include "helpers/exceptions.hpp"
-#include "helpers/utils.hpp"
-#include "types/types.hpp"
+#include "../core/exceptions.hpp"
+#include "../core/types.hpp"
+#include "../core/utils.hpp"
 
 #include "wav/wav.hpp"
 
@@ -31,7 +31,7 @@ namespace tree_executor
         return parse_string_from_obj(arg);
     }
 
-    ExObjUPtr func_call(const std::string &funcName, const ExObjs &args)
+    ExObjUPtr func_call_impl(const std::string &funcName, const ExObjs &args)
     {
         auto it = functions.find(funcName);
         if (it == functions.end())
