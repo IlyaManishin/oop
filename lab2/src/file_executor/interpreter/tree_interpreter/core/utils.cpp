@@ -1,7 +1,7 @@
 #include "file_parser/types.hpp"
 
-#include "types.hpp"
 #include "exceptions.hpp"
+#include "types.hpp"
 
 namespace tree_executor
 {
@@ -22,6 +22,9 @@ namespace tree_executor
 
         if (arg->type == file_parser::Arg::Type::STRING)
             return std::make_unique<StringType>(std::get<std::string>(arg->value));
+
+        if (arg->type == file_parser::Arg::Type::BOOL)
+            return std::make_unique<BoolType>(std::get<bool>(arg->value));
 
         return nullptr;
     }
