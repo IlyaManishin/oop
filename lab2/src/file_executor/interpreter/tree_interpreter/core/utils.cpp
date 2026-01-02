@@ -1,16 +1,16 @@
 #include "file_parser/types.hpp"
 
-#include "../types/types.hpp"
 #include "exceptions.hpp"
+#include "types.hpp"
 
 namespace tree_executor
 {
-    const std::string &parse_string_from_obj(const ExObjUPtr &obj)
+    const std::string &parse_string_from_obj_ptr(const ExObjPtr obj)
     {
-        const StringType *strObj = dynamic_cast<const StringType *>(obj.get());
+        const StringType *strObj = dynamic_cast<const StringType *>(obj);
         if (!strObj)
         {
-            throw UnexpectedArgExc(obj, STRING_TYPE_NAME);
+            throw UnexpectedArgExc(obj->GetType(), STRING_TYPE_NAME);
         }
         return strObj->GetValue();
     }
@@ -22,6 +22,9 @@ namespace tree_executor
 
         if (arg->type == file_parser::Arg::Type::STRING)
             return std::make_unique<StringType>(std::get<std::string>(arg->value));
+
+        if (arg->type == file_parser::Arg::Type::BOOL)
+            return std::make_unique<BoolType>(std::get<bool>(arg->value));
 
         return nullptr;
     }

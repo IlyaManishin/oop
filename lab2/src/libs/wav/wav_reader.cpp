@@ -24,7 +24,7 @@ namespace wav_lib
         }
         catch (const WavException &exc)
         {
-            throw WavException(std::string("Can't create wav file") + exc.what(), destPath);
+            throw WavException(std::string("Can't create wav file"), destPath);
         }
     }
 

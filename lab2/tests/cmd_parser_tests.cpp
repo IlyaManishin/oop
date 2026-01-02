@@ -1,8 +1,8 @@
 #include "cmd_parser/cmd_parser.hpp"
 
 #include <gtest/gtest.h>
-#include <variant>
 #include <string>
+#include <variant>
 
 using namespace cmd_parser;
 

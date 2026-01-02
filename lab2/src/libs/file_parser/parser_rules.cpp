@@ -302,6 +302,11 @@ namespace file_parser
             return std::make_unique<Arg>(std::move(v), Arg::Type::STRING);
         }
 
+        if (checkTokType(TRUE_KW))
+            return std::make_unique<Arg>(true);
+        if (checkTokType(FALSE_KW))
+            return std::make_unique<Arg>(false);
+
         rewind(pos);
         markError("argument", startTok);
         return nullptr;

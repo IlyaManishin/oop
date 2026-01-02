@@ -1,5 +1,5 @@
 #include "types.hpp"
-#include "../helpers/exceptions.hpp"
+#include "exceptions.hpp"
 
 namespace tree_executor
 {

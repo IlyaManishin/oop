@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -14,12 +15,13 @@ namespace tree_executor
     inline const char *BASE_TYPE_NAME = "base";
     inline const char *FLOAT_TYPE_NAME = "float";
     inline const char *STRING_TYPE_NAME = "string";
+    inline const char *BOOL_TYPE_NAME = "bool";
     inline const char *WAVFILE_TYPE_NAME = "wav_file";
     inline const char *WAVINTERVAL_TYPE_NAME = "wav_interval";
 
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
-    using ExObjRef = const ExObj *;
+    using ExObjPtr = const ExObj *;
 
     using ExObjs = std::vector<ExObjUPtr>;
 
@@ -51,7 +53,11 @@ namespace tree_executor
 
         void Print(std::ostream &out) const override
         {
-            out << std::to_string(value);
+            std::ostringstream ss;
+            ss.setf(std::ios::fixed);
+            ss.precision(2);
+            ss << value;
+            out << ss.str();
         }
     };
 
@@ -67,6 +73,24 @@ namespace tree_executor
         void Print(std::ostream &out) const override
         {
             out << value;
+        }
+    };
+
+    class BoolType : public ExObj
+    {
+    private:
+        bool value;
+
+    public:
+        BoolType(bool v) : value(v) { type = BOOL_TYPE_NAME; }
+        float GetValue() const { return value; }
+
+        void Print(std::ostream &out) const override
+        {
+            if (this->value)
+                out << "True";
+            else
+                out << "False";
         }
     };
 
@@ -109,5 +133,13 @@ namespace tree_executor
             this->value->Save();
         }
     };
+
+    class ArgsFrame
+    {
+    public:
+        std::vector<ExObjPtr> allArgs;
+        ExObjs valueArgs;
+    };
+    using ArgsFrameUPtr = std::unique_ptr<ArgsFrame>;
 
 } // namespace tree_executor

@@ -1,37 +1,37 @@
 #pragma once
 
-#include "../types/types.hpp"
+#include "types.hpp"
 
 #include <stdexcept>
 
 namespace tree_executor
 {
-    class InvalidArgsExc : public std::runtime_error
+    class InvalidArgExc : public std::runtime_error
     {
     public:
-        explicit InvalidArgsExc(const std::string &msg = "Invalid argument error")
+        explicit InvalidArgExc(const std::string &msg = "Invalid argument error")
             : std::runtime_error(msg) {}
     };
 
-    class UnexpectedArgExc : public InvalidArgsExc
+    class UnexpectedArgExc : public InvalidArgExc
     {
     public:
-        UnexpectedArgExc(const ExObjUPtr &arg, const char *expectedType)
-            : InvalidArgsExc(
+        UnexpectedArgExc(const char *gotType, const char *expectedType)
+            : InvalidArgExc(
                   std::string("Unexpected argument type: '") +
-                  arg->GetType() + "', expected: '" + expectedType + "'") {}
+                  gotType + "', expected: '" + expectedType + "'") {}
 
         explicit UnexpectedArgExc(const ExObjUPtr &arg)
-            : InvalidArgsExc(
+            : InvalidArgExc(
                   std::string("Unexpected argument type: '") +
                   arg->GetType() + "'") {}
     };
 
-    class InvalidArgsCountExc : public InvalidArgsExc
+    class InvalidArgsCountExc : public InvalidArgExc
     {
     public:
         InvalidArgsCountExc(size_t got, size_t expected)
-            : InvalidArgsExc(
+            : InvalidArgExc(
                   "Invalid arguments count: expected " +
                   std::to_string(expected) +
                   ", got " +
