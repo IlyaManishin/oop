@@ -50,18 +50,22 @@ namespace file_parser
         StatementUPtr parseStmt();
         StatementUPtr parseSimpleStmt();
         StatementUPtr parseCompoundStmt();
-        StatementsUPtr parseBlock();
+        ExpressionUPtr parseExpression();
         AssignUPtr parseAssign();
         FuncRunUPtr parseFuncRun();
+
         FuncCallUPtr parseFuncCall();
         MethodRunUPtr parseMethodRun();
         IfStatUPtr parseIfStat();
         StatementsUPtr parseElseStat();
+        StatementsUPtr parseBlock();
 
-        ArgUPtr argRule();
-        ArgsUPtr readArgsRule();
+        ArgsUPtr parseArgs();
+        ArgUPtr parseArg();
+        ArgUPtr parseStringArg(TToken& token);
+        ArgUPtr parseBoolArg(TToken& token);
 
-        std::optional<std::string> identRule();
+        std::optional<std::string> parseIdent();
 
         void throwUnexpectedTokenExc(TToken errTok);
 
@@ -77,7 +81,5 @@ namespace file_parser
 
         bool isEOF() { return acceptTok(EOF_TOKEN); };
         bool isErr() { return is_tokenizer_error(this->tokenizer); };
-
-        std::string tokToStr(TToken token);
     };
 } // namespace file_parser

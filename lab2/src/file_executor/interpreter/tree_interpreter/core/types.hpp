@@ -22,10 +22,9 @@ namespace tree_executor
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
     using ExObjPtr = const ExObj *;
-
     using ExObjs = std::vector<ExObjUPtr>;
 
-    using MethodType = std::function<ExObjUPtr(const std::vector<ExObjUPtr> &)>;
+    using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
 
     class ExObj
     {
@@ -39,7 +38,7 @@ namespace tree_executor
 
         virtual ~ExObj() = default;
 
-        void RunMethod(const std::string &name, const std::vector<ExObjUPtr> &args);
+        void RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
     };
 
     class FloatType : public ExObj

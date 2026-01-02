@@ -10,6 +10,7 @@ namespace file_parser
     struct Arg;
     struct FuncCall;
     struct FuncRun;
+    struct Expression;
     struct Assign;
     struct MethodRun;
     struct IfStat;
@@ -20,6 +21,7 @@ namespace file_parser
     using ArgsUPtr = std::unique_ptr<std::vector<ArgUPtr>>;
     using FuncCallUPtr = std::unique_ptr<FuncCall>;
     using FuncRunUPtr = std::unique_ptr<FuncRun>;
+    using ExpressionUPtr = std::unique_ptr<Expression>;
     using AssignUPtr = std::unique_ptr<Assign>;
     using MethodRunUPtr = std::unique_ptr<MethodRun>;
     using IfStatUPtr = std::unique_ptr<IfStat>;
@@ -70,10 +72,20 @@ namespace file_parser
     struct Assign
     {
         std::string ident;
-        FuncCallUPtr right;
+        ExpressionUPtr right;
 
-        Assign(std::string ident, FuncCallUPtr right)
+        Assign(std::string ident, ExpressionUPtr right)
             : ident(std::move(ident)), right(std::move(right)) {}
+    };
+
+    struct Expression
+    {
+        std::variant<FuncCallUPtr, ArgUPtr> value;
+
+        Expression(FuncCallUPtr funcCall)
+            : value(std::move(funcCall)) {};
+        Expression(ArgUPtr arg)
+            : value(std::move(arg)) {};
     };
 
     struct MethodRun

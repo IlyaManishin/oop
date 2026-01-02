@@ -92,13 +92,4 @@ namespace file_parser
         this->isErrMark = true;
         this->errMark = SyntaxError(errToken, ruleName, errToken.lineno, errToken.col);
     }
-
-    std::string AstParser::tokToStr(TToken token)
-    {
-        if (token.start == NULL)
-        {
-            return std::string();
-        }
-        return std::string(token.start, token_strlen(token));
-    }
 } // namespace file_parser

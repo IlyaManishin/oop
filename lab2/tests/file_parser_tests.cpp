@@ -30,10 +30,15 @@ TEST(ParserTest, SimpleAssign)
     EXPECT_TRUE(std::holds_alternative<AssignUPtr>(stmt->value));
 
     auto &assign = std::get<AssignUPtr>(stmt->value);
+
     EXPECT_EQ(assign->ident, "x");
-    EXPECT_EQ(assign->right->name, "foo");
-    ASSERT_TRUE(assign->right->args);
-    EXPECT_EQ(assign->right->args->size(), 2u);
+
+    ASSERT_TRUE(std::holds_alternative<FuncCallUPtr>(assign->right->value));
+    auto &funcCall = std::get<FuncCallUPtr>(assign->right->value);
+
+    EXPECT_EQ(funcCall->name, "foo");
+    ASSERT_TRUE(funcCall->args);
+    EXPECT_EQ(funcCall->args->size(), 2u);
 }
 
 TEST(ParserTest, FuncAndMethod)
@@ -93,59 +98,71 @@ TEST(ParserTest, RecursiveIfBlock)
     ASSERT_TRUE(std::holds_alternative<IfStatUPtr>(stmt->value));
     auto &ifst = std::get<IfStatUPtr>(stmt->value);
 
-    // Проверка условия верхнего if
-    EXPECT_EQ(ifst->condition->name, "check_status");
-    ASSERT_TRUE(ifst->condition->args);
-    ASSERT_EQ(ifst->condition->args->size(), 1u);
-    EXPECT_TRUE(std::holds_alternative<float>((*ifst->condition->args)[0]->value));
+    auto &cond = ifst->condition;
+    EXPECT_EQ(cond->name, "check_status");
+    ASSERT_TRUE(cond->args);
+    ASSERT_EQ(cond->args->size(), 1u);
+    auto &arg0 = *(*cond->args)[0]; // ArgUPtr -> Arg
+    EXPECT_EQ(arg0.type, file_parser::Arg::Type::NUMBER);
+    EXPECT_FLOAT_EQ(std::get<float>(arg0.value), 42.0f); // пример для числа
 
-    // Проверка тела верхнего if
     ASSERT_TRUE(ifst->ifStmts);
     ASSERT_EQ(ifst->ifStmts->size(), 4u);
 
     // log("start")
-    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>((*ifst->ifStmts)[0]->value));
-    auto &logCall = std::get<FuncRunUPtr>((*ifst->ifStmts)[0]->value);
+    auto &logCallStmt = (*ifst->ifStmts)[0];
+    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>(logCallStmt->value));
+    auto &logCall = std::get<FuncRunUPtr>(logCallStmt->value);
     EXPECT_EQ(logCall->fCall->name, "log");
     ASSERT_EQ(logCall->fCall->args->size(), 1u);
-    EXPECT_TRUE(std::holds_alternative<std::string>((*logCall->fCall->args)[0]->value));
+    auto &logArg = *(*logCall->fCall->args)[0];
+    EXPECT_TRUE(std::holds_alternative<std::string>(logArg.value));
 
     // x = compute(3.14)
-    EXPECT_TRUE(std::holds_alternative<AssignUPtr>((*ifst->ifStmts)[1]->value));
-    auto &assignX = std::get<AssignUPtr>((*ifst->ifStmts)[1]->value);
+    auto &assignXStmt = (*ifst->ifStmts)[1];
+    EXPECT_TRUE(std::holds_alternative<AssignUPtr>(assignXStmt->value));
+    auto &assignX = std::get<AssignUPtr>(assignXStmt->value);
     EXPECT_EQ(assignX->ident, "x");
-    EXPECT_EQ(assignX->right->name, "compute");
-    ASSERT_EQ(assignX->right->args->size(), 1u);
-    EXPECT_TRUE(std::holds_alternative<float>((*assignX->right->args)[0]->value));
+    auto &rightX = std::get<FuncCallUPtr>(assignX->right->value);
+    EXPECT_EQ(rightX->name, "compute");
+    ASSERT_EQ(rightX->args->size(), 1u);
+    auto &argX0 = *(*rightX->args)[0];
+    EXPECT_TRUE(std::holds_alternative<float>(argX0.value));
 
     // if x_greater(x, 10):
-    EXPECT_TRUE(std::holds_alternative<IfStatUPtr>((*ifst->ifStmts)[2]->value));
-    auto &nestedIf = std::get<IfStatUPtr>((*ifst->ifStmts)[2]->value);
+    auto &nestedIfStmt = (*ifst->ifStmts)[2];
+    EXPECT_TRUE(std::holds_alternative<IfStatUPtr>(nestedIfStmt->value));
+    auto &nestedIf = std::get<IfStatUPtr>(nestedIfStmt->value);
     EXPECT_EQ(nestedIf->condition->name, "x_greater");
     ASSERT_EQ(nestedIf->condition->args->size(), 2u);
+    auto &nestedArg0 = *(*nestedIf->condition->args)[0];
+    auto &nestedArg1 = *(*nestedIf->condition->args)[1];
+    EXPECT_TRUE(std::holds_alternative<std::string>(nestedArg0.value));
+    EXPECT_TRUE(std::holds_alternative<float>(nestedArg1.value));
 
-    EXPECT_TRUE(std::holds_alternative<std::string>((*nestedIf->condition->args)[0]->value));
-    EXPECT_TRUE(std::holds_alternative<float>((*nestedIf->condition->args)[1]->value));
-
-    // Проверка тела вложенного if
     ASSERT_TRUE(nestedIf->ifStmts);
     ASSERT_EQ(nestedIf->ifStmts->size(), 1u);
-
-    EXPECT_TRUE(std::holds_alternative<MethodRunUPtr>((*nestedIf->ifStmts)[0]->value));
-    auto &methodCall = std::get<MethodRunUPtr>((*nestedIf->ifStmts)[0]->value);
+    auto &methodStmt = (*nestedIf->ifStmts)[0];
+    EXPECT_TRUE(std::holds_alternative<MethodRunUPtr>(methodStmt->value));
+    auto &methodCall = std::get<MethodRunUPtr>(methodStmt->value);
     EXPECT_EQ(methodCall->object, "obj");
     EXPECT_EQ(methodCall->call->name, "update");
     ASSERT_EQ(methodCall->call->args->size(), 2u);
-    EXPECT_TRUE(std::holds_alternative<std::string>((*methodCall->call->args)[1]->value));
+    auto &methodArg1 = *(*methodCall->call->args)[1];
+    EXPECT_TRUE(std::holds_alternative<std::string>(methodArg1.value));
 
     // y = calc_value("test", 7)
-    EXPECT_TRUE(std::holds_alternative<AssignUPtr>((*ifst->ifStmts)[3]->value));
-    auto &assignY = std::get<AssignUPtr>((*ifst->ifStmts)[3]->value);
+    auto &assignYStmt = (*ifst->ifStmts)[3];
+    EXPECT_TRUE(std::holds_alternative<AssignUPtr>(assignYStmt->value));
+    auto &assignY = std::get<AssignUPtr>(assignYStmt->value);
     EXPECT_EQ(assignY->ident, "y");
-    EXPECT_EQ(assignY->right->name, "calc_value");
-    ASSERT_EQ(assignY->right->args->size(), 2u);
-    EXPECT_TRUE(std::holds_alternative<std::string>((*assignY->right->args)[0]->value));
-    EXPECT_TRUE(std::holds_alternative<float>((*assignY->right->args)[1]->value));
+    auto &rightY = std::get<FuncCallUPtr>(assignY->right->value);
+    EXPECT_EQ(rightY->name, "calc_value");
+    ASSERT_EQ(rightY->args->size(), 2u);
+    auto &argY0 = *(*rightY->args)[0];
+    auto &argY1 = *(*rightY->args)[1];
+    EXPECT_TRUE(std::holds_alternative<std::string>(argY0.value));
+    EXPECT_TRUE(std::holds_alternative<float>(argY1.value));
 }
 
 TEST(ParserTest, IfElseBlock)
@@ -163,25 +180,29 @@ TEST(ParserTest, IfElseBlock)
 
     EXPECT_EQ(ifst->condition->name, "is_ready");
     ASSERT_EQ(ifst->condition->args->size(), 1u);
-    EXPECT_TRUE(std::holds_alternative<float>((*ifst->condition->args)[0]->value));
+    auto &condArg = *(*ifst->condition->args)[0];
+    EXPECT_TRUE(std::holds_alternative<float>(condArg.value));
 
     ASSERT_TRUE(ifst->ifStmts);
     ASSERT_EQ(ifst->ifStmts->size(), 2u);
 
-    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>((*ifst->ifStmts)[0]->value));
-    auto &okLog = std::get<FuncRunUPtr>((*ifst->ifStmts)[0]->value);
+    auto &okLogStmt = (*ifst->ifStmts)[0];
+    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>(okLogStmt->value));
+    auto &okLog = std::get<FuncRunUPtr>(okLogStmt->value);
     EXPECT_EQ(okLog->fCall->name, "log_ok");
 
-    EXPECT_TRUE(std::holds_alternative<AssignUPtr>((*ifst->ifStmts)[1]->value));
-    auto &assignA = std::get<AssignUPtr>((*ifst->ifStmts)[1]->value);
+    auto &assignAStmt = (*ifst->ifStmts)[1];
+    EXPECT_TRUE(std::holds_alternative<AssignUPtr>(assignAStmt->value));
+    auto &assignA = std::get<AssignUPtr>(assignAStmt->value);
     EXPECT_EQ(assignA->ident, "a");
-    EXPECT_EQ(assignA->right->name, "compute");
+    auto &rightA = std::get<FuncCallUPtr>(assignA->right->value);
+    EXPECT_EQ(rightA->name, "compute");
 
     ASSERT_TRUE(ifst->elseStmts);
     ASSERT_EQ(ifst->elseStmts->size(), 1u);
-
-    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>((*ifst->elseStmts)[0]->value));
-    auto &failLog = std::get<FuncRunUPtr>((*ifst->elseStmts)[0]->value);
+    auto &failLogStmt = (*ifst->elseStmts)[0];
+    EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>(failLogStmt->value));
+    auto &failLog = std::get<FuncRunUPtr>(failLogStmt->value);
     EXPECT_EQ(failLog->fCall->name, "log_fail");
 }
 
@@ -196,15 +217,18 @@ TEST(ParserTest, FuncCallAllArgTypes)
 
     auto &stmt = (*tree->statements)[0];
     ASSERT_TRUE(std::holds_alternative<AssignUPtr>(stmt->value));
-
     auto &assign = std::get<AssignUPtr>(stmt->value);
+
     EXPECT_EQ(assign->ident, "var");
-    EXPECT_EQ(assign->right->name, "func");
 
-    ASSERT_TRUE(assign->right->args);
-    ASSERT_EQ(assign->right->args->size(), 6u);
+    ASSERT_TRUE(std::holds_alternative<FuncCallUPtr>(assign->right->value));
+    auto &call = std::get<FuncCallUPtr>(assign->right->value);
+    EXPECT_EQ(call->name, "func");
 
-    auto &args = *assign->right->args;
+    ASSERT_TRUE(call->args);
+    ASSERT_EQ(call->args->size(), 6u);
+
+    auto &args = *call->args;
 
     EXPECT_TRUE(std::holds_alternative<float>(args[0]->value));
     EXPECT_EQ(std::get<float>(args[0]->value), 0.0f);
@@ -238,7 +262,7 @@ TEST(ParserErrorTest, AssignMissing)
     {
         std::string msg = exc.what();
 
-        EXPECT_NE(msg.find("func_call"), std::string::npos);
+        EXPECT_NE(msg.find("expression"), std::string::npos);
         EXPECT_NE(msg.find("line 2"), std::string::npos);
     }
     catch (...)
