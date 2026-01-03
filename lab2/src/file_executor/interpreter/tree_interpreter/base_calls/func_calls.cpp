@@ -17,11 +17,13 @@ namespace tree_executor
     static ExObjUPtr create_wav(std::vector<ExObjPtr> args, std::ostream &out);
     static ExObjUPtr open_wav(std::vector<ExObjPtr> args, std::ostream &out);
     static ExObjUPtr print_args(std::vector<ExObjPtr> args, std::ostream &out);
+    static ExObjUPtr str_time_to_sec(std::vector<ExObjPtr> args, std::ostream &out);
 
     const std::unordered_map<std::string, FuncCallType> functions = {
         {"create_wav", create_wav},
         {"open_wav", open_wav},
-        {"print", print_args}};
+        {"print", print_args},
+        {"time", str_time_to_sec}}; // H:M:S -> float
 
     static const std::string &args_to_string(const std::vector<ExObjPtr> &args)
     {
@@ -40,13 +42,13 @@ namespace tree_executor
         return it->second(args, out);
     }
 
-    static ExObjUPtr create_wav(std::vector<ExObjPtr> args, std::ostream &out)
+    static ExObjUPtr create_wav(std::vector<ExObjPtr> args, std::ostream &)
     {
         const std::string &path = args_to_string(args);
         WavReader reader;
         try
         {
-            WavFileSPtr file = reader.CreateWav(path);
+            IWavFileSPtr file = reader.CreateWav(path);
             return std::make_unique<WavFileType>(file);
         }
         catch (const WavException &exc)
@@ -55,13 +57,13 @@ namespace tree_executor
         }
     }
 
-    static ExObjUPtr open_wav(std::vector<ExObjPtr> args, std::ostream &out)
+    static ExObjUPtr open_wav(std::vector<ExObjPtr> args, std::ostream &)
     {
         const std::string &path = args_to_string(args);
         WavReader reader;
         try
         {
-            WavFileSPtr file = reader.OpenWav(path);
+            IWavFileSPtr file = reader.OpenWav(path);
             return std::make_unique<WavFileType>(file);
         }
         catch (const WavException &exc)
@@ -80,6 +82,34 @@ namespace tree_executor
         }
         out << std::endl;
         return nullptr;
+    }
+
+    static ExObjUPtr str_time_to_sec(std::vector<ExObjPtr> args, std::ostream &)
+    {
+        const std::string &timeStr = args_to_string(args);
+
+        std::size_t p1 = timeStr.find(':');
+        std::size_t p2 = timeStr.find(':', p1 + 1);
+
+        if (p1 == std::string::npos || p2 == std::string::npos)
+            throw RunTimeExc("invalid time format");
+
+        try
+        {
+            int h = std::stoi(timeStr.substr(0, p1));
+            int m = std::stoi(timeStr.substr(p1 + 1, p2 - p1 - 1));
+            float sec = std::stof(timeStr.substr(p2 + 1));
+
+            if (h < 0 || m < 0 || sec < 0.0f)
+                throw RunTimeExc("negative time value");
+
+            float t = h * 3600.0f + m * 60.0f + sec;
+            return std::make_unique<FloatType>(t);
+        }
+        catch (const std::exception &)
+        {
+            throw RunTimeExc("invalid time format");
+        }
     }
 
 } // namespace tree_executor

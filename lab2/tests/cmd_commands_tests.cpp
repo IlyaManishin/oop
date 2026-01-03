@@ -28,7 +28,7 @@ TEST(CmdCreateWavTest, CreateEmptyWavFile)
     EXPECT_TRUE(std::filesystem::exists(path));
 
     WavReader reader;
-    WavFileSPtr created = reader.OpenWav(path);
+    IWavFileSPtr created = reader.OpenWav(path);
 
     EXPECT_FLOAT_EQ(created->GetDurationSec(), 0.0f);
 

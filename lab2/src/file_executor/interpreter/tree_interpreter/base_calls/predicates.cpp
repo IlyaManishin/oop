@@ -8,9 +8,11 @@
 
 namespace tree_executor
 {
+    using PredicateType = bool (*)(std::vector<ExObjPtr>);
+
     static bool exists_wav_file(std::vector<ExObjPtr> args);
 
-    const std::unordered_map<std::string, bool (*)(std::vector<ExObjPtr>)> predicates = {
+    const std::unordered_map<std::string, PredicateType> predicates = {
         {"exists", exists_wav_file}};
 
     bool predicate_call_impl(const std::string &predicatName, std::vector<ExObjPtr> args)

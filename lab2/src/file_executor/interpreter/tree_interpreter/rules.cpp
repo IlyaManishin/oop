@@ -34,8 +34,8 @@ namespace tree_executor
 
     void TreeInterpreter::executeAssign(const Assign &assign)
     {
-        ExObjUPtr res = executeFuncCall(*assign.right);
-        this->addVar(assign.ident, std::move(res));
+        ExObjUPtr right = executeExpression(*assign.right);
+        this->addVar(assign.ident, std::move(right));
     }
 
     void TreeInterpreter::executeFuncRun(const FuncRun &run)

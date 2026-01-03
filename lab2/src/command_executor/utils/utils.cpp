@@ -9,11 +9,11 @@ using namespace wav_lib;
 
 namespace executor
 {
-    WavFileSPtr try_read_wav(const WavReader &reader, const std::string &path) noexcept
+    IWavFileSPtr try_read_wav(const WavReader &reader, const std::string &path) noexcept
     {
         try
         {
-            WavFileSPtr wavFile = reader.OpenWav(path);
+            IWavFileSPtr wavFile = reader.OpenWav(path);
             return wavFile;
         }
         catch (const std::exception &e)

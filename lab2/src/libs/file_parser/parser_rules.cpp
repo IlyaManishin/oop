@@ -66,6 +66,7 @@ namespace file_parser
         if (auto stmt = parseSimpleStmt())
             return stmt;
 
+        rewind(pos);
         return nullptr;
     }
 
@@ -176,20 +177,37 @@ namespace file_parser
         int pos = savePos();
         TToken startTok = peekNextToken();
 
-        auto ident = identRule();
-        FuncCallUPtr funcCall;
+        auto ident = parseIdent();
+        ExpressionUPtr expr;
 
         if (ident &&
             acceptTok(ASSIGN) &&
-            (funcCall = parseFuncCall()) &&
+            (expr = parseExpression()) &&
             acceptTok(NEWLINE))
         {
             return file_parser::AssignUPtr(
-                new file_parser::Assign(*ident, std::move(funcCall)));
+                new file_parser::Assign(*ident, std::move(expr)));
         }
 
         rewind(pos);
         markError("assign", startTok);
+        return nullptr;
+    }
+
+    ExpressionUPtr AstParser::parseExpression()
+    {
+        TToken startTok = peekNextToken();
+        int pos = savePos();
+
+        if (auto funcCall = parseFuncCall())
+            return std::make_unique<Expression>(std::move(funcCall));
+
+        rewind(pos);
+        if (auto arg = parseArg())
+            return std::make_unique<Expression>(std::move(arg));
+
+        rewind(pos);
+        markError("expression", startTok);
         return nullptr;
     }
 
@@ -198,7 +216,7 @@ namespace file_parser
         int pos = savePos();
         TToken startTok = peekNextToken();
 
-        auto ident = identRule();
+        auto ident = parseIdent();
         FuncCallUPtr fCall;
 
         if (ident &&
@@ -235,11 +253,11 @@ namespace file_parser
         int pos = savePos();
         TToken startTok = peekNextToken();
 
-        auto ident = identRule();
+        auto ident = parseIdent();
         ArgsUPtr args;
         if (ident &&
             acceptTok(LPAREN) &&
-            (args = readArgsRule()) &&
+            (args = parseArgs()) &&
             acceptTok(RPAREN))
         {
             return std::make_unique<FuncCall>(*ident, std::move(args));
@@ -250,7 +268,7 @@ namespace file_parser
         return nullptr;
     }
 
-    ArgsUPtr AstParser::readArgsRule()
+    ArgsUPtr AstParser::parseArgs()
     {
         int pos = savePos();
         TToken startTok = peekNextToken();
@@ -259,7 +277,7 @@ namespace file_parser
         bool hasComma = false;
         while (true)
         {
-            auto arg = argRule();
+            auto arg = parseArg();
             if (!arg)
                 break;
             hasComma = false;
@@ -278,7 +296,7 @@ namespace file_parser
         return args;
     }
 
-    ArgUPtr AstParser::argRule()
+    ArgUPtr AstParser::parseArg()
     {
         int pos = savePos();
 
@@ -298,21 +316,43 @@ namespace file_parser
 
         if (checkTokType(STRING))
         {
-            std::string v(curTok.start, curTok.end);
-            return std::make_unique<Arg>(std::move(v), Arg::Type::STRING);
+            return parseStringArg(this->curTok);
         }
-
-        if (checkTokType(TRUE_KW))
-            return std::make_unique<Arg>(true);
-        if (checkTokType(FALSE_KW))
-            return std::make_unique<Arg>(false);
+        if (checkTokType(TRUE_KW) || checkTokType(FALSE_KW))
+        {
+            return parseBoolArg(this->curTok);
+        }
 
         rewind(pos);
         markError("argument", startTok);
         return nullptr;
     }
 
-    std::optional<std::string> AstParser::identRule()
+    ArgUPtr AstParser::parseStringArg(TToken &token)
+    {
+        if (token.type != STRING)
+            return nullptr;
+
+        std::string v(token.start, token.end);
+        size_t pos = 0;
+        while ((pos = v.find("\\n", pos)) != std::string::npos)
+        {
+            v.replace(pos, 2, "\n");
+            pos += 1;
+        }
+        return std::make_unique<Arg>(std::move(v), Arg::Type::STRING);
+    }
+
+    ArgUPtr AstParser::parseBoolArg(TToken &token)
+    {
+        if (token.type == TRUE_KW)
+            return std::make_unique<Arg>(true);
+        if (token.type == FALSE_KW)
+            return std::make_unique<Arg>(false);
+        return nullptr;
+    }
+
+    std::optional<std::string> AstParser::parseIdent()
     {
         int pos = savePos();
 

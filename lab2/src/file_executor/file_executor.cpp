@@ -23,7 +23,7 @@ namespace file_executor
         }
         catch (const std::exception &exc)
         {
-            std::string msg = std::string("File parsing error: \n") + exc.what();
+            std::string msg = std::string("File parser error:\n") + exc.what();
             throw std::runtime_error(msg);
         }
         try
@@ -32,7 +32,7 @@ namespace file_executor
         }
         catch (const std::exception &exc)
         {
-            std::string msg = std::string("Interpreter error occurred: \n") + exc.what();
+            std::string msg = std::string("Interpreter error occurred:\n") + exc.what();
             throw std::runtime_error(msg);
         }
     }

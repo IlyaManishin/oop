@@ -24,9 +24,9 @@ TEST(WavMixTest, BasicMixToCreatedFile)
         std::filesystem::remove(destPath);
 
     WavReader reader;
-    WavFileSPtr file = reader.OpenWav(inPath);
+    IWavFileSPtr file = reader.OpenWav(inPath);
     TWavHeader header = file->GetHeader();
-    WavFileSPtr dest = reader.CreateWav(destPath, header.numChannels, header.sampleRate, header.bitsPerSample);
+    IWavFileSPtr dest = reader.CreateWav(destPath, header.numChannels, header.sampleRate, header.bitsPerSample);
 
     cmd_parser::Args args;
     args.push_back(destPath);

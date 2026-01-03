@@ -115,12 +115,12 @@ namespace executor
         }
 
         WavReader reader;
-        WavFileSPtr outFile = try_read_wav(reader, outputPath);
+        IWavFileSPtr outFile = try_read_wav(reader, outputPath);
         if (!outFile)
         {
             return false;
         }
-        WavFileSPtr inFile = try_read_wav(reader, inputFile);
+        IWavFileSPtr inFile = try_read_wav(reader, inputFile);
         if (!inFile)
         {
             return false;
@@ -169,7 +169,7 @@ namespace executor
         }
 
         WavReader reader;
-        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
+        IWavFileSPtr wavFile = try_read_wav(reader, wavPath);
         if (!wavFile)
             return false;
 
@@ -204,7 +204,7 @@ namespace executor
             return false;
         }
         WavReader reader;
-        WavFileSPtr wavFile = try_read_wav(reader, wavPath);
+        IWavFileSPtr wavFile = try_read_wav(reader, wavPath);
         if (!wavFile)
         {
             return false;

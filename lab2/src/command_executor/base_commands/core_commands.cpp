@@ -8,19 +8,19 @@ using namespace wav_lib;
 
 namespace executor
 {
-    void cmd_wav_info_impl(WavFileSPtr wavFile) noexcept
+    void cmd_wav_info_impl(IWavFileSPtr wavFile) noexcept
     {
         wavFile->PrintInfo();
     }
 
-    void cmd_wav_mix_impl(WavFileSPtr outFile, float outStart,
-                          WavFileSPtr inFile, float inStart, float inEnd)
+    void cmd_wav_mix_impl(IWavFileSPtr outFile, float outStart,
+                          IWavFileSPtr inFile, float inStart, float inEnd)
     {
         auto interval = inFile->GetInterval(inStart, inEnd);
         outFile->WriteInterval(interval, outStart);
     }
 
-    void cmd_set_effect_impl(WavFileSPtr wavFile,
+    void cmd_set_effect_impl(IWavFileSPtr wavFile,
                              const std::string &effect,
                              float start,
                              float end)

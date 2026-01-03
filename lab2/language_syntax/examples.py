@@ -2,7 +2,7 @@ from interface import *
 
 #EXAMPLES
 
-if (exists("name.wav")):
+if exists("name.wav"):
     file = open("name.wav")
 else:
     file = create("name1.wav")

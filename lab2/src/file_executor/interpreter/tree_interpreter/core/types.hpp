@@ -21,11 +21,10 @@ namespace tree_executor
 
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
-    using ExObjPtr = const ExObj *;
-
+    using ExObjPtr = ExObj *;
     using ExObjs = std::vector<ExObjUPtr>;
 
-    using MethodType = std::function<ExObjUPtr(const std::vector<ExObjUPtr> &)>;
+    using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
 
     class ExObj
     {
@@ -39,7 +38,7 @@ namespace tree_executor
 
         virtual ~ExObj() = default;
 
-        void RunMethod(const std::string &name, const std::vector<ExObjUPtr> &args);
+        void RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
     };
 
     class FloatType : public ExObj
@@ -97,11 +96,11 @@ namespace tree_executor
     class WavFileType : public ExObj
     {
     private:
-        wav_lib::WavFileSPtr value;
+        wav_lib::IWavFileSPtr value;
 
     public:
-        WavFileType(wav_lib::WavFileSPtr v) : value(std::move(v)) { type = WAVFILE_TYPE_NAME; }
-        wav_lib::WavFileSPtr GetValue() const { return value; }
+        WavFileType(wav_lib::IWavFileSPtr v);
+        wav_lib::IWavFileSPtr GetValue() const { return value; }
 
         void Print(std::ostream &out) const override
         {
@@ -117,20 +116,15 @@ namespace tree_executor
     class WavIntervalType : public ExObj
     {
     private:
-        wav_lib::WavFileSPtr value;
+        wav_lib::IWavIntervalSPtr value;
 
     public:
-        WavIntervalType(wav_lib::WavFileSPtr v) : value(std::move(v)) { type = WAVINTERVAL_TYPE_NAME; }
-        wav_lib::WavFileSPtr GetValue() const { return value; }
+        WavIntervalType(wav_lib::IWavIntervalSPtr v);
+        wav_lib::IWavIntervalSPtr GetValue() const { return value; }
 
         void Print(std::ostream &out) const override
         {
-            this->value->PrintInfo(out);
-        }
-
-        ~WavIntervalType() override
-        {
-            this->value->Save();
+            this->value->Print(out);
         }
     };
 
