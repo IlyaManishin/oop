@@ -12,9 +12,17 @@ namespace tree_executor
 {
     TreeInterpreter::TreeInterpreter(std::ostream &out) : out(out) {};
 
-    void TreeInterpreter::addVar(const std::string &name, ExObjUPtr value)
+    ExObjPtr TreeInterpreter::getVarPtr(const std::string &varName)
     {
-        vars[name] = std::move(value);
+        auto it = vars.find(varName);
+        if (it != vars.end())
+        {
+            return it->second.get();
+        }
+        else
+        {
+            throw UndefinedVarExc(varName);
+        }
     }
 
     ExObjUPtr TreeInterpreter::executeExpression(file_parser::Expression &expr)
@@ -26,7 +34,7 @@ namespace tree_executor
         }
         else if (std::holds_alternative<ArgUPtr>(expr.value))
         {
-            const ArgUPtr& arg = std::get<ArgUPtr>(expr.value);
+            const ArgUPtr &arg = std::get<ArgUPtr>(expr.value);
             res = exobj_from_value_arg(arg);
             if (!res)
                 throw InvalidArgExc("Not value argument: " + std::to_string((int)arg->type));
@@ -49,15 +57,8 @@ namespace tree_executor
         if (arg->type == file_parser::Arg::Type::IDENT)
         {
             const std::string &varName = std::get<std::string>(arg->value);
-            auto it = vars.find(varName);
-            if (it != vars.end())
-            {
-                argsFrameUPtr->allArgs.push_back(it->second.get());
-            }
-            else
-            {
-                throw UndefinedVarExc(varName);
-            }
+            ExObjPtr varPtr = this->getVarPtr(varName);
+            argsFrameUPtr->allArgs.push_back(varPtr);
         }
         else
         {
@@ -85,5 +86,8 @@ namespace tree_executor
 
     void TreeInterpreter::executeMethod(const std::string &varName, file_parser::FuncCall &funcCall)
     {
+        ExObjPtr var = this->getVarPtr(varName);
+        ArgsFrameUPtr argsFrame = this->parseArgs(funcCall.args);
+        var->RunMethod(funcCall.name, argsFrame->allArgs);
     }
 }

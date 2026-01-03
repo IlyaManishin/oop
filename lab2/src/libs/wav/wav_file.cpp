@@ -70,14 +70,14 @@ namespace wav_lib
             throw WavException("Cannot open file", this->path);
     }
 
-    WavFileSPtr WavFile::Open(const std::string &path)
+    IWavFileSPtr WavFile::Open(const std::string &path)
     {
         auto wavFile = std::shared_ptr<WavFile>(new WavFile(path, false));
         wavFile->extractFileData();
         return wavFile;
     }
 
-    WavFileSPtr WavFile::Create(const std::string &path, uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample)
+    IWavFileSPtr WavFile::Create(const std::string &path, uint16_t channels, uint32_t sampleRate, uint16_t bitsPerSample)
     {
         auto wavFile = std::shared_ptr<WavFile>(new WavFile(path, true));
         wavFile->initNewHeader(channels, sampleRate, bitsPerSample);
@@ -202,7 +202,7 @@ namespace wav_lib
         out << "Bits per sample: " << this->header.bitsPerSample << "\n";
         out << "Byte rate: " << this->header.byteRate << "\n";
         out << "Data size: " << this->dataEnd - this->dataStart << " bytes\n";
-        out << "Duration: " << std::to_string(this->GetDurationSec()) << " sec\n";
+        out << "Duration: " << std::to_string(this->GetDurationSec()) << " sec";
     }
 
     double WavFile::GetDurationSec() const

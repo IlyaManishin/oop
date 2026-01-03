@@ -6,13 +6,13 @@
 
 namespace wav_lib
 {
-    WavFileSPtr WavReader::OpenWav(const std::string &path) const 
+    IWavFileSPtr WavReader::OpenWav(const std::string &path) const 
     {
         auto file = WavFile::Open(path);
         return file;
     }
 
-    WavFileSPtr WavReader::CreateWav(const std::string &destPath,
+    IWavFileSPtr WavReader::CreateWav(const std::string &destPath,
                                      int numChannels,
                                      uint32_t sampleRate,
                                      uint32_t bitsPerSample) const
@@ -32,7 +32,7 @@ namespace wav_lib
     {
         try
         {
-            WavFileSPtr file = WavFile::Open(path);
+            IWavFileSPtr file = WavFile::Open(path);
             return true;
         }
         catch (const WavException &exc)

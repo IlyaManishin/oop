@@ -34,7 +34,7 @@ namespace wav_lib
     class IWavFile;
     class IWavInterval;
 
-    using WavFileSPtr = std::shared_ptr<IWavFile>;
+    using IWavFileSPtr = std::shared_ptr<IWavFile>;
     using IWavIntervalSPtr = std::shared_ptr<IWavInterval>;
 
     class IWavInterval
@@ -69,8 +69,8 @@ namespace wav_lib
     {
     public:
         WavReader(const std::string &wavDir = "") noexcept : wavDir(wavDir) {};
-        WavFileSPtr OpenWav(const std::string &path) const;
-        WavFileSPtr CreateWav(const std::string &destPath,
+        IWavFileSPtr OpenWav(const std::string &path) const;
+        IWavFileSPtr CreateWav(const std::string &destPath,
                               int numChannels = 2,
                               uint32_t sampleRate = 44100,
                               uint32_t bitsPerSample = 16) const;

@@ -30,7 +30,9 @@ namespace tree_executor
         ArgsFrameUPtr parseArgs(const file_parser::ArgsUPtr &args);
         void parseArg(ArgsFrameUPtr &argsFrameUPtr, const file_parser::ArgUPtr &arg);
 
-        void addVar(const std::string &name, ExObjUPtr value);
+        void addVar(const std::string &name, ExObjUPtr value) { vars[name] = std::move(value); };
+        ExObjPtr getVarPtr(const std::string &varName);
+
         ExObjUPtr executeExpression(file_parser::Expression &expr);
         ExObjUPtr executeFuncCall(file_parser::FuncCall &funcCall);
         bool executePredicate(file_parser::FuncCall &funcCall);

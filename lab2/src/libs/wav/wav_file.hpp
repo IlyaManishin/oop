@@ -16,8 +16,8 @@ namespace wav_lib
     class WavFile : public IWavFile
     {
     public:
-        static WavFileSPtr Open(const std::string &path);
-        static WavFileSPtr Create(const std::string &path,
+        static IWavFileSPtr Open(const std::string &path);
+        static IWavFileSPtr Create(const std::string &path,
                                   uint16_t channels,
                                   uint32_t sampleRate,
                                   uint16_t bitsPerSample);
