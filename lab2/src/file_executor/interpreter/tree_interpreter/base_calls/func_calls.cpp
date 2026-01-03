@@ -17,11 +17,13 @@ namespace tree_executor
     static ExObjUPtr create_wav(std::vector<ExObjPtr> args, std::ostream &out);
     static ExObjUPtr open_wav(std::vector<ExObjPtr> args, std::ostream &out);
     static ExObjUPtr print_args(std::vector<ExObjPtr> args, std::ostream &out);
+    static ExObjUPtr time(std::vector<ExObjPtr> args, std::ostream &out);
 
     const std::unordered_map<std::string, FuncCallType> functions = {
         {"create_wav", create_wav},
         {"open_wav", open_wav},
-        {"print", print_args}};
+        {"print", print_args},
+        {"time", time}}; // H:M:S -> float
 
     static const std::string &args_to_string(const std::vector<ExObjPtr> &args)
     {
@@ -80,6 +82,24 @@ namespace tree_executor
         }
         out << std::endl;
         return nullptr;
+    }
+
+    static ExObjUPtr time(std::vector<ExObjPtr> args, std::ostream &out)
+    {
+        const std::string &timeStr = args_to_string(args);
+
+        int h = 0, m = 0;
+        float sec = 0.0f;
+
+        std::size_t p1 = timeStr.find(':');
+        std::size_t p2 = timeStr.find(':', p1 + 1);
+
+        h = std::stoi(timeStr.substr(0, p1));
+        m = std::stoi(timeStr.substr(p1 + 1, p2 - p1 - 1));
+        sec = std::stof(timeStr.substr(p2 + 1));
+
+        float time = h * 3600.0f + m * 60.0f + sec;
+        return std::make_unique<FloatType>(time);
     }
 
 } // namespace tree_executor
