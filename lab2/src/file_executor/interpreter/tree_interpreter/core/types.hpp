@@ -21,16 +21,20 @@ namespace tree_executor
 
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
-    using ExObjPtr = ExObj *;
     using ExObjs = std::vector<ExObjUPtr>;
 
-    using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
+    using ExObjPtr = ExObj *;
+    // using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
+    // using Method = ExObjUPtr (*)(const std::vector<ExObjPtr> &);
+    using StaticMethod = ExObjUPtr (*)(ExObj *cur, const std::vector<ExObjPtr> &);
 
     class ExObj
     {
     protected:
-        std::unordered_map<std::string, MethodType> methods;
+        std::unordered_map<std::string, StaticMethod> methods;
         const char *type = BASE_TYPE_NAME;
+
+        void regMethod(const std::string &name, StaticMethod methodPtr) { this->methods[name] = methodPtr; };
 
     public:
         virtual void Print(std::ostream &out) const = 0;
@@ -97,6 +101,7 @@ namespace tree_executor
     {
     private:
         wav_lib::IWavFileSPtr value;
+        static ExObjUPtr getInterval(ExObj* cur, const std::vector<ExObjPtr> &args);
 
     public:
         WavFileType(wav_lib::IWavFileSPtr v);

@@ -1,6 +1,10 @@
 #include "types.hpp"
 #include "exceptions.hpp"
+#include "utils.hpp"
 
+#include "wav/wav.hpp"
+
+using namespace wav_lib;
 namespace tree_executor
 {
     void tree_executor::ExObj::RunMethod(const std::string &name, const std::vector<ExObjPtr> &args)
@@ -8,7 +12,7 @@ namespace tree_executor
         auto it = methods.find(name);
         if (it != methods.end())
         {
-            it->second(args);
+            it->second(this, args);
         }
         else
         {
@@ -17,9 +21,35 @@ namespace tree_executor
         }
     }
 
+    ExObjUPtr WavFileType::getInterval(ExObj *cur, const std::vector<ExObjPtr> &args)
+    {
+        const size_t argsCount = 4;
+        if (args.size() != argsCount)
+            throw InvalidArgsCountExc(args.size(), argsCount);
+        FloatType *startSec = exobj_convert<FloatType *>(args[0], FLOAT_TYPE_NAME);
+        FloatType *endSec = exobj_convert<FloatType *>(args[1], FLOAT_TYPE_NAME);
+
+        WavFileType *wavObj = static_cast<WavFileType *>(cur);
+        IWavFileSPtr wavFile = wavObj->GetValue();
+        
+        IWavIntervalSPtr interval = nullptr;
+        try
+        {
+            IWavIntervalSPtr interval = wavFile->GetInterval(startSec->GetValue(),
+                                                             endSec->GetValue());
+        }
+        catch (const std::exception &exc)
+        {
+            throw RunTimeExc(exc.what());
+        }
+
+        return std::make_unique<WavIntervalType>(interval);
+    }
+
     WavFileType::WavFileType(wav_lib::IWavFileSPtr v) : value(std::move(v))
     {
         type = WAVFILE_TYPE_NAME;
+        this->regMethod("get_interval", getInterval);
     }
 
     WavIntervalType::WavIntervalType(wav_lib::IWavIntervalSPtr v)
