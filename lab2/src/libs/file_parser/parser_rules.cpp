@@ -199,8 +199,12 @@ namespace file_parser
         TToken startTok = peekNextToken();
         int pos = savePos();
 
-        if (auto funcCall = parseFuncCall())
-            return std::make_unique<Expression>(std::move(funcCall));
+        if (auto fCall = parseFuncCall())
+            return std::make_unique<Expression>(std::move(fCall));
+
+        rewind(pos);
+        if (auto methodCall = parseMethodCall())
+            return std::make_unique<Expression>(std::move(methodCall));
 
         rewind(pos);
         if (auto arg = parseArg())
@@ -216,15 +220,31 @@ namespace file_parser
         int pos = savePos();
         TToken startTok = peekNextToken();
 
+        MethodCallUPtr methodCall;
+        if ((methodCall = parseMethodCall()) &&
+            acceptTok(NEWLINE))
+        {
+            return std::make_unique<MethodRun>(std::move(methodCall));
+        }
+
+        rewind(pos);
+        markError("method_run", startTok);
+        return nullptr;
+    }
+
+    MethodCallUPtr AstParser::parseMethodCall()
+    {
+        int pos = savePos();
+        TToken startTok = peekNextToken();
+
         auto ident = parseIdent();
         FuncCallUPtr fCall;
 
         if (ident &&
             acceptTok(DOT) &&
-            (fCall = parseFuncCall()) &&
-            acceptTok(NEWLINE))
+            (fCall = parseFuncCall()))
         {
-            return std::make_unique<MethodRun>(*ident, std::move(fCall));
+            return std::make_unique<MethodCall>(*ident, std::move(fCall));
         }
 
         rewind(pos);

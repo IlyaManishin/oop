@@ -7,12 +7,12 @@
 using namespace wav_lib;
 namespace tree_executor
 {
-    void tree_executor::ExObj::RunMethod(const std::string &name, const std::vector<ExObjPtr> &args)
+    ExObjUPtr tree_executor::ExObj::RunMethod(const std::string &name, const std::vector<ExObjPtr> &args)
     {
         auto it = methods.find(name);
         if (it != methods.end())
         {
-            it->second(this, args);
+            return it->second(this, args);
         }
         else
         {
@@ -31,7 +31,7 @@ namespace tree_executor
 
         WavFileType *wavObj = static_cast<WavFileType *>(cur);
         IWavFileSPtr wavFile = wavObj->GetValue();
-        
+
         IWavIntervalSPtr interval = nullptr;
         try
         {

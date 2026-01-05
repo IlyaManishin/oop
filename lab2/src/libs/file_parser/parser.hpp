@@ -54,6 +54,7 @@ namespace file_parser
         AssignUPtr parseAssign();
         FuncRunUPtr parseFuncRun();
 
+        MethodCallUPtr parseMethodCall();
         FuncCallUPtr parseFuncCall();
         MethodRunUPtr parseMethodRun();
         IfStatUPtr parseIfStat();

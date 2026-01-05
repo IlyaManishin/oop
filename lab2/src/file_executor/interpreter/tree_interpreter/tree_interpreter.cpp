@@ -25,23 +25,6 @@ namespace tree_executor
         }
     }
 
-    ExObjUPtr TreeInterpreter::executeExpression(file_parser::Expression &expr)
-    {
-        ExObjUPtr res = nullptr;
-        if (std::holds_alternative<FuncCallUPtr>(expr.value))
-        {
-            res = executeFuncCall(*std::get<FuncCallUPtr>(expr.value));
-        }
-        else if (std::holds_alternative<ArgUPtr>(expr.value))
-        {
-            const ArgUPtr &arg = std::get<ArgUPtr>(expr.value);
-            res = exobj_from_value_arg(arg);
-            if (!res)
-                throw InvalidArgExc("Not value argument: " + std::to_string((int)arg->type));
-        }
-        return res;
-    }
-
     ArgsFrameUPtr TreeInterpreter::parseArgs(const ArgsUPtr &args)
     {
         ArgsFrameUPtr argsFrame = std::make_unique<ArgsFrame>();
@@ -77,6 +60,16 @@ namespace tree_executor
         return res;
     }
 
+    ExObjUPtr TreeInterpreter::executeMethodCall(file_parser::MethodCall &methodCall)
+    {
+        ExObjPtr var = this->getVarPtr(methodCall.object);
+
+        FuncCallUPtr &fcall = methodCall.fcall;
+        ArgsFrameUPtr argsFrame = this->parseArgs(fcall->args);
+        ExObjUPtr res = var->RunMethod(fcall->name, argsFrame->allArgs);
+        return res;
+    }
+
     bool TreeInterpreter::executePredicate(file_parser::FuncCall &funcCall)
     {
         ArgsFrameUPtr argsFrame = this->parseArgs(funcCall.args);
@@ -84,10 +77,4 @@ namespace tree_executor
         return res;
     }
 
-    void TreeInterpreter::executeMethod(const std::string &varName, file_parser::FuncCall &funcCall)
-    {
-        ExObjPtr var = this->getVarPtr(varName);
-        ArgsFrameUPtr argsFrame = this->parseArgs(funcCall.args);
-        var->RunMethod(funcCall.name, argsFrame->allArgs);
-    }
 }

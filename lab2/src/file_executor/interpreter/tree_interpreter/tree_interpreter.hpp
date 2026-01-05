@@ -35,7 +35,7 @@ namespace tree_executor
 
         ExObjUPtr executeExpression(file_parser::Expression &expr);
         ExObjUPtr executeFuncCall(file_parser::FuncCall &funcCall);
+        ExObjUPtr executeMethodCall(file_parser::MethodCall &methodCall);
         bool executePredicate(file_parser::FuncCall &funcCall);
-        void executeMethod(const std::string &varName, file_parser::FuncCall &funcCall);
     };
 }

@@ -42,7 +42,7 @@ namespace tree_executor
 
         virtual ~ExObj() = default;
 
-        void RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
+        ExObjUPtr RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
     };
 
     class FloatType : public ExObj

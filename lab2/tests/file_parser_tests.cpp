@@ -53,11 +53,12 @@ TEST(ParserTest, FuncAndMethod)
     EXPECT_TRUE(std::holds_alternative<FuncRunUPtr>((*tree->statements)[0]->value));
     EXPECT_TRUE(std::holds_alternative<MethodRunUPtr>((*tree->statements)[1]->value));
 
-    auto &method = std::get<MethodRunUPtr>((*tree->statements)[1]->value);
+    auto &methodRun = std::get<MethodRunUPtr>((*tree->statements)[1]->value);
+    auto &method = methodRun->methodCall;
     EXPECT_EQ(method->object, "obj");
-    EXPECT_EQ(method->call->name, "run");
-    ASSERT_TRUE(method->call->args);
-    EXPECT_EQ(method->call->args->size(), 1u);
+    EXPECT_EQ(method->fcall->name, "run");
+    ASSERT_TRUE(method->fcall->args);
+    EXPECT_EQ(method->fcall->args->size(), 1u);
 }
 
 TEST(ParserTest, IfBlock)
@@ -144,11 +145,11 @@ TEST(ParserTest, RecursiveIfBlock)
     ASSERT_EQ(nestedIf->ifStmts->size(), 1u);
     auto &methodStmt = (*nestedIf->ifStmts)[0];
     EXPECT_TRUE(std::holds_alternative<MethodRunUPtr>(methodStmt->value));
-    auto &methodCall = std::get<MethodRunUPtr>(methodStmt->value);
-    EXPECT_EQ(methodCall->object, "obj");
-    EXPECT_EQ(methodCall->call->name, "update");
-    ASSERT_EQ(methodCall->call->args->size(), 2u);
-    auto &methodArg1 = *(*methodCall->call->args)[1];
+    auto &methodRun = std::get<MethodRunUPtr>(methodStmt->value);
+    EXPECT_EQ(methodRun->methodCall->object, "obj");
+    EXPECT_EQ(methodRun->methodCall->fcall->name, "update");
+    ASSERT_EQ(methodRun->methodCall->fcall->args->size(), 2u);
+    auto &methodArg1 = *(*methodRun->methodCall->fcall->args)[1];
     EXPECT_TRUE(std::holds_alternative<std::string>(methodArg1.value));
 
     // y = calc_value("test", 7)
