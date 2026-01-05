@@ -23,7 +23,7 @@ namespace tree_executor
 
     ExObjUPtr WavFileType::getInterval(ExObj *cur, const std::vector<ExObjPtr> &args)
     {
-        const size_t argsCount = 4;
+        const size_t argsCount = 2;
         if (args.size() != argsCount)
             throw InvalidArgsCountExc(args.size(), argsCount);
         FloatType *startSec = exobj_convert<FloatType *>(args[0], FLOAT_TYPE_NAME);
@@ -35,14 +35,13 @@ namespace tree_executor
         IWavIntervalSPtr interval = nullptr;
         try
         {
-            IWavIntervalSPtr interval = wavFile->GetInterval(startSec->GetValue(),
-                                                             endSec->GetValue());
+            interval = wavFile->GetInterval(startSec->GetValue(),
+                                            endSec->GetValue());
         }
         catch (const std::exception &exc)
         {
             throw RunTimeExc(exc.what());
         }
-
         return std::make_unique<WavIntervalType>(interval);
     }
 
