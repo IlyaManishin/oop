@@ -17,7 +17,7 @@ namespace tree_executor
     inline const char *STRING_TYPE_NAME = "string";
     inline const char *BOOL_TYPE_NAME = "bool";
     inline const char *WAVFILE_TYPE_NAME = "wav_file";
-    inline const char *WAVINTERVAL_TYPE_NAME = "wav_interval";
+    inline const char *INTERVAL_TYPE_NAME = "wav_interval";
 
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
@@ -26,7 +26,8 @@ namespace tree_executor
     using ExObjPtr = ExObj *;
     // using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
     // using Method = ExObjUPtr (*)(const std::vector<ExObjPtr> &);
-    using StaticMethod = ExObjUPtr (*)(ExObj *cur, const std::vector<ExObjPtr> &);
+    using StaticMethod = ExObjUPtr (*)(ExObj *cur, const std::string &methodName,
+                                       const std::vector<ExObjPtr> &);
 
     class ExObj
     {
@@ -86,7 +87,7 @@ namespace tree_executor
 
     public:
         BoolType(bool v) : value(v) { type = BOOL_TYPE_NAME; }
-        float GetValue() const { return value; }
+        bool GetValue() const { return value; }
 
         void Print(std::ostream &out) const override
         {
@@ -101,7 +102,10 @@ namespace tree_executor
     {
     private:
         wav_lib::IWavFileSPtr value;
-        static ExObjUPtr getInterval(ExObj* cur, const std::vector<ExObjPtr> &args);
+        static ExObjUPtr getInterval(ExObj *cur, const std::string &methodName,
+                                     const std::vector<ExObjPtr> &args);
+        static ExObjUPtr writeInterval(ExObj *cur, const std::string &methodName,
+                                       const std::vector<ExObjPtr> &args);
 
     public:
         WavFileType(wav_lib::IWavFileSPtr v);
@@ -122,6 +126,8 @@ namespace tree_executor
     {
     private:
         wav_lib::IWavIntervalSPtr value;
+        static ExObjUPtr setEffect(ExObj *cur, const std::string &methodName,
+                                   const std::vector<ExObjPtr> &args);
 
     public:
         WavIntervalType(wav_lib::IWavIntervalSPtr v);

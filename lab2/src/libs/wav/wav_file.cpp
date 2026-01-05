@@ -38,7 +38,7 @@ namespace wav_lib
               samplesCount(samplesCount), durationSec(durationSec),
               startSec(startSec), endSec(endSec) {};
 
-        void SetEffect(WavEffects effect) override { this->effect = effect; }
+        void SetEffect(WavEffects effect) override { this->effect = effect; } 
         void SetVolume(float value) override { this->volumeValue = value; }
         bool IsChangedSound() { return isNewVolume || (this->effect != WavEffects::NORMAL); };
         void Print(std::ostream &out = std::cout) const override
