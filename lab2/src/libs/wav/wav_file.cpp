@@ -38,13 +38,13 @@ namespace wav_lib
               samplesCount(samplesCount), durationSec(durationSec),
               startSec(startSec), endSec(endSec) {};
 
-        void SetEffect(WavEffects effect) override { this->effect = effect; }
+        void SetEffect(WavEffects effect) override { this->effect = effect; } 
         void SetVolume(float value) override { this->volumeValue = value; }
         bool IsChangedSound() { return isNewVolume || (this->effect != WavEffects::NORMAL); };
-        virtual void Print(std::ostream &out = std::cout) const override
+        void Print(std::ostream &out = std::cout) const override
         {
-            out << "Interval: start=" << std::to_string(this->startSec)
-                << ", end=" << std::to_string(this->endSec);
+            out << "Interval: start=" << this->startSec
+                << ", end=" << this->endSec;
         }
 
         ~WavInterval() {};

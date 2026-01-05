@@ -118,12 +118,13 @@ static bool lookahead(TTokenizer *tokenizer, const char *check)
         }
         cur++;
     }
-    if (is_ident_or_kw_start_symbol(*cur))
+    tgetc(tokenizer, &tok_ch);
+    if (is_ident_or_kw_start_symbol(tok_ch))
         result = false;
-
+    if (tok_ch != EOF)
+        tbackc(tokenizer, tok_ch);
+        
     cur--;
-    // tgetc(tokenizer, &tok_ch);???
-
     while (cur >= check)
     {
         tbackc(tokenizer, *cur);

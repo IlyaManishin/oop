@@ -17,20 +17,25 @@ namespace tree_executor
     inline const char *STRING_TYPE_NAME = "string";
     inline const char *BOOL_TYPE_NAME = "bool";
     inline const char *WAVFILE_TYPE_NAME = "wav_file";
-    inline const char *WAVINTERVAL_TYPE_NAME = "wav_interval";
+    inline const char *INTERVAL_TYPE_NAME = "wav_interval";
 
     class ExObj;
     using ExObjUPtr = std::unique_ptr<ExObj>;
-    using ExObjPtr = ExObj *;
     using ExObjs = std::vector<ExObjUPtr>;
 
-    using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
+    using ExObjPtr = ExObj *;
+    // using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
+    // using Method = ExObjUPtr (*)(const std::vector<ExObjPtr> &);
+    using StaticMethod = ExObjUPtr (*)(ExObj *cur, const std::string &methodName,
+                                       const std::vector<ExObjPtr> &);
 
     class ExObj
     {
     protected:
-        std::unordered_map<std::string, MethodType> methods;
+        std::unordered_map<std::string, StaticMethod> methods;
         const char *type = BASE_TYPE_NAME;
+
+        void regMethod(const std::string &name, StaticMethod methodPtr) { this->methods[name] = methodPtr; };
 
     public:
         virtual void Print(std::ostream &out) const = 0;
@@ -38,7 +43,7 @@ namespace tree_executor
 
         virtual ~ExObj() = default;
 
-        void RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
+        ExObjUPtr RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
     };
 
     class FloatType : public ExObj
@@ -82,7 +87,7 @@ namespace tree_executor
 
     public:
         BoolType(bool v) : value(v) { type = BOOL_TYPE_NAME; }
-        float GetValue() const { return value; }
+        bool GetValue() const { return value; }
 
         void Print(std::ostream &out) const override
         {
@@ -97,6 +102,10 @@ namespace tree_executor
     {
     private:
         wav_lib::IWavFileSPtr value;
+        static ExObjUPtr getInterval(ExObj *cur, const std::string &methodName,
+                                     const std::vector<ExObjPtr> &args);
+        static ExObjUPtr writeInterval(ExObj *cur, const std::string &methodName,
+                                       const std::vector<ExObjPtr> &args);
 
     public:
         WavFileType(wav_lib::IWavFileSPtr v);
@@ -117,6 +126,8 @@ namespace tree_executor
     {
     private:
         wav_lib::IWavIntervalSPtr value;
+        static ExObjUPtr setEffect(ExObj *cur, const std::string &methodName,
+                                   const std::vector<ExObjPtr> &args);
 
     public:
         WavIntervalType(wav_lib::IWavIntervalSPtr v);

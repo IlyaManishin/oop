@@ -12,6 +12,7 @@ namespace file_parser
     struct FuncRun;
     struct Expression;
     struct Assign;
+    struct MethodCall;
     struct MethodRun;
     struct IfStat;
     struct Statement;
@@ -23,6 +24,7 @@ namespace file_parser
     using FuncRunUPtr = std::unique_ptr<FuncRun>;
     using ExpressionUPtr = std::unique_ptr<Expression>;
     using AssignUPtr = std::unique_ptr<Assign>;
+    using MethodCallUPtr = std::unique_ptr<MethodCall>;
     using MethodRunUPtr = std::unique_ptr<MethodRun>;
     using IfStatUPtr = std::unique_ptr<IfStat>;
     using StatementUPtr = std::unique_ptr<Statement>;
@@ -80,21 +82,31 @@ namespace file_parser
 
     struct Expression
     {
-        std::variant<FuncCallUPtr, ArgUPtr> value;
+        std::variant<FuncCallUPtr, ArgUPtr, MethodCallUPtr>value;
 
         Expression(FuncCallUPtr funcCall)
             : value(std::move(funcCall)) {};
+        Expression(MethodCallUPtr methodCall)
+            : value(std::move(methodCall)) {};
         Expression(ArgUPtr arg)
             : value(std::move(arg)) {};
     };
 
-    struct MethodRun
+    struct MethodCall
     {
         std::string object;
-        FuncCallUPtr call;
+        FuncCallUPtr fcall;
 
-        MethodRun(std::string object, FuncCallUPtr call)
-            : object(std::move(object)), call(std::move(call)) {}
+        MethodCall(std::string object, FuncCallUPtr call)
+            : object(std::move(object)), fcall(std::move(call)) {};
+    };
+
+    struct MethodRun
+    {
+        MethodCallUPtr methodCall;
+
+        MethodRun(MethodCallUPtr methodCall)
+            : methodCall(std::move(methodCall)) {};
     };
 
     struct IfStat

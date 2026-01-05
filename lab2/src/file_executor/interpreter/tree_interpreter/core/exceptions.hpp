@@ -16,26 +16,38 @@ namespace tree_executor
     class UnexpectedArgExc : public InvalidArgExc
     {
     public:
-        UnexpectedArgExc(const char *gotType, const char *expectedType)
-            : InvalidArgExc(
-                  std::string("Unexpected argument type: '") +
-                  gotType + "', expected: '" + expectedType + "'") {}
+        UnexpectedArgExc(const char *gotType, const char *expectedType, const std::string &callName = "")
+            : InvalidArgExc(buildMessage(gotType, expectedType, callName)) {}
 
         explicit UnexpectedArgExc(const ExObjUPtr &arg)
-            : InvalidArgExc(
-                  std::string("Unexpected argument type: '") +
-                  arg->GetType() + "'") {}
+            : InvalidArgExc(std::string("Unexpected argument type: '") + arg->GetType() + "'") {}
+
+    private:
+        static std::string buildMessage(const char *gotType, const char *expectedType, const std::string &callName)
+        {
+            std::string msg = "Unexpected argument type: '" + std::string(gotType) +
+                              "', expected: '" + expectedType + "'";
+            if (!callName.empty())
+                msg += " in " + callName;
+            return msg;
+        }
     };
 
     class InvalidArgsCountExc : public InvalidArgExc
     {
     public:
-        InvalidArgsCountExc(size_t got, size_t expected)
-            : InvalidArgExc(
-                  "Invalid arguments count: expected " +
-                  std::to_string(expected) +
-                  ", got " +
-                  std::to_string(got)) {}
+        InvalidArgsCountExc(size_t got, size_t expected, const std::string &callName = "")
+            : InvalidArgExc(buildMessage(got, expected, callName)) {}
+
+    private:
+        static std::string buildMessage(size_t got, size_t expected, const std::string &callName)
+        {
+            std::string msg = "Invalid arguments count: expected " + std::to_string(expected) +
+                              ", got " + std::to_string(got);
+            if (!callName.empty())
+                msg += " in " + callName;
+            return msg;
+        }
     };
 
     class RunTimeExc : public std::runtime_error

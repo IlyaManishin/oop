@@ -38,6 +38,27 @@ namespace tree_executor
         this->addVar(assign.ident, std::move(right));
     }
 
+    ExObjUPtr TreeInterpreter::executeExpression(file_parser::Expression &expr)
+    {
+        ExObjUPtr res = nullptr;
+        if (std::holds_alternative<FuncCallUPtr>(expr.value))
+        {
+            res = executeFuncCall(*std::get<FuncCallUPtr>(expr.value));
+        }
+        else if (std::holds_alternative<MethodCallUPtr>(expr.value))
+        {
+            res = executeMethodCall(*std::get<MethodCallUPtr>(expr.value));
+        }
+        else if (std::holds_alternative<ArgUPtr>(expr.value))
+        {
+            const ArgUPtr &arg = std::get<ArgUPtr>(expr.value);
+            res = exobj_from_value_arg(arg);
+            if (!res)
+                throw InvalidArgExc("Not value argument: " + std::to_string((int)arg->type));
+        }
+        return res;
+    }
+
     void TreeInterpreter::executeFuncRun(const FuncRun &run)
     {
         executeFuncCall(*run.fCall);
@@ -45,7 +66,7 @@ namespace tree_executor
 
     void TreeInterpreter::executeMethodRun(const file_parser::MethodRun &method_run)
     {
-        executeMethod(method_run.object, *method_run.call);
+        executeMethodCall(*method_run.methodCall);
     }
 
     void TreeInterpreter::executeIfStmt(const IfStat &ifstat)
