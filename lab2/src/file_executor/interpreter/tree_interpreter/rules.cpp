@@ -35,6 +35,9 @@ namespace tree_executor
     void TreeInterpreter::executeAssign(const Assign &assign)
     {
         ExObjUPtr right = executeExpression(*assign.right);
+        if (right == nullptr)
+            RunTimeExc("No return value for expression");
+
         this->addVar(assign.ident, std::move(right));
     }
 
