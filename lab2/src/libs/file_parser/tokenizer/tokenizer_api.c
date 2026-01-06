@@ -11,7 +11,7 @@ typedef struct TFileData
     size_t dataSize;
 } TFileData;
 
-TFileData read_file_data(FILE *file)
+static TFileData read_file_data(FILE *file)
 {
     TFileData result;
     if (file == NULL)
@@ -167,7 +167,7 @@ TToken token_soft_read(TTokenizer *tokenizer)
     return token;
 }
 
-/**clear used tokens between left and curBufPos forever */
+/**Clear used tokens between left and curBufPos forever */
 void flush_used_tokens(TTokenizer *tokenizer)
 {
     pop_tokens_from_buf(tokenizer->tokensBuf, tokenizer->curBufPos);

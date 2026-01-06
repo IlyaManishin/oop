@@ -119,7 +119,7 @@ static bool lookahead(TTokenizer *tokenizer, const char *check)
         cur++;
     }
     tgetc(tokenizer, &tok_ch);
-    if (is_ident_or_kw_start_symbol(tok_ch))
+    if (is_ident_or_kw_start_symbol(tok_ch) || is_digit(tok_ch))
         result = false;
     if (tok_ch != EOF)
         tbackc(tokenizer, tok_ch);
@@ -201,14 +201,12 @@ static int read_new_line_indent(TTokenizer *tokenizer)
 
 static bool try_to_tgets(TTokenizer *tokenizer, const char *s)
 {
-    bool isValid = false;
-
     if (lookahead(tokenizer, s))
     {
         tgets(tokenizer, s);
-        isValid = true;
+        return true;
     }
-    return isValid;
+    return false;
 }
 static TToken read_keyword_token(TTokenizer *tokenizer)
 {

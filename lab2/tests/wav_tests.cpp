@@ -14,7 +14,7 @@
 
 using namespace wav_lib;
 
-TEST(WavMixTest, BasicMixToCreatedFile)
+TEST(WavLibTest, BasicMixToCreatedFile)
 {
     std::string inPath = WAV_LIB_MEDIA_DIR + "/Smoke.wav"; // background
     std::string outPath = WAV_LIB_MEDIA_DIR + "/Alive.wav";
@@ -60,7 +60,7 @@ TEST(WavMixTest, BasicMixToCreatedFile)
     EXPECT_TRUE(ok);
 }
 
-TEST(WavMixTest, UltraBassTest)
+TEST(WavLibTest, UltraBassTest)
 {
     auto src = wav_lib::WavFile::Open(WAV_LIB_MEDIA_DIR + "/Smoke.wav");
 
@@ -77,7 +77,7 @@ TEST(WavMixTest, UltraBassTest)
     dst->Save();
 }
 
-TEST(WavMixTest, multyEffects)
+TEST(WavLibTest, multyEffectsMix)
 {
     auto src = wav_lib::WavFile::Open(WAV_LIB_MEDIA_DIR + "/Smoke.wav");
 
@@ -107,7 +107,7 @@ TEST(WavMixTest, multyEffects)
     }
 }
 
-TEST(InsertEmptySpace, BasicTest)
+TEST(WavLibTest, InsertEmptySpace)
 {
     const char *testFile = "test.bin";
 
@@ -144,7 +144,7 @@ TEST(InsertEmptySpace, BasicTest)
     std::remove(testFile);
 }
 
-TEST(WavMixTest, IntervalInsert)
+TEST(WavLibTest, IntervalInsert)
 {
     const std::string smokePath = WAV_LIB_MEDIA_DIR + "/Smoke.wav";
     const std::string alivePath = WAV_LIB_MEDIA_DIR + "/Alive.wav";

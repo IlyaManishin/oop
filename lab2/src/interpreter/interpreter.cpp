@@ -3,11 +3,11 @@
 
 #include <iostream>
 
-namespace tree_executor
+namespace interpreter
 {
     void Interpreter::ExecuteTree(const file_parser::FileUPtr &tree, std::ostream &out)
     {
-        TreeInterpreter interpreter(out);
+        tree_executor::TreeInterpreter interpreter(out);
         interpreter.ExecuteTree(tree);
     }
-} // namespace tree_executor
+} // namespace interpreter
