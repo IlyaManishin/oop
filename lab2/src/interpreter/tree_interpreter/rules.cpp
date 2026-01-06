@@ -11,6 +11,8 @@ namespace tree_executor
 {
     void TreeInterpreter::ExecuteTree(const FileUPtr &tree)
     {
+        if (tree == nullptr)
+            return;
         executeStatements(*tree->statements);
     }
 
