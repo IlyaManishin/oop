@@ -1,5 +1,4 @@
-#include "base_commands/core_commands.hpp"
-#include "utils/utils.hpp"
+#include "commands_impl.hpp"
 
 #include "cmd_parser/cmd_parser.hpp"
 #include "command_executor.hpp"
@@ -30,6 +29,20 @@ namespace executor
 
         std::cerr << "Invalid argument type at #" << i << "\n";
         return false;
+    }
+
+    static IWavFileSPtr try_read_wav(const WavReader &reader, const std::string &path) noexcept
+    {
+        try
+        {
+            IWavFileSPtr wavFile = reader.OpenWav(path);
+            return wavFile;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << "\n";
+            return nullptr;
+        }
     }
 
     bool cmd_run_from_config_file(const Args &args) noexcept
