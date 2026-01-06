@@ -1,14 +1,13 @@
-#include "interpreter/interpreter.hpp"
-
 #include "file_executor.hpp"
 #include "file_parser/parser.hpp"
+#include "interpreter.hpp"
 
 #include <exception>
 #include <iostream>
 #include <string>
 
 using namespace file_parser;
-using namespace tree_executor;
+using namespace interpreter;
 
 namespace file_executor
 {
@@ -23,7 +22,7 @@ namespace file_executor
         }
         catch (const std::exception &exc)
         {
-            std::string msg = std::string("File parser error:\n") + exc.what();
+            std::string msg = std::string("File parser error occurred:\n") + exc.what();
             throw std::runtime_error(msg);
         }
         try

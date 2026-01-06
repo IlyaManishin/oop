@@ -1,4 +1,3 @@
-add_subdirectory(interpreter)
 add_library(file_executor STATIC file_executor.cpp)
 
 target_link_libraries(file_executor PRIVATE file_parser interpreter)
