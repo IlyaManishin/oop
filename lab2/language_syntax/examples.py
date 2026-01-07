@@ -3,14 +3,14 @@ from interface import *
 #EXAMPLES
 
 if exists("name.wav"):
-    file = open("name.wav")
+    file = open_wav("name.wav")
 else:
-    file = create("name1.wav")
+    file = create_wav("name.wav")
 
-const1 = 1
-const2 = 2
-interval = file.get_interval(const1, const2)
+start = time("0:0:10")
+end =  time("0:0:20")
+interval = file.get_interval(start, end)
 
-other = open("name1.wav")
+other = open_wav("name1.wav")
 other.write_interval(interval)
 

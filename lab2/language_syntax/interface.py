@@ -14,6 +14,7 @@ class File():
     def write_interval(self, interval: Interval): pass
 
 
-def open(path: str) -> File: pass
-def create(path: str) -> File: pass
+def open_wav(path: str) -> File: pass
+def create_wav(path: str) -> File: pass
 def exists(path: str) -> bool: pass
+def time(time_str: str) -> float: pass

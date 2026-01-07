@@ -24,8 +24,6 @@ namespace tree_executor
     using ExObjs = std::vector<ExObjUPtr>;
 
     using ExObjPtr = ExObj *;
-    // using MethodType = std::function<ExObjUPtr(const std::vector<ExObjPtr> &)>;
-    // using Method = ExObjUPtr (*)(const std::vector<ExObjPtr> &);
     using StaticMethod = ExObjUPtr (*)(ExObj *cur, const std::string &methodName,
                                        const std::vector<ExObjPtr> &);
 
@@ -39,12 +37,19 @@ namespace tree_executor
 
     public:
         virtual void Print(std::ostream &out) const = 0;
-        const char *GetType() const { return type; }
+        const char *GetType() const { return type; };
+        ExObjUPtr RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
 
         virtual ~ExObj() = default;
-
-        ExObjUPtr RunMethod(const std::string &name, const std::vector<ExObjPtr> &args);
     };
+
+    class ArgsFrame
+    {
+    public:
+        std::vector<ExObjPtr> allArgs;
+        ExObjs valueArgs;
+    };
+    using ArgsFrameUPtr = std::unique_ptr<ArgsFrame>;
 
     class FloatType : public ExObj
     {
@@ -138,13 +143,5 @@ namespace tree_executor
             this->value->Print(out);
         }
     };
-
-    class ArgsFrame
-    {
-    public:
-        std::vector<ExObjPtr> allArgs;
-        ExObjs valueArgs;
-    };
-    using ArgsFrameUPtr = std::unique_ptr<ArgsFrame>;
 
 } // namespace tree_executor

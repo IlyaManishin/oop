@@ -76,5 +76,4 @@ namespace tree_executor
         bool res = predicate_call_impl(funcCall.name, argsFrame->allArgs);
         return res;
     }
-
 }

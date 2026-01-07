@@ -40,12 +40,12 @@ namespace wav_lib
     class IWavInterval
     {
     public:
-        virtual ~IWavInterval() = default;
-
         virtual void SetEffect(WavEffects effect) = 0;
         virtual void SetVolume(float value) = 0;
         virtual bool IsChangedSound() = 0;
         virtual void Print(std::ostream &out = std::cout) const = 0;
+
+        virtual ~IWavInterval() = default;
     };
 
     class IWavFile
@@ -71,9 +71,9 @@ namespace wav_lib
         WavReader(const std::string &wavDir = "") noexcept : wavDir(wavDir) {};
         IWavFileSPtr OpenWav(const std::string &path) const;
         IWavFileSPtr CreateWav(const std::string &destPath,
-                              int numChannels = 2,
-                              uint32_t sampleRate = 44100,
-                              uint32_t bitsPerSample = 16) const;
+                               int numChannels = 2,
+                               uint32_t sampleRate = 44100,
+                               uint32_t bitsPerSample = 16) const;
         bool IsExistsWav(const std::string &path) const noexcept;
 
     private:
