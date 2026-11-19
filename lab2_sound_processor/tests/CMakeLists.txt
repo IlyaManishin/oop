@@ -1,11 +1,11 @@
-add_executable(tests
+add_executable(sound_processor_tests
      main.cpp
      cmd_parser_tests.cpp
      cmd_commands_tests.cpp
      wav_tests.cpp
      file_parser_tests.cpp)
 
-target_link_libraries(tests
+target_link_libraries(sound_processor_tests
      PRIVATE
      cmd_parser
      command_executor
@@ -13,10 +13,6 @@ target_link_libraries(tests
      GTest::gtest
      GTest::gtest_main
 )
-gtest_add_tests(TARGET tests EXTRA_ARGS --gtest_color=1)
-add_test(NAME all_tests COMMAND tests)
 
-file(COPY ./tests_data
-     DESTINATION ${CMAKE_BINARY_DIR}/tests)
-
-
+add_test(NAME sound_processor_tests COMMAND sound_processor_tests)
+set_tests_properties(sound_processor_tests PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
