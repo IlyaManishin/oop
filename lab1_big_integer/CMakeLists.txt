@@ -21,3 +21,6 @@ add_subdirectory(tests)
 
 add_executable(big_integer_demo main.cpp)
 target_link_libraries(big_integer_demo PRIVATE big_long)
+
+add_executable(big_integer_examples examples/demo.cpp)
+target_link_libraries(big_integer_examples PRIVATE big_long)
