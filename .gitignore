@@ -22,7 +22,7 @@ Testing/
 # Temporary and local data
 .cache/
 **/questions.txt
-lab0/data/
+lab0_word_count/data/
 
 # Lab2 local test audio media and outputs
 **/tests/tests_data/wav_lib/
