@@ -1,0 +1,7 @@
+Object-oriented programming (OOP) is a programming paradigm based on the concept of objects.
+Objects can contain data in the form of fields, often known as attributes or properties.
+Objects can also contain code in the form of procedures, often known as methods.
+In OOP, computer programs are designed by making them out of objects that interact with one another.
+OOP languages are diverse, but the most popular ones are class-based.
+Classes define the format and behavior of objects, acting as blueprints for creating instances.
+Object-oriented programming is widely used in modern software development.

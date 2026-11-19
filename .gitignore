@@ -1,0 +1,28 @@
+# Build outputs
+build/
+.build/
+**/bin/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+Testing/
+**/Testing/
+*.o
+*.a
+*.so
+*.dylib
+
+# IDE and Editor files
+.vscode/
+.clangd/
+.idea/
+*.swp
+*~
+
+# Temporary and local data
+.cache/
+**/questions.txt
+lab0_word_count/data/
+
+# Lab2 local test audio media and outputs
+**/tests/tests_data/wav_lib/

@@ -1,1 +1,0 @@
-add_library(big_long STATIC big_long.cpp big_long_core.cpp big_long_operators.cpp)
