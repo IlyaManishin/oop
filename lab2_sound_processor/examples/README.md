@@ -6,9 +6,9 @@ Sample scripts and workflow for `sound_processor`.
 
 ## Files
 
-- [**`mix_audio.dsl`**](file:///home/mashina/Documents/last_labs/oop/lab2_sound_processor/examples/mix_audio.dsl) — opens files, extracts an interval, and mixes it into a new WAV file.
-- [**`apply_effects.dsl`**](file:///home/mashina/Documents/last_labs/oop/lab2_sound_processor/examples/apply_effects.dsl) — applies audio effects (`bass`, `raise_high`, `distortion`).
-- [**`workflow_demo.sh`**](file:///home/mashina/Documents/last_labs/oop/lab2_sound_processor/examples/workflow_demo.sh) — demo bash script running basic CLI commands and DSL scripts.
+- [**`mix_audio.dsl`**](mix_audio.dsl) — opens files, extracts an interval, and mixes it into a new WAV file.
+- [**`apply_effects.dsl`**](apply_effects.dsl) — applies audio effects (`bass`, `raise_high`, `distortion`).
+- [**`workflow_demo.sh`**](workflow_demo.sh) — demo bash script running basic CLI commands and DSL scripts.
 
 ---
 

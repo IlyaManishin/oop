@@ -113,7 +113,7 @@ In addition to DSL scripts, the program can be driven directly via terminal comm
 
 ## Examples
 
-Runnable example scripts and a bash demo are in [**`examples/`**](file:///home/mashina/Documents/last_labs/oop/lab2_sound_processor/examples):
+Runnable example scripts and a bash demo are in [**`examples/`**](examples/):
 
 ```bash
 # Run a DSL mixing script

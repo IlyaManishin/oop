@@ -10,9 +10,9 @@ The repository covers three distinct projects written in modern C++, progressing
 
 | Project | Description | Key Topics |
 |---|---|---|
-| [**`lab0_word_count`**](file:///home/mashina/Documents/last_labs/oop/lab0_word_count) | **Word Frequency Analyzer**<br>Reads text streams, counts word occurrences, and exports sorted frequency tables to CSV format. | STL containers (`std::map`, `std::vector`), file streams, custom CLI flag parsing, CSV generation. |
-| [**`lab1_big_integer`**](file:///home/mashina/Documents/last_labs/oop/lab1_big_integer) | **BigLong: Arbitrary Precision Arithmetic**<br>A big integer library supporting signed arithmetic with large numbers stored in custom 30-bit limbs. | Operator overloading, template metaprogramming for numeric types, memory management, GoogleTest. |
-| [**`lab2_sound_processor`**](file:///home/mashina/Documents/last_labs/oop/lab2_sound_processor) | **WAV Sound Processor & DSL Interpreter**<br>16-bit PCM audio processor driven either via CLI or through a custom, handwritten Python-like scripting language. | Lexer with indentation tracking (C), recursive descent AST parser (C++), tree-walk interpreter, audio DSP filters. |
+| [**`lab0_word_count`**](lab0_word_count/) | **Word Frequency Analyzer**<br>Reads text streams, counts word occurrences, and exports sorted frequency tables to CSV format. | STL containers (`std::map`, `std::vector`), file streams, custom CLI flag parsing, CSV generation. |
+| [**`lab1_big_integer`**](lab1_big_integer/) | **BigLong: Arbitrary Precision Arithmetic**<br>A big integer library supporting signed arithmetic with large numbers stored in custom 30-bit limbs. | Operator overloading, template metaprogramming for numeric types, memory management, GoogleTest. |
+| [**`lab2_sound_processor`**](lab2_sound_processor/) | **WAV Sound Processor & DSL Interpreter**<br>16-bit PCM audio processor driven either via CLI or through a custom, handwritten Python-like scripting language. | Lexer with indentation tracking (C), recursive descent AST parser (C++), tree-walk interpreter, audio DSP filters. |
 
 ---
 
