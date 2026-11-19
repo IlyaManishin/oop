@@ -1,0 +1,18 @@
+print("[mix_audio] Checking audio source availability...")
+if exists("tests/tests_data/wav_lib/media/Smoke.wav"):
+    print("[mix_audio] Opening input audio streams...")
+    bg = open_wav("tests/tests_data/wav_lib/media/Smoke.wav")
+    lead = open_wav("tests/tests_data/wav_lib/media/Alive.wav")
+    out = create_wav("mixed_output.wav")
+    t0 = time("0:0:0")
+    t5 = time("0:0:5")
+    t10 = time("0:0:10")
+    print("[mix_audio] Slicing intro interval (0s to 5s) from background track...")
+    intro = bg.get_interval(t0, t5)
+    out.write_interval(intro, t0, False)
+    print("[mix_audio] Slicing lead interval (0s to 5s) and writing at 5s...")
+    solo = lead.get_interval(t0, t5)
+    out.write_interval(solo, t5, False)
+    print("[mix_audio] Mixing complete: output saved to mixed_output.wav")
+else:
+    print("[mix_audio] Error: required media files not found.")
