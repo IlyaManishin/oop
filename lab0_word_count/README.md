@@ -1,36 +1,19 @@
-# Word Frequency Analyzer (Lab 0)
+# Lab 0: Word Count
 
-A C++ utility that reads a text file, counts word occurrences, calculates relative word frequencies, and exports a sorted frequency table to CSV format.
+A program that reads a text file, counts word occurrences, and saves the frequencies into a CSV file sorted in descending order.
 
-## Features
+---
 
-- **Text Stream Tokenizer**: Parses arbitrary text files into words separated by whitespace and punctuation.
-- **Statistical Aggregation**: Computes raw counts and relative frequencies for every unique word.
-- **Sorted CSV Output**: Automatically sorts words by frequency descending and outputs standard delimited tabular data.
-- **Flexible CLI Configuration**: Configurable destination path, custom delimiters (e.g. `,` or `;`), and top-N row limits.
-
-## Project Structure
-
-```
-lab0_word_count/
-├── cmd/            # Command-line argument and flag parser
-├── tables/         # File stream reader and frequency table generator
-├── tests/          # Unit tests and test data
-├── examples/       # Sample input and output files
-├── main.cpp        # Application entrypoint
-└── CMakeLists.txt  # Build configuration
-```
-
-## Build & Test
+## How to Build
 
 ```bash
-# Build standalone
 cmake -B build -S .
 cmake --build build
 
-# Run unit tests
 ctest --test-dir build --output-on-failure
 ```
+
+---
 
 ## Usage
 
@@ -40,21 +23,21 @@ ctest --test-dir build --output-on-failure
 
 ### Options
 
-| Flag | Description | Default |
-|---|---|---|
-| `<input_file>` | Path to the source text file (required) | — |
-| `-dest=<path>` | Destination path for the output CSV file | `output.csv` |
-| `-d=<char>` | Column delimiter character | `;` |
-| `-h=<int>` | Maximum number of rows to export | `100` |
+- `<input_file>` — path to the input text file (required)
+- `-dest=<file>` — output CSV file (default: `output.csv`)
+- `-d=<char>` — delimiter character (default: `;`)
+- `-h=<number>` — max rows to write (default: `100`)
 
-### Example
+---
+
+## Example
 
 ```bash
-# Analyze sample text and export top 20 words with comma delimiter
-./build/bin/word_count examples/sample.txt -dest=examples/sample_output.csv -d=, -h=20
+./build/bin/word_count examples/sample.txt -dest=output.csv -d=, -h=5
 ```
 
-**Output preview (`examples/sample_output.csv`):**
+Result in `output.csv`:
+
 ```csv
 Word,Count,Frequency,
 of,5,0.0521
